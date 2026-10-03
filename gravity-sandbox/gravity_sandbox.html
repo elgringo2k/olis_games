@@ -477,26 +477,7 @@
     }
   }
 
-  // rings a gas giant was born with (separate from the debris rings accreted later)
-  function drawPrimordialRings(b, s, trueR){
-    var pr = b.primordialRings;
-    if (!pr || trueR < 0.05) return;
-    var inner = pr.inner * trueR, outer = pr.outer * trueR;
-    if (outer < 2) return;
-    var tint = pr.tint.join(',');
-    var g = ctx.createRadialGradient(s.x, s.y, inner, s.x, s.y, outer);
-    for (var i=0;i<pr.stops.length;i++){
-      g.addColorStop(pr.stops[i].t, 'rgba(' + tint + ',' + (pr.stops[i].a * pr.alpha) + ')');
-    }
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, outer, 0, Math.PI*2);
-    ctx.arc(s.x, s.y, inner, 0, Math.PI*2, true);
-    ctx.fill();
-  }
-
   function drawRings(b, s, trueR){
-    drawPrimordialRings(b, s, trueR);
     var rg = b.rings;
     if (!rg || rg.count <= 0) return;
     if (trueR < 0.05) return; // body has shrunk below visibility — ring should too, not hang around at a fixed size
@@ -1438,23 +1419,13 @@
     return { kind: kind, mass: mass, sizeMultiplier: kind.size * (0.9 + Math.random()*0.2) };
   }
 
-  function makePrimordialRings(kind){
-    var bright = kind.type === 'paleGiant';
-    var stops = [{ t: 0, a: 0 }];
-    var gapT = 0.55 + Math.random()*0.15;
-    for (var i=1;i<14;i++){
-      var t = i/14;
-      var a = Math.abs(t - gapT) < 0.04 ? 0.05 : 0.35 + Math.random()*0.65;
-      stops.push({ t: t, a: a });
-    }
-    stops.push({ t: 1, a: 0 });
-    var tint = kind.type === 'paleGiant' ? [214,198,160] : (kind.type === 'stormyGiant' ? [170,150,130] : [175,200,210]);
-    return {
-      inner: 1.2 + Math.random()*0.25,
-      outer: (bright ? 2.0 : 1.6) + Math.random()*0.6,
-      alpha: bright ? 0.55 + Math.random()*0.3 : 0.15 + Math.random()*0.15,
-      tint: tint, stops: stops
-    };
+  // a giant born with rings: seed the normal debris-ring system with enough pieces to show up.
+  // drawRings thins rings out on bigger hosts, so the piece count scales with the giant's radius
+  function seedRings(body, kind){
+    var targetAlpha = kind.type === 'paleGiant' ? 0.45 + Math.random()*0.35 : 0.15 + Math.random()*0.15;
+    var count = Math.round(targetAlpha / (0.045 * massToRadius(15) / body.r));
+    var inner = 1.25 + Math.random()*0.25, outer = (kind.type === 'paleGiant' ? 2.0 : 1.6) + Math.random()*0.6;
+    for (var i=0;i<count;i++) addToRings(body, inner + (outer - inner) * Math.random());
   }
 
   function pointerUp(){
@@ -1529,7 +1500,7 @@
     }
     if (giant){
       body.hot = giant.kind.type === 'hotGiant';
-      if (Math.random() < giant.kind.ringChance) body.primordialRings = makePrimordialRings(giant.kind);
+      if (Math.random() < giant.kind.ringChance) seedRings(body, giant.kind);
     }
     if (preset.star && !preset.notStar){
       body.spots = [];
@@ -2711,9 +2682,7 @@
       lines.push('Orbited by: nothing');
     }
     if (b.rings && b.rings.count){
-      lines.push('Rings: <b>' + (b.primordialRings ? 'primordial + ' : '') + b.rings.count + ' pieces</b>');
-    } else if (b.primordialRings){
-      lines.push('Rings: <b>primordial</b>');
+      lines.push('Rings: <b>' + b.rings.count + ' pieces</b>');
     }
     if (!b.spots && b.tideStress !== undefined){
       lines.push('Tidal stress: <b>' + Math.round(Math.min(1, b.tideStress) * 100) + '%</b>');
