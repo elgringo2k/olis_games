@@ -51,6 +51,7 @@
   <div class="seg">
     <button id="presetMoon" data-mass="5">Moon</button>
     <button id="presetPlanet" data-mass="15" class="active">Planet</button>
+    <button id="presetGasGiant" data-mass="120">Gas giant</button>
     <button id="presetStar" data-mass="1500">Star</button>
     <button id="presetRedGiant" data-mass="2500">Red giant</button>
     <button id="presetSupergiant" data-mass="5000">Supergiant</button>
@@ -107,6 +108,7 @@
   var presets = {
     moon:   { mass: 5,   color: '#B4B2A9' },
     planet: { mass: 15,  color: '#378ADD' },
+    gasGiant: { mass: 120, color: '#C9A27A', sizeMultiplier: 7.4 }, // preview size only — real size is rolled per spawn
     star:   { mass: 1500, color: '#EF9F27', sizeMultiplier: 20, star: true },
     redGiant: { mass: 2500, color: '#D2491F', sizeMultiplier: 171.8, star: true, unstable: true },
     supergiant: { mass: 5000, color: '#B8341A', sizeMultiplier: 696.08, star: true, unstable: true },
@@ -475,7 +477,26 @@
     }
   }
 
+  // rings a gas giant was born with (separate from the debris rings accreted later)
+  function drawPrimordialRings(b, s, trueR){
+    var pr = b.primordialRings;
+    if (!pr || trueR < 0.05) return;
+    var inner = pr.inner * trueR, outer = pr.outer * trueR;
+    if (outer < 2) return;
+    var tint = pr.tint.join(',');
+    var g = ctx.createRadialGradient(s.x, s.y, inner, s.x, s.y, outer);
+    for (var i=0;i<pr.stops.length;i++){
+      g.addColorStop(pr.stops[i].t, 'rgba(' + tint + ',' + (pr.stops[i].a * pr.alpha) + ')');
+    }
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, outer, 0, Math.PI*2);
+    ctx.arc(s.x, s.y, inner, 0, Math.PI*2, true);
+    ctx.fill();
+  }
+
   function drawRings(b, s, trueR){
+    drawPrimordialRings(b, s, trueR);
     var rg = b.rings;
     if (!rg || rg.count <= 0) return;
     if (trueR < 0.05) return; // body has shrunk below visibility — ring should too, not hang around at a fixed size
@@ -974,7 +995,339 @@
     return c;
   }
 
-  var TEXTURE_GENERATORS = { rocky: texRocky, venus: texVenus, habitable: texHabitable, mars: texMars, icy: texIcy };
+  // ---- gas giant & moon textures ----
+  // each giant and moon gets its own texture: a palette family is picked, then the whole thing is
+  // nudged in hue/saturation/lightness so no two bodies look alike
+  function shiftHex(hex, dh, ds, dl){
+    var rgb = hexToRgb(hex), r = rgb[0]/255, g = rgb[1]/255, b = rgb[2]/255;
+    var max = Math.max(r,g,b), min = Math.min(r,g,b), l = (max+min)/2, h = 0, s = 0;
+    if (max !== min){
+      var dd = max - min;
+      s = l > 0.5 ? dd/(2-max-min) : dd/(max+min);
+      h = max === r ? (g-b)/dd + (g < b ? 6 : 0) : (max === g ? (b-r)/dd + 2 : (r-g)/dd + 4);
+      h *= 60;
+    }
+    h = (h + dh + 360) % 360; s = Math.max(0, Math.min(1, s + ds)); l = Math.max(0, Math.min(1, l + dl));
+    var c = (1 - Math.abs(2*l - 1)) * s, x = c * (1 - Math.abs((h/60) % 2 - 1)), m = l - c/2;
+    var rr = 0, gg = 0, bb = 0;
+    if (h < 60){ rr = c; gg = x; } else if (h < 120){ rr = x; gg = c; } else if (h < 180){ gg = c; bb = x; }
+    else if (h < 240){ gg = x; bb = c; } else if (h < 300){ rr = x; bb = c; } else { rr = c; bb = x; }
+    return hexOf([Math.round((rr+m)*255), Math.round((gg+m)*255), Math.round((bb+m)*255)]);
+  }
+
+  function pickPalette(palettes, hueRange, satRange, lightRange){
+    var p = palettes[Math.floor(Math.random()*palettes.length)];
+    var dh = (Math.random()-0.5)*hueRange, ds = (Math.random()-0.5)*satRange, dl = (Math.random()-0.5)*lightRange;
+    function shift(v){
+      if (typeof v === 'number') return v; // raw rgb triples (plume/crack tints) stay as authored
+      if (typeof v === 'string') return shiftHex(v, dh, ds, dl);
+      if (Array.isArray(v)) return v.map(shift);
+      var o = {}; for (var k in v) o[k] = shift(v[k]); return o;
+    }
+    return shift(p);
+  }
+
+  function randInt(a, b){ return a + Math.floor(Math.random()*(b - a + 1)); }
+
+  // wavy horizontal cloud bands across the whole square (the body clip trims it to a disc)
+  function paintBands(tctx, colors, count, wave, aMin, aMax){
+    var sc = TEX_SIZE/200, step = TEX_SIZE/count;
+    for (var i=0;i<count;i++){
+      var y0 = i*step + (Math.random()-0.5)*step*0.4;
+      var h = step * (0.5 + Math.random()*0.9);
+      var ph = Math.random()*Math.PI*2, ph2 = Math.random()*Math.PI*2, f = 0.02 + Math.random()*0.04;
+      tctx.beginPath();
+      for (var x=0; x<=TEX_SIZE; x+=6*sc) tctx.lineTo(x, y0 + Math.sin(x*f + ph)*wave*sc);
+      for (var x2=TEX_SIZE; x2>=0; x2-=6*sc) tctx.lineTo(x2, y0 + h + Math.sin(x2*f + ph2)*wave*sc);
+      tctx.closePath();
+      tctx.fillStyle = colors[Math.floor(Math.random()*colors.length)] + toAlphaHex(aMin + Math.random()*(aMax-aMin));
+      tctx.fill();
+    }
+  }
+
+  // short curling strokes along band edges for turbulence
+  function paintSwirls(tctx, colors, count, alpha){
+    var sc = TEX_SIZE/200;
+    tctx.lineCap = 'round';
+    for (var i=0;i<count;i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE;
+      var len = (8 + Math.random()*22)*sc, curl = (Math.random()-0.5)*0.5;
+      tctx.beginPath(); tctx.moveTo(x, y);
+      var ang = (Math.random()-0.5)*0.3;
+      for (var k=0;k<6;k++){ ang += curl; x += Math.cos(ang)*len/6; y += Math.sin(ang)*len/6; tctx.lineTo(x, y); }
+      tctx.lineWidth = (1 + Math.random()*2.5)*sc;
+      tctx.strokeStyle = colors[Math.floor(Math.random()*colors.length)] + toAlphaHex(alpha*(0.5+Math.random()*0.5));
+      tctx.stroke();
+    }
+  }
+
+  // an oval storm: concentric ellipses with a lighter or darker core
+  function paintStorm(tctx, x, y, rx, ry, outer, inner){
+    for (var k=0;k<5;k++){
+      var t = k/4;
+      tctx.beginPath(); tctx.ellipse(x, y, rx*(1-t*0.75), ry*(1-t*0.75), 0, 0, Math.PI*2);
+      tctx.fillStyle = (k%2===0 ? outer : inner) + toAlphaHex(150 + t*90);
+      tctx.fill();
+    }
+  }
+
+  function texStormyGiant(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#E3CBA3', bands:['#C58F5E','#F1E4C8','#A86F45','#D8B184','#8E5A3A'], spot:'#C0502E', spotIn:'#E07A4E' },
+      { base:'#D8B8A8', bands:['#B0705E','#F0DED4','#8E4E40','#CC9886','#6E3428'], spot:'#8E2E24', spotIn:'#C2584A' },
+      { base:'#CFC6A4', bands:['#9E9460','#ECE6CC','#7C7444','#BDB27E','#5E5630'], spot:'#8A6A2E', spotIn:'#B8924A' },
+      { base:'#CBBFC8', bands:['#9A8494','#EAE2E8','#76606E','#B8A4B2','#5A4654'], spot:'#7A3E5E', spotIn:'#A8648A' }
+    ], 40, 0.25, 0.12);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBands(tctx, p.bands, randInt(9, 20), 2 + Math.random()*5, 100, 220);
+    paintSwirls(tctx, ['#FFFFFF', p.bands[2], p.bands[4]], randInt(40, 110), 120);
+    // a few big storms of random size, or none at all
+    var bigStorms = Math.random() < 0.2 ? 0 : randInt(1, 3);
+    for (var s=0;s<bigStorms;s++){
+      var rx = (12 + Math.random()*22)*sc;
+      paintStorm(tctx, Math.random()*TEX_SIZE, (30 + Math.random()*140)*sc, rx, rx*(0.45 + Math.random()*0.25), p.spot, p.spotIn);
+    }
+    for (var i=0, n=randInt(2, 10); i<n; i++){
+      paintStorm(tctx, Math.random()*TEX_SIZE, Math.random()*TEX_SIZE, (4+Math.random()*6)*sc, (2.5+Math.random()*3)*sc, '#F4EEE2', '#FFFFFF');
+    }
+    return c;
+  }
+
+  function texPaleGiant(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#E8DDBF', bands:['#D9C89E','#F2EAD3','#CDB98C','#E2D3AE'] },
+      { base:'#E6E2D8', bands:['#D2CCBC','#F4F2EC','#C4BCA8','#DED8CA'] },
+      { base:'#E8D8C8', bands:['#D8BEA6','#F4EAE0','#CAAA90','#E2CCB8'] }
+    ], 50, 0.2, 0.08);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBands(tctx, p.bands, randInt(10, 24), 0.5 + Math.random()*2, 50, 130);
+    paintSwirls(tctx, ['#FFFFFF', p.bands[2]], randInt(5, 30), 50);
+    for (var i=0, n=Math.random() < 0.4 ? 0 : randInt(1, 3); i<n; i++){
+      paintStorm(tctx, Math.random()*TEX_SIZE, (30 + Math.random()*140)*sc, (6+Math.random()*9)*sc, (4+Math.random()*4)*sc, '#F8F3E6', '#FFFFFF');
+    }
+    return c;
+  }
+
+  function texIceCalm(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), mid = TEX_SIZE/2;
+    var p = pickPalette([
+      { base:'#9FD8E0', bands:['#8CCBD6','#B4E4EA'], haze:'#D8F4F6' },
+      { base:'#A9DCC8', bands:['#93CFB6','#C0E8D8'], haze:'#E0F7EE' },
+      { base:'#A8C4E6', bands:['#92B2DA','#C0D6F0'], haze:'#E0ECFA' }
+    ], 40, 0.2, 0.1);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBands(tctx, p.bands, randInt(6, 14), 1, 15, 50);
+    // soft polar haze, centred somewhere near one pole
+    var hy = mid * (0.2 + Math.random()*0.3), hr = mid * (0.6 + Math.random()*0.5);
+    var hz = tctx.createRadialGradient(mid, hy, 0, mid, hy, hr);
+    hz.addColorStop(0, p.haze + toAlphaHex(110 + Math.random()*90)); hz.addColorStop(1, p.haze + '00');
+    tctx.fillStyle = hz; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    return c;
+  }
+
+  function texIceStormy(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#3B6FD0', bands:['#2A55B0','#5A8FE0','#1E3F8F','#7FB0F0'], spot:'#142A6E', spotIn:'#0E1F55' },
+      { base:'#2F8A9E', bands:['#226E82','#4AA8BC','#185868','#70C4D4'], spot:'#0E3844', spotIn:'#082A34' },
+      { base:'#5260C8', bands:['#3E4AA8','#6E7CE0','#2C3688','#94A0F0'], spot:'#1A1E66', spotIn:'#10144E' }
+    ], 40, 0.2, 0.12);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBands(tctx, p.bands, randInt(8, 16), 1 + Math.random()*4, 70, 180);
+    tctx.lineCap = 'round';
+    for (var s=0, n=randInt(1, 3); s<n; s++){
+      var rx = (10 + Math.random()*16)*sc;
+      var sx = Math.random()*TEX_SIZE, sy = (30 + Math.random()*140)*sc;
+      paintStorm(tctx, sx, sy, rx, rx*(0.5 + Math.random()*0.2), p.spot, p.spotIn);
+      // bright high-altitude cloud streaks riding alongside the dark spot
+      for (var i=0, k=randInt(2, 7); i<k; i++){
+        tctx.beginPath();
+        var y = sy + (Math.random()-0.5)*rx*2.5, x = sx + (Math.random()-0.3)*rx*2;
+        tctx.moveTo(x, y); tctx.lineTo(x + (10+Math.random()*25)*sc, y + (Math.random()-0.5)*3*sc);
+        tctx.lineWidth = (1.5+Math.random()*2.5)*sc;
+        tctx.strokeStyle = 'rgba(255,255,255,' + (0.5+Math.random()*0.4) + ')';
+        tctx.stroke();
+      }
+    }
+    paintSwirls(tctx, ['#FFFFFF', p.bands[3]], randInt(10, 40), 90);
+    return c;
+  }
+
+  function texHotGiant(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#5A1206', bands:['#FF7A1A','#FFB347','#C6260E','#FFD27A','#8A1A08'] },
+      { base:'#4A0E10', bands:['#FF5A1F','#FF9E3D','#B01810','#FFC86A','#701010'] },
+      { base:'#3A0A18', bands:['#FF4A3A','#FF8A5A','#A01030','#FFB08A','#600A20'] }
+    ], 25, 0.1, 0.08);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBands(tctx, p.bands, randInt(9, 18), 3 + Math.random()*5, 120, 230);
+    paintSwirls(tctx, ['#FFF2C0', '#3A0804', p.bands[0]], randInt(60, 130), 160);
+    // molten hot spots
+    for (var i=0, n=randInt(4, 14); i<n; i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE, r = (6+Math.random()*14)*sc;
+      var g = tctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(255,240,180,0.85)'); g.addColorStop(1, 'rgba(255,120,30,0)');
+      tctx.fillStyle = g; tctx.beginPath(); tctx.arc(x, y, r, 0, Math.PI*2); tctx.fill();
+    }
+    return c;
+  }
+
+  // ---- moon textures ----
+  function paintCraters(tctx, count, fill, rMin, rMax){
+    var sc = TEX_SIZE/200;
+    for (var i=0;i<count;i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE, r = (rMin + Math.random()*(rMax-rMin))*sc;
+      tctx.beginPath(); tctx.arc(x, y, r, 0, Math.PI*2);
+      tctx.fillStyle = 'rgba(0,0,0,0.3)'; tctx.fill();
+      tctx.beginPath(); tctx.arc(x-r*0.2, y-r*0.2, r*0.7, 0, Math.PI*2);
+      tctx.fillStyle = fill; tctx.fill();
+      tctx.beginPath(); tctx.arc(x+r*0.3, y+r*0.3, r*0.3, 0, Math.PI*2);
+      tctx.fillStyle = 'rgba(255,255,255,0.15)'; tctx.fill();
+    }
+  }
+
+  function paintBlotches(tctx, colors, count, rMin, rMax, aMin, aMax){
+    var sc = TEX_SIZE/200;
+    for (var i=0;i<count;i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE, r = (rMin + Math.random()*(rMax-rMin))*sc;
+      tctx.beginPath(); tctx.arc(x, y, r, 0, Math.PI*2);
+      tctx.fillStyle = colors[Math.floor(Math.random()*colors.length)] + toAlphaHex(aMin + Math.random()*(aMax-aMin));
+      tctx.fill();
+    }
+  }
+
+  function texCratered(){
+    var c = newTexCanvas(), tctx = c.getContext('2d');
+    var p = pickPalette([
+      { base:'#A9A7A2', dark:['#6E6C68','#7A7873'] },
+      { base:'#B0A494', dark:['#766A5C','#84786A'] },
+      { base:'#9CA2A6', dark:['#646A70','#727880'] }
+    ], 30, 0.1, 0.15);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBlotches(tctx, p.dark, randInt(0, 14), 14, 42, 90, 180); // dark lava plains
+    paintCraters(tctx, randInt(15, 50), p.base, 2, 4 + Math.random()*12);
+    return c;
+  }
+
+  function texRubble(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#6B6058', blot:['#4A423C','#857A6F'] },
+      { base:'#5E5A56', blot:['#3E3A38','#7A7670'] },
+      { base:'#74604E', blot:['#4E3E30','#8E7860'] }
+    ], 30, 0.15, 0.12);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBlotches(tctx, p.blot, randInt(10, 30), 8, 25, 50, 110);
+    // sometimes one huge impact crater that nearly shattered it
+    if (Math.random() < 0.6){
+      var x = (50 + Math.random()*100)*sc, y = (50 + Math.random()*100)*sc, r = (25 + Math.random()*20)*sc;
+      tctx.beginPath(); tctx.arc(x, y, r, 0, Math.PI*2); tctx.fillStyle = 'rgba(0,0,0,0.35)'; tctx.fill();
+      tctx.beginPath(); tctx.arc(x-r*0.15, y-r*0.15, r*0.8, 0, Math.PI*2); tctx.fillStyle = p.base; tctx.fill();
+    }
+    paintCraters(tctx, randInt(25, 60), p.base, 2, 8);
+    tctx.strokeStyle = 'rgba(30,25,20,0.35)'; tctx.lineWidth = 1.5*sc;
+    var gAng = (Math.random()-0.5)*60*sc;
+    for (var i=0, n=randInt(0, 12); i<n; i++){
+      var gy = Math.random()*TEX_SIZE;
+      tctx.beginPath(); tctx.moveTo(0, gy); tctx.lineTo(TEX_SIZE, gy + gAng + (Math.random()-0.5)*10*sc); tctx.stroke();
+    }
+    return c;
+  }
+
+  function texVolcanic(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#E6D25A', blot:['#D9A23A','#F2E99A','#C9C25A'], plume:[190,60,25] },
+      { base:'#D8A848', blot:['#B8742E','#EED08A','#C49848'], plume:[170,40,20] },
+      { base:'#C8B890', blot:['#A08A60','#E2D6B4','#B4A070'], plume:[200,90,30] }
+    ], 30, 0.2, 0.1);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBlotches(tctx, p.blot, randInt(15, 40), 8, 26, 70, 150);
+    // volcanoes: dark calderas ringed by plume deposits
+    var plume = p.plume.join(',');
+    for (var i=0, n=randInt(6, 22); i<n; i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE, r = (2 + Math.random()*4)*sc, reach = 3 + Math.random()*3;
+      var g = tctx.createRadialGradient(x, y, r, x, y, r*reach);
+      g.addColorStop(0, 'rgba(' + plume + ',0.75)'); g.addColorStop(1, 'rgba(' + plume + ',0)');
+      tctx.fillStyle = g; tctx.beginPath(); tctx.arc(x, y, r*reach, 0, Math.PI*2); tctx.fill();
+      tctx.beginPath(); tctx.arc(x, y, r, 0, Math.PI*2); tctx.fillStyle = '#1A1410'; tctx.fill();
+    }
+    return c;
+  }
+
+  function texGroovedIce(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#8A7F72', groove:'#CDC8BE', line:'#96918A' },
+      { base:'#76808A', groove:'#C8D0D8', line:'#8A949E' },
+      { base:'#8C7868', groove:'#D6C8BA', line:'#A08E80' }
+    ], 30, 0.1, 0.12);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    // bright grooved terrain cutting across the dark ancient crust
+    for (var i=0, n=randInt(3, 10); i<n; i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE, ang = Math.random()*Math.PI;
+      var w = (12 + Math.random()*28)*sc, l = (50 + Math.random()*90)*sc;
+      tctx.save(); tctx.translate(x, y); tctx.rotate(ang);
+      tctx.fillStyle = p.groove + '8C'; tctx.fillRect(-l/2, -w/2, l, w);
+      tctx.strokeStyle = p.line + '99'; tctx.lineWidth = 1*sc;
+      for (var k=-w/2+3*sc; k<w/2; k+=(3 + Math.random()*3)*sc){ tctx.beginPath(); tctx.moveTo(-l/2, k); tctx.lineTo(l/2, k); tctx.stroke(); }
+      tctx.restore();
+    }
+    paintCraters(tctx, randInt(8, 28), p.base, 3, 9);
+    if (Math.random() < 0.6){
+      tctx.fillStyle = 'rgba(235,240,245,0.45)'; // frosty poles
+      var pw = (60 + Math.random()*50)*sc, ph = (18 + Math.random()*16)*sc;
+      tctx.beginPath(); tctx.ellipse(TEX_SIZE/2, 0, pw, ph, 0, 0, Math.PI*2); tctx.fill();
+      tctx.beginPath(); tctx.ellipse(TEX_SIZE/2, TEX_SIZE, pw, ph, 0, 0, Math.PI*2); tctx.fill();
+    }
+    return c;
+  }
+
+  function texCrackedIce(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), sc = TEX_SIZE/200;
+    var p = pickPalette([
+      { base:'#E9E3D6', blot:['#C9A98A','#D8C4A8'], crack:[140,75,45] },
+      { base:'#E2E8EE', blot:['#A8B8C8','#C4D0DC'], crack:[90,70,100] },
+      { base:'#EAE4D0', blot:['#C8B48A','#DCCCA8'], crack:[150,95,40] }
+    ], 25, 0.15, 0.06);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBlotches(tctx, p.blot, randInt(5, 20), 10, 30, 40, 90);
+    // long cracks criss-crossing the ice
+    tctx.lineCap = 'round';
+    var crack = p.crack.join(','), wiggle = 0.15 + Math.random()*0.4;
+    for (var i=0, n=randInt(10, 32); i<n; i++){
+      var x = Math.random()*TEX_SIZE, y = Math.random()*TEX_SIZE, ang = Math.random()*Math.PI*2;
+      tctx.beginPath(); tctx.moveTo(x, y);
+      for (var s=0;s<6;s++){ x += Math.cos(ang)*20*sc; y += Math.sin(ang)*20*sc; ang += (Math.random()-0.5)*wiggle; tctx.lineTo(x, y); }
+      tctx.lineWidth = (0.8 + Math.random()*1.8)*sc;
+      tctx.strokeStyle = 'rgba(' + crack + ',' + (0.45 + Math.random()*0.35) + ')';
+      tctx.stroke();
+    }
+    return c;
+  }
+
+  function texHazy(){
+    var c = newTexCanvas(), tctx = c.getContext('2d'), mid = TEX_SIZE/2;
+    var p = pickPalette([
+      { base:'#D89A3E', band:'#C4842E', haze:'#F0C27A' },
+      { base:'#C8A070', band:'#AE8858', haze:'#E8C8A0' },
+      { base:'#B0A050', band:'#988838', haze:'#D8CC88' }
+    ], 40, 0.2, 0.1);
+    tctx.fillStyle = p.base; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    paintBands(tctx, [p.band, p.haze], randInt(4, 12), 1, 20, 60);
+    // thick smoggy haze, brighter at the limb
+    var g = tctx.createRadialGradient(mid, mid, mid*(0.3 + Math.random()*0.3), mid, mid, mid);
+    g.addColorStop(0, p.haze + '00'); g.addColorStop(1, p.haze + toAlphaHex(140 + Math.random()*80));
+    tctx.fillStyle = g; tctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+    return c;
+  }
+
+  var TEXTURE_GENERATORS = { rocky: texRocky, venus: texVenus, habitable: texHabitable, mars: texMars, icy: texIcy,
+    stormyGiant: texStormyGiant, paleGiant: texPaleGiant, iceCalm: texIceCalm, iceStormy: texIceStormy, hotGiant: texHotGiant,
+    cratered: texCratered, rubble: texRubble, volcanic: texVolcanic, groovedIce: texGroovedIce, crackedIce: texCrackedIce, hazy: texHazy };
 
   function getPlanetTexture(zoneType, variant){
     var gen = TEXTURE_GENERATORS[zoneType];
@@ -1021,6 +1374,89 @@
     return PLANET_ZONES[PLANET_ZONES.length-1];
   }
 
+  var GAS_GIANT_KINDS = [
+    { type:'stormyGiant', label:'Banded, stormy gas giant', color:'#C9A27A', ringChance: 0.15 },
+    { type:'paleGiant',   label:'Pale, bleached gas giant', color:'#E2D6B6', ringChance: 0.7 },
+    { type:'iceCalm',     label:'Calm ice giant',           color:'#9FD8E0', ringChance: 0.25 },
+    { type:'iceStormy',   label:'Banded, stormy ice giant', color:'#3B6FD0', ringChance: 0.25 },
+    { type:'hotGiant',    label:'Hot, fiery gas giant',     color:'#E8601C', ringChance: 0 }
+  ];
+  function gasGiantKind(type){ return GAS_GIANT_KINDS.filter(function(k){ return k.type === type; })[0]; }
+
+  // rolls kind, mass and size: far out they freeze into ice giants (mostly under 100 mass, and
+  // never big); heavy ones near a star can be hot and bloated; otherwise banded-stormy or pale at any size
+  function rollGasGiant(d){
+    if (!isFinite(d)) d = 40000;
+    var lt = (Math.log(d) - Math.log(75000)) / (Math.log(110000) - Math.log(75000));
+    lt = Math.max(0, Math.min(1, lt));
+    var iceChance = lt*lt*(3 - 2*lt);
+    var planetR = massToRadius(15);
+    var kind, mass, sizeFactor;
+    if (Math.random() < iceChance){
+      kind = gasGiantKind(Math.random() < 0.5 ? 'iceCalm' : 'iceStormy');
+      mass = Math.random() < 0.85 ? 50 + Math.random()*50 : 100 + Math.random()*40;
+      sizeFactor = 5 + Math.random()*5;
+    } else {
+      mass = 50 + Math.random()*150;
+      var hotChance = mass >= 150 ? (d < 35000 ? 0.75 : 0.3) : 0;
+      if (Math.random() < hotChance){
+        kind = gasGiantKind('hotGiant');
+        sizeFactor = 12 + (mass - 150)/50 * 5 + Math.random()*3;
+      } else {
+        kind = gasGiantKind(Math.random() < 0.5 ? 'stormyGiant' : 'paleGiant');
+        sizeFactor = 5 + Math.random()*15;
+      }
+    }
+    var r = planetR * sizeFactor;
+    return { kind: kind, mass: mass, r: r, sizeMultiplier: r / massToRadius(mass) };
+  }
+
+  var MOON_KINDS = [
+    { type:'cratered',   label:'Cratered rock',         color:'#A9A7A2', weight: 1.0, minMass: 3, size: 1.0 },
+    { type:'groovedIce', label:'Grooved ice',           color:'#8A7F72', weight: 0.9, minMass: 3, size: 1.1 },
+    { type:'crackedIce', label:'Cracked ice',           color:'#E9E3D6', weight: 0.8, minMass: 3, size: 0.95 },
+    { type:'volcanic',   label:'Volcanic',              color:'#E6D25A', weight: 0.8, minMass: 4, size: 0.95 },
+    { type:'hazy',       label:'Thick hazy atmosphere', color:'#D89A3E', weight: 0.6, minMass: 7, size: 1.1 },
+    { type:'rubble',     label:'Tiny rubble chunk',     color:'#6B6058', weight: 0, minMass: 0, size: 0.55 }
+  ];
+
+  // a moon is 3-12 mass, but always under half its host's mass so it never reads as a binary
+  function rollMoon(host){
+    var mass = 3 + Math.random()*9;
+    if (host) mass = Math.min(mass, host.mass / 2.2);
+    var kind;
+    if (mass < 4.5){
+      kind = MOON_KINDS[Math.random() < 0.7 ? 5 : 0];
+    } else {
+      var pool = MOON_KINDS.filter(function(k){ return k.weight > 0 && mass >= k.minMass; });
+      var hostIsGiant = host && host.type === 'gasGiant';
+      var weights = pool.map(function(k){ return k.weight * (hostIsGiant && k.type === 'volcanic' ? 2 : 1); });
+      var sum = weights.reduce(function(a,b){ return a+b; }, 0), r = Math.random()*sum;
+      kind = pool[pool.length-1];
+      for (var i=0;i<pool.length;i++){ r -= weights[i]; if (r <= 0){ kind = pool[i]; break; } }
+    }
+    return { kind: kind, mass: mass, sizeMultiplier: kind.size * (0.9 + Math.random()*0.2) };
+  }
+
+  function makePrimordialRings(kind){
+    var bright = kind.type === 'paleGiant';
+    var stops = [{ t: 0, a: 0 }];
+    var gapT = 0.55 + Math.random()*0.15;
+    for (var i=1;i<14;i++){
+      var t = i/14;
+      var a = Math.abs(t - gapT) < 0.04 ? 0.05 : 0.35 + Math.random()*0.65;
+      stops.push({ t: t, a: a });
+    }
+    stops.push({ t: 1, a: 0 });
+    var tint = kind.type === 'paleGiant' ? [214,198,160] : (kind.type === 'stormyGiant' ? [170,150,130] : [175,200,210]);
+    return {
+      inner: 1.2 + Math.random()*0.25,
+      outer: (bright ? 2.0 : 1.6) + Math.random()*0.6,
+      alpha: bright ? 0.55 + Math.random()*0.3 : 0.15 + Math.random()*0.15,
+      tint: tint, stops: stops
+    };
+  }
+
   function pointerUp(){
     if (grabbed){
       if (grabStart && grabCur){
@@ -1063,6 +1499,17 @@
       planetZone = pickPlanetZone(nearestStarDistance(startWorld));
       color = planetZone.color;
     }
+    if (currentPreset === 'moon'){
+      var moon = rollMoon((orbitMode && anchorBody) ? anchorBody : heaviestOther(startWorld));
+      mass = moon.mass; sizeMultiplier = moon.sizeMultiplier;
+      planetZone = moon.kind; color = moon.kind.color;
+    }
+    var giant = null;
+    if (currentPreset === 'gasGiant'){
+      giant = rollGasGiant(nearestStarDistance(startWorld));
+      mass = giant.mass; sizeMultiplier = giant.sizeMultiplier;
+      planetZone = giant.kind; color = giant.kind.color;
+    }
     var body = {
       x: startWorld.x, y: startWorld.y,
       vx: 0, vy: 0,
@@ -1076,8 +1523,13 @@
     };
     if (planetZone){
       body.planetZone = planetZone.type;
-      body.texVariant = Math.floor(Math.random()*TEX_VARIANTS);
+      // giants and moons each get a one-off texture; rocky planets share a few cached variants
+      body.texVariant = (giant || moon) ? Math.floor(Math.random()*1e9) : Math.floor(Math.random()*TEX_VARIANTS);
       body.texAngle = Math.random()*Math.PI*2;
+    }
+    if (giant){
+      body.hot = giant.kind.type === 'hotGiant';
+      if (Math.random() < giant.kind.ringChance) body.primordialRings = makePrimordialRings(giant.kind);
     }
     if (preset.star && !preset.notStar){
       body.spots = [];
@@ -1167,6 +1619,7 @@
   var presetBtns = {
     moon: document.getElementById('presetMoon'),
     planet: document.getElementById('presetPlanet'),
+    gasGiant: document.getElementById('presetGasGiant'),
     star: document.getElementById('presetStar'),
     redGiant: document.getElementById('presetRedGiant'),
     supergiant: document.getElementById('presetSupergiant'),
@@ -2213,7 +2666,7 @@
   var portraitCv = document.getElementById('portrait');
   var portraitCtx = portraitCv.getContext('2d');
   document.getElementById('panelClose').addEventListener('click', function(){ selected = null; });
-  var typeNames = { moon: 'Moon', planet: 'Planet', star: 'Star', redGiant: 'Red giant', supergiant: 'Supergiant', neutronStar: 'Neutron star', blackHole: 'Black hole', orangeDwarf: 'Orange dwarf', redDwarf: 'Red dwarf' };
+  var typeNames = { moon: 'Moon', planet: 'Planet', gasGiant: 'Gas giant', star: 'Star', redGiant: 'Red giant', supergiant: 'Supergiant', neutronStar: 'Neutron star', blackHole: 'Black hole', orangeDwarf: 'Orange dwarf', redDwarf: 'Red dwarf' };
   function typeName(b){ return typeNames[b.type] || (b.spots ? 'Star' : 'Body'); }
 
   function renderPortrait(b){
@@ -2236,7 +2689,7 @@
     renderPortrait(b);
     var lines = [];
     if (b.planetZone){
-      var zoneLabel = (PLANET_ZONES.filter(function(z){ return z.type === b.planetZone; })[0] || {}).label;
+      var zoneLabel = (PLANET_ZONES.concat(GAS_GIANT_KINDS, MOON_KINDS).filter(function(z){ return z.type === b.planetZone; })[0] || {}).label;
       if (zoneLabel) lines.push('Composition: <b>' + zoneLabel + '</b>');
     }
     lines.push('Mass: <b>' + (Math.round(b.mass*10)/10) + '</b>');
@@ -2258,7 +2711,9 @@
       lines.push('Orbited by: nothing');
     }
     if (b.rings && b.rings.count){
-      lines.push('Rings: <b>' + b.rings.count + ' pieces</b>');
+      lines.push('Rings: <b>' + (b.primordialRings ? 'primordial + ' : '') + b.rings.count + ' pieces</b>');
+    } else if (b.primordialRings){
+      lines.push('Rings: <b>primordial</b>');
     }
     if (!b.spots && b.tideStress !== undefined){
       lines.push('Tidal stress: <b>' + Math.round(Math.min(1, b.tideStress) * 100) + '%</b>');
@@ -2359,6 +2814,17 @@
         // shear skews the bulge sideways (inner material orbits faster than outer)
         var tst = Math.max(0, Math.min(1, ((b.tideStress || 0) - 0.3) / 0.7));
         var deform = tidalShape(b, tst);
+        if (b.hot){
+          // hot giants glow with their own heat
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          var hgl = ctx.createRadialGradient(s.x, s.y, rr*0.8, s.x, s.y, rr*1.6);
+          hgl.addColorStop(0, 'rgba(255,110,30,0.45)');
+          hgl.addColorStop(1, 'rgba(255,60,10,0)');
+          ctx.fillStyle = hgl;
+          ctx.beginPath(); ctx.arc(s.x, s.y, rr*1.6, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
         ctx.save();
 
         // surface: baked procedural texture if this body has a composition, else flat dark base
@@ -2383,7 +2849,7 @@
           ctx.restore();
           // ambient darken: night side starts dim, texture still faintly visible
           ctx.globalCompositeOperation = 'multiply';
-          ctx.fillStyle = 'rgb(46,44,50)';
+          ctx.fillStyle = b.hot ? 'rgb(190,160,150)' : 'rgb(46,44,50)'; // hot giants' night side still glows
           ctx.fillRect(s.x-rr*2.5, s.y-rr*2.5, rr*5, rr*5);
           ctx.globalCompositeOperation = 'source-over';
         } else {
