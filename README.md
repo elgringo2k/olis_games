@@ -1,6 +1,7 @@
 # olis_games
 
-Each subfolder is a web game with an `index.html`.
+Each game lives in its own top-level folder, and its start page must be called `index.html`:
+`my-game/index.html` ✅ · `my-game/my_game.html` ❌ · `my-game/my-game/index.html` ❌
 
 1. Oli opens a PR adding/updating a game folder.
 2. Review and merge it.
