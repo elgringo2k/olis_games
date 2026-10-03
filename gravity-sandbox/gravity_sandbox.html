@@ -1387,7 +1387,7 @@
   // never big); heavy ones near a star can be hot and bloated; otherwise banded-stormy or pale at any size
   function rollGasGiant(d){
     if (!isFinite(d)) d = 40000;
-    var lt = (Math.log(d) - Math.log(75000)) / (Math.log(110000) - Math.log(75000));
+    var lt = (Math.log(d) - Math.log(180000)) / (Math.log(280000) - Math.log(180000));
     lt = Math.max(0, Math.min(1, lt));
     var iceChance = lt*lt*(3 - 2*lt);
     var planetR = massToRadius(15);
@@ -2762,6 +2762,21 @@
     ctx.closePath();
   }
 
+  // the star lighting a body most strongly: its light level (sqrt of flux) and direction
+  function brightestStar(b){
+    var best = null;
+    for (var i=0;i<bodies.length;i++){
+      var st = bodies[i];
+      if (!st.spots && st.type !== 'blackHole') continue;
+      var dx = st.x - b.x, dy = st.y - b.y;
+      var d = Math.sqrt(dx*dx+dy*dy) || 1;
+      var lightMass = st.type === 'blackHole' ? 70 : st.mass;
+      var light = Math.sqrt((lightMass/1500) * Math.pow(25000/d, 2));
+      if (!best || light > best.light) best = { light: light, ux: dx/d, uy: dy/d };
+    }
+    return best;
+  }
+
   function drawBody(b, portrait){
     var s = worldToScreen(b.x, b.y);
     var r = b.r * camera.zoom;
@@ -2849,7 +2864,22 @@
           ctx.restore();
           // ambient darken: night side starts dim, texture still faintly visible
           ctx.globalCompositeOperation = 'multiply';
-          ctx.fillStyle = b.hot ? 'rgb(190,160,150)' : 'rgb(46,44,50)'; // hot giants' night side still glows
+          var night = b.hot ? [190,160,150] : [46,44,50]; // hot giants' night side still glows
+          var giantSun = b.type === 'gasGiant' ? brightestStar(b) : null;
+          if (giantSun){
+            // gas giants: darken only the night side, so the day side shows the cloud bands in full
+            // colour instead of being washed out by an additive glow
+            var L = Math.min(1, Math.sqrt(giantSun.light) * 1.6); // gentle falloff so far-out giants stay well lit
+            var day = night.map(function(v, k){ return Math.round(v + ([255,250,240][k] - v) * L); });
+            var gl = ctx.createLinearGradient(s.x + giantSun.ux*rr, s.y + giantSun.uy*rr, s.x - giantSun.ux*rr, s.y - giantSun.uy*rr);
+            gl.addColorStop(0, 'rgb(' + day.join(',') + ')');
+            gl.addColorStop(0.45, 'rgb(' + day.join(',') + ')');
+            gl.addColorStop(0.62, 'rgb(' + night.join(',') + ')');
+            gl.addColorStop(1, 'rgb(' + night.join(',') + ')');
+            ctx.fillStyle = gl;
+          } else {
+            ctx.fillStyle = 'rgb(' + night.join(',') + ')';
+          }
           ctx.fillRect(s.x-rr*2.5, s.y-rr*2.5, rr*5, rr*5);
           ctx.globalCompositeOperation = 'source-over';
         } else {
@@ -2868,7 +2898,7 @@
           var d = Math.sqrt(dx*dx+dy*dy) || 1;
           var lightMass = st.type === 'blackHole' ? 70 : st.mass; // black holes only give off a faint glow
           var flux = (lightMass/1500) * Math.pow(25000/d, 2);
-          var inten = Math.min(1, Math.sqrt(flux)) * (planetTex ? 0.55 : 0.95);
+          var inten = Math.min(1, Math.sqrt(flux)) * (planetTex ? (giantSun ? 0.15 : 0.55) : 0.95); // giants already lit above; just a soft sheen
           if (inten < 0.02) continue;
           var ux = dx/d, uy = dy/d;
           var relight = planetTex ? '255,246,225' : rgb.join(',');
