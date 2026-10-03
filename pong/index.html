@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pong</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; color: #fff; font-family: monospace; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  canvas { background: #111; max-width: 100vw; max-height: 85vh; touch-action: none; }
+  p { opacity: .6; }
+</style>
+</head>
+<body>
+<canvas id="c" width="800" height="500"></canvas>
+<p>Move with the mouse, a finger, or ↑ ↓ keys. First to 5 wins.</p>
+<script>
+const c = document.getElementById('c'), g = c.getContext('2d');
+const W = c.width, H = c.height, PH = 80, PW = 10, R = 8;
+let you = H / 2, cpu = H / 2, score = [0, 0], keys = {}, ball;
+
+function serve(dir) { ball = { x: W / 2, y: H / 2, vx: 5 * dir, vy: (Math.random() * 6 - 3) }; }
+serve(1);
+
+addEventListener('keydown', e => keys[e.key] = true);
+addEventListener('keyup', e => keys[e.key] = false);
+function pointer(e) { const r = c.getBoundingClientRect(); you = (e.clientY - r.top) * H / r.height; }
+c.addEventListener('pointermove', pointer);
+c.addEventListener('pointerdown', pointer);
+
+function hit(py, px) {
+  if (Math.abs(ball.y - py) < PH / 2 + R && Math.abs(ball.x - px) < PW / 2 + R) {
+    ball.vx = -ball.vx * 1.05;
+    ball.vy = (ball.y - py) / (PH / 2) * 6;  // where it hits the paddle sets the angle
+    ball.x = px + Math.sign(ball.vx) * (PW / 2 + R);
+  }
+}
+
+function step() {
+  if (keys.ArrowUp) you -= 8;
+  if (keys.ArrowDown) you += 8;
+  cpu += Math.max(-4.5, Math.min(4.5, ball.y - cpu));  // capped speed so it can be beaten
+  you = Math.max(PH / 2, Math.min(H - PH / 2, you));
+  cpu = Math.max(PH / 2, Math.min(H - PH / 2, cpu));
+
+  ball.x += ball.vx; ball.y += ball.vy;
+  if (ball.y < R || ball.y > H - R) ball.vy = -ball.vy;
+  hit(you, 20); hit(cpu, W - 20);
+  if (ball.x < 0) { score[1]++; serve(1); }
+  if (ball.x > W) { score[0]++; serve(-1); }
+  if (score[0] === 5 || score[1] === 5) {
+    alert(score[0] === 5 ? 'You win!' : 'Computer wins!');
+    score = [0, 0];
+  }
+
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#fff';
+  for (let y = 0; y < H; y += 30) g.fillRect(W / 2 - 1, y, 2, 15);
+  g.fillRect(20 - PW / 2, you - PH / 2, PW, PH);
+  g.fillRect(W - 20 - PW / 2, cpu - PH / 2, PW, PH);
+  g.beginPath(); g.arc(ball.x, ball.y, R, 0, 7); g.fill();
+  g.font = '40px monospace'; g.textAlign = 'center';
+  g.fillText(score[0], W / 4, 50); g.fillText(score[1], W * 3 / 4, 50);
+  requestAnimationFrame(step);
+}
+step();
+</script>
+</body>
+</html>
