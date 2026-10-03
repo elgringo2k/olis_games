@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Snapper Tower Defense</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#1a2a1a; font-family:system-ui,sans-serif; }
+  body { display:flex; justify-content:center; align-items:center; }
+  #stage { position:relative; width:100vw; height:100vh; display:flex; justify-content:center; align-items:center; }
+  canvas { background:#3d7a3d; border:4px solid #163016; border-radius:8px; cursor:crosshair; }
+  #fsBtn {
+    position:absolute; top:10px; right:10px; z-index:10;
+    background:rgba(0,0,0,0.55); color:#fff; border:2px solid #163016; border-radius:6px;
+    padding:8px 12px; font:bold 14px system-ui,sans-serif; cursor:pointer;
+  }
+  #fsBtn:hover { background:rgba(0,0,0,0.75); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" width="1100" height="600"></canvas>
+  <button id="fsBtn" title="Toggle fullscreen (F)">⛶ Fullscreen</button>
+</div>
+<script>
+const cvs = document.getElementById('game'), ctx = cvs.getContext('2d');
+// steel enemies are always the same radius, so build this gradient once instead of every frame per enemy
+const STEEL_GRAD = ctx.createLinearGradient(-16, -16, 16, 16);
+STEEL_GRAD.addColorStop(0, '#3d3d3d');
+STEEL_GRAD.addColorStop(1, '#c8c8c8');
+const ULTRASTEEL_GRAD = ctx.createLinearGradient(-16, -16, 16, 16); // cooler, darker plate steel
+ULTRASTEEL_GRAD.addColorStop(0, '#23282d');
+ULTRASTEEL_GRAD.addColorStop(1, '#9aa5ac');
+const stage = document.getElementById('stage'), fsBtn = document.getElementById('fsBtn');
+const GAME_W = cvs.width, GAME_H = cvs.height;
+function fitCanvas() {
+  const availW = stage.clientWidth, availH = stage.clientHeight;
+  const scale = Math.min(availW / GAME_W, availH / GAME_H);
+  cvs.style.width = (GAME_W * scale) + 'px';
+  cvs.style.height = (GAME_H * scale) + 'px';
+}
+window.addEventListener('resize', fitCanvas);
+document.addEventListener('fullscreenchange', fitCanvas);
+fitCanvas();
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    (stage.requestFullscreen ? stage : document.documentElement).requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+fsBtn.addEventListener('click', toggleFullscreen);
+window.addEventListener('keydown', e => { if (e.key === 'f' || e.key === 'F') toggleFullscreen(); });
+// sprite PNGs now ship with real baked-in alpha, so just load them directly (no per-pixel canvas scan needed)
+function loadKeyed(src, done) {
+  const img = new Image(); img.src = src;
+  img.onload = () => done(img);
+}
+let sheet = {complete:false}, camoSheet = {complete:false}, ninjaSheet = {complete:false}, ultraCamoSheet = {complete:false}, cannonSheet = {complete:false}, bankingDobaSheet = {complete:false};
+loadKeyed('oh_my_snapper.PNG', c => sheet = c);
+loadKeyed('camo_added.PNG', c => camoSheet = c);
+loadKeyed('ninjarie.PNG', c => ninjaSheet = c);
+loadKeyed('cannon_snapper.PNG', c => cannonSheet = c);
+loadKeyed('ultra_camo.PNG', c => ultraCamoSheet = c);
+loadKeyed('banking_doba.PNG', c => bankingDobaSheet = c);
+const CAMO_SPR = {x:1533, y:93, w:122, h:118}; // camo blob on the camo sheet
+const ULTRACAMO_SPR = {x:0, y:0, w:114, h:113}; // the blue camo blob, its own sheet
+
+// sprite source rects per tower kind: idle, punch-right, punch-left
+const SPRS = {
+  doba: {
+    img: () => sheet,
+    idle:  {x:50,  y:30, w:270, h:135},
+    punchR:{x:360, y:30, w:255, h:185},
+    punchL:{x:670, y:30, w:250, h:190},
+  },
+  ninjarie: {
+    img: () => ninjaSheet,
+    idle:  {x:25,  y:50, w:265, h:135},
+    punchR:{x:300, y:55, w:295, h:138},
+    punchL:{x:615, y:50, w:235, h:160},
+  },
+  cannon: { // idle, then firing (with muzzle flame), then the recoil frame right after
+    img: () => cannonSheet,
+    idle:  {x:129, y:35, w:206, h:221},
+    punchR:{x:396, y:32, w:236, h:441}, // shooting, flame frame
+    punchL:{x:667, y:15, w:205, h:188}, // recoil, right after shooting
+  },
+  bankingDoba: { // sits at a desk, never punches — just alternates between its two drawn frames
+    img: () => bankingDobaSheet,
+    idle:  {x:12,  y:12, w:294, h:328},
+    idle2: {x:318, y:12, w:294, h:328},
+  },
+};
+// document/crate pickup icons — cropped from the same banking doba art sheet
+const DOC_SPR   = {x:12, y:352, w:26, h:40};
+const CRATE_SPR = {x:50, y:352, w:34, h:34};
+
+// enemy types straight from the design sheet
+const ETYPES = { // rewards scaled to doba prices
+  1:    {hp:50,    speed:60, color:'#f5f05a', r:16, reward:6},
+  2:    {hp:150,   speed:60, color:'#f0c455', r:16, reward:9},
+  3:    {hp:75,    speed:90, color:'#f0955c', r:16, reward:12},
+  4:    {hp:300,   speed:60, color:'#f07070', r:16, reward:15},
+  5:    {hp:750,   speed:60, color:'#ff79c2', r:16, reward:40},
+  6:    {hp:500,   speed:90, color:'#ffb4de', r:16, reward:50},
+  7:    {hp:1500,  speed:60, color:'#c67aff', r:16, reward:90},
+  steel: {hp:500, speed:45, color:'#a8a8a8', r:16, reward:60, armored:true, steel:true}, // only explosions (bombs, mega/atomic punch) hurt it
+  ultraSteel: {hp:1550, speed:45, color:'#a8a8a8', r:16, reward:160, armored:true, steel:true, ultraSteel:true}, // riveted plating; only explosions hurt it
+  camo:      {hp:150, speed:75, color:'#4a4f38', r:16, reward:20,  camo:true},
+  ultraCamo: {hp:750, speed:75, color:'#35507f', r:16, reward:110, camo:true, ultraCamo:true},
+  boss:  {hp:2500,  speed:45, color:'#f7f0a0', r:26, reward:500,  boss:true, splitInto:4}, // splits into 4 level-4s
+  boss2: {hp:15000, speed:45, color:'#ff8888', ringColor:'#ff3737', r:30, reward:3000, boss:true, splitInto:7}, // splits into 4 level-7s
+};
+
+// the track (waypoints) — several layouts to pick from on the title screen.
+// obstacles: {x,y,r,type:'rock'|'building'|'water'} — block tower placement; rocks/buildings also bounce cannonballs
+const MAPS = [
+  { name:'CLASSIC', theme:'grass', obstacles: [], path: [
+    {x:-30,y:120},{x:250,y:120},{x:250,y:300},{x:120,y:300},{x:120,y:480},
+    {x:480,y:480},{x:480,y:200},{x:700,y:200},{x:700,y:400},{x:990,y:400},
+  ]},
+  { name:'SWITCHBACK', theme:'grass', obstacles: [
+    {x:50,y:220,r:120,type:'water'},
+  ], path: [
+    {x:-30,y:510},{x:870,y:510},{x:870,y:400},{x:200,y:400},{x:200,y:290},
+    {x:870,y:290},{x:870,y:180},{x:200,y:180},{x:200,y:70},{x:990,y:70},
+  ]},
+  { name:'SPIRAL', theme:'grass', obstacles: [
+    {x:480,y:555,w:1000,h:80,type:'water'}, // river, bank to bank
+  ], path: [
+    {x:-30,y:300},{x:500,y:300},{x:500,y:100},{x:850,y:100},{x:850,y:480},
+    {x:300,y:480},{x:300,y:220},{x:650,y:220},{x:650,y:400},{x:990,y:400},
+  ]},
+  { name:'STAIRCASE', theme:'grass', obstacles: [
+    {x:376,y:436,r:150,type:'water'},
+  ], path: [
+    {x:-30,y:70},{x:150,y:70},{x:150,y:230},{x:360,y:230},{x:360,y:70},
+    {x:560,y:70},{x:560,y:410},{x:760,y:410},{x:760,y:190},{x:990,y:190},
+  ]},
+  { name:'DESERT CANYON', theme:'desert', obstacles: [
+    {x:730,y:470,r:28,type:'rock'}, {x:290,y:180,r:26,type:'rock'},
+    {x:630,y:300,w:110,h:640,type:'water'}, // river, running top to bottom — the road bridges it
+  ], path: [
+    {x:-30,y:440},{x:250,y:440},{x:250,y:260},{x:130,y:260},{x:130,y:90},
+    {x:500,y:90},{x:500,y:340},{x:760,y:340},{x:760,y:150},{x:990,y:150},
+  ]},
+  { name:'SNOWFIELD', theme:'snow', obstacles: [
+    {x:450,y:270,r:28,type:'rock'}, {x:750,y:150,r:26,type:'rock'},
+    {x:100,y:125,r:130,type:'water'}, // frozen lake
+    {x:480,y:380,w:1000,h:96,type:'water'}, // river, bank to bank, nearer the middle of the map
+  ], path: [
+    {x:-30,y:300},{x:300,y:300},{x:300,y:50},{x:600,y:50},{x:600,y:460},
+    {x:900,y:460},{x:900,y:300},{x:990,y:300},
+  ]},
+  { name:'ANCIENT PILLARS', theme:'ruins', obstacles: [
+    {x:90,y:150,r:75,type:'building'}, {x:240,y:60,r:75,type:'building'}, {x:150,y:540,r:75,type:'building'},
+    {x:390,y:420,r:75,type:'building'}, {x:600,y:480,r:75,type:'building'}, {x:720,y:180,r:75,type:'building'},
+    {x:870,y:480,r:75,type:'building'},
+  ], path: [
+    {x:-30,y:300},{x:320,y:300},{x:320,y:160},{x:600,y:160},{x:600,y:340},
+    {x:850,y:340},{x:850,y:120},{x:990,y:120},
+  ]},
+  { name:'HARBOR', theme:'harbor', obstacles: [
+    {x:880,y:500,r:28,type:'rock'}, {x:700,y:500,r:26,type:'rock'},
+    {x:800,y:420,r:60,type:'container'}, {x:490,y:440,r:105,type:'crane'}, // ludicrously large dockyard crane
+    {x:810,y:125,r:120,type:'water'}, // basin
+    {x:250,y:300,w:100,h:640,type:'water'}, // river, running top to bottom — the road bridges it
+  ], path: [
+    {x:-30,y:440},{x:180,y:440},{x:180,y:260},{x:380,y:260},{x:380,y:60},
+    {x:650,y:60},{x:650,y:300},{x:990,y:300},
+  ]},
+];
+let mapIndex = 0;
+let PATH = MAPS[mapIndex].path;
+let OBSTACLES = MAPS[mapIndex].obstacles;
+let THEME = MAPS[mapIndex].theme;
+const PATH_W = 46;
+
+// per-theme ground / road / decoration colors
+const THEME_COLORS = {
+  grass:  { bg:'#3d7a3d', pathOuter:'#2b5a2b', pathInner:'#c9a86a' },
+  desert: { bg:'#d9c17a', pathOuter:'#a8863f', pathInner:'#e8d9a0' },
+  snow:   { bg:'#dfeaf2', pathOuter:'#9fb3c2', pathInner:'#c7d6de' },
+  ruins:  { bg:'#8a7c5c', pathOuter:'#5c4f39', pathInner:'#c4b48c' },
+  harbor: { bg:'#5f8f6a', pathOuter:'#3f6b48', pathInner:'#c9a86a' },
+};
+const THEME_DECOR = { // [kind0 pair, kind1 pair, kind2 pair] colors, swapped in for the grass bush/flower/rock shapes
+  grass:  [['#2e6330','#3c7d3e'], ['#f7f0a0','#f0d8f5'], ['#8a8f85','#a5aa9f']],
+  desert: [['#8a6d3f','#a9865a'], ['#4f7942','#3a5c30'], ['#c2a878','#d8c090']],
+  snow:   [['#dfe9ee','#ffffff'], ['#bfe3ff','#eaf7ff'], ['#8a97a3','#c9d6de']],
+  ruins:  [['#6b6048','#847761'], ['#7c8f5e','#96a878'], ['#5a5548','#726c5c']],
+  harbor: [['#2e6330','#3c7d3e'], ['#f7f0a0','#f0d8f5'], ['#8a8f85','#a5aa9f']],
+};
+
+// tower kinds per the doba_upgrades / ninjarie_upgrades sheets
+// two upgrade paths each; tier 3 in one path locks tier 3 in the other
+const TKINDS = {
+  doba: {
+    name:'DOBA', cost:200, range:100, icons:['⚡','👊'],
+    paths: [
+      [ // attack rate
+        {rate:2},
+        {rate:3,  cost:150,   name:'Faster Punches'},
+        {rate:4,  cost:450,   name:'Even Faster Punches'},
+        {rate:8,  cost:2000,  name:'Ra-ta-ta-ta'},
+        {rate:40, cost:21000, name:'Lightning Punches'},
+      ],
+      [ // damage (tier 3+ adds the mega/atomic punch ability)
+        {damage:20},
+        {damage:55,  cost:250,   name:'Stronger Punches'},
+        {damage:85,  cost:350,   name:'Even Stronger Punches'},
+        {damage:145, cost:1700,  name:'Mega Punch', aoe:3000},
+        {damage:500, cost:18000, name:'Atomic Punch', aoe:10000},
+      ],
+    ],
+  },
+  ninjarie: { // 45-dmg shurikens, 1/sec, pierce 2; the only tower that sees camo
+    name:'NINJARIE', cost:270, range:180, icons:['✦','💣'], seesCamo:true,
+    paths: [
+      [ // shurikens
+        {},
+        {cost:190,   name:'Sharper Shurikens'},   // pierce 3
+        {cost:350,   name:'Other Strike'},        // every other shuriken gold, double damage
+        {cost:2400,  name:'Dual Shuriken'},       // 2 side by side, 3/sec
+        {cost:22000, name:'Snapper Jitsu'},       // 5 double-damage shurikens, 5/sec, fan spread
+      ],
+      [ // traps
+        {},
+        {cost:300,   name:'Caltrops'},            // every 2s, 25 dmg, lasts 10s
+        {cost:290,   name:'Sneaky Snapper'},      // every 10th caltrop golden: 250 dmg, 30s
+        {cost:1400,  name:'Sticky Bombs'},        // every 5s, 250 dmg in an area
+        {cost:20000, name:'Boss Bombs'},          // 15k dmg bomb when a boss is in range
+      ],
+    ],
+  },
+  bankingDoba: { // passive economy tower: makes money instead of attacking, via collectible documents
+    name:'BANKING DOBA', cost:945, range:100, icons:['📄','⌨️'], note:"makes money",
+    paths: [
+      [ // document / crate value
+        {},
+        {cost:750,    name:'More Important Documents'},        // documents worth $150
+        {cost:600,    name:'Even More Important Documents'},   // documents worth $200
+        {cost:5100,   name:'Document Crate'},                  // crates worth $500, 3-5 a round
+        {cost:70000,  name:'Hyper Crate'},                     // crates worth $2500, same 3-5 a round
+      ],
+      [ // typing speed / auto-deposits
+        {},
+        {cost:650,    name:'Faster Typing'},          // 6 documents a round instead of 4 (or 4 crates instead of 3, once you have Document Crate)
+        {cost:750,    name:'Even Faster Typing'},     // 8 documents a round instead of 6 (or 5 crates instead of 4)
+        {cost:4600,   name:'Online Deposits'},        // $90 x 15 a round straight to the bank, no clicking needed
+        {cost:62000,  name:'Gigabyte Transfer'},      // $300 x 15 a round straight to the bank
+      ],
+    ],
+  },
+  cannon: { // slow heavy cannonballs, 20 pierce; its shots damage steel blobs
+    name:'CANNON', cost:450, range:140, icons:['\u26AB','\uD83D\uDE80'], note:'damages steel',
+    paths: [
+      [ // cannonballs
+        {},
+        {cost:250,   name:'Far and Wide'},          // balls 50% faster, range slightly up
+        {cost:400,   name:'Quick Shots'},           // 1 attack / 2s
+        {cost:1650,  name:'Grape Shot'},            // 7 small balls in a 70-degree cone, pierce 3, 200 dmg (other path's damage no longer applies)
+        {cost:28000, name:'Cloud of Cannonballs'},  // 27 balls in the cone, 500 dmg
+      ],
+      [ // heavier ordnance
+        {},
+        {cost:550,   name:'Harder Hits'},           // 300 dmg
+        {cost:500,   name:'Even Harder Hits'},      // 450 dmg
+        {cost:1750,  name:'Missiles'},              // explode on contact: 1500 in a small area, range slightly up
+        {cost:35000, name:'Atomic Missiles', icbm:30000}, // 5k missiles + ICBM ability: 30k at the toughest blob
+      ],
+    ],
+  },
+};
+const AOE_RADIUS = 130, AOE_CD = 10, ICBM_CD = 20; // ponytail: doba "ability" fires automatically on cooldown, no activation UI
+const DOC_GRAB_R = 50; // banking doba: hover/tap this close to a document or crate to collect it
+
+// ---- sound (WebAudio, no assets) ----
+let ac, masterGain;
+function beep(freq, dur, type='square', vol=0.06, slideTo=0) {
+  if (!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = freq;
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, ac.currentTime + dur);
+  g.gain.setValueAtTime(vol, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+  o.connect(g).connect(masterGain);
+  o.start(); o.stop(ac.currentTime + dur);
+}
+const sfx = {
+  punch:  () => beep(160, 0.07, 'square', 0.05, 60),
+  ting:   () => { beep(1600, 0.12, 'triangle', 0.05, 2400); beep(2400, 0.07, 'sine', 0.03); }, // blocked hit on armor
+  bounce: () => beep(240, 0.08, 'square', 0.07, 120), // cannonball glancing off a rock/building
+  cannon: () => {
+    beep(55, 0.3, 'triangle', 0.24, 25); beep(220, 0.06, 'square', 0.07, 70);
+    if (!ac) return;
+    const len = ac.sampleRate * 0.3, buf = ac.createBuffer(1, len, ac.sampleRate); // deep muzzle-blast thump
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    const src = ac.createBufferSource(), g = ac.createGain(), lp = ac.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 220; // filter out the hiss, keep the deep body
+    src.buffer = buf; g.gain.value = 0.42;
+    src.connect(lp).connect(g).connect(masterGain); src.start();
+  },
+
+  pop:    () => beep(400, 0.15, 'triangle', 0.08, 60),
+  place:  () => beep(520, 0.1, 'sine', 0.08),
+  cash:   () => { beep(1046, 0.06, 'sine', 0.05, 1568); setTimeout(() => beep(1568, 0.08, 'sine', 0.04), 55); }, // banking document collected
+  upgrade:() => { beep(440, 0.09, 'sine', 0.08); setTimeout(() => beep(660, 0.12, 'sine', 0.08), 90); },
+  leak:   () => beep(110, 0.3, 'sawtooth', 0.08, 55),
+  clear:  () => { beep(523, 0.1, 'sine', 0.07); setTimeout(() => beep(784, 0.18, 'sine', 0.07), 110); },
+  win:    () => [523,659,784,1047].forEach((f,i) => setTimeout(() => beep(f, 0.25, 'sine', 0.08), i*140)),
+  missileBoom: () => { // quieter explosion for cannon missile/atomic missile impacts
+    if (!ac) return;
+    beep(140, 0.5, 'sawtooth', 0.09, 30);
+    beep(70, 0.65, 'triangle', 0.1, 25);
+    setTimeout(() => beep(100, 0.3, 'sawtooth', 0.05, 30), 150);
+    const len = ac.sampleRate * 0.4, buf = ac.createBuffer(1, len, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    const src = ac.createBufferSource(), g = ac.createGain();
+    src.buffer = buf; g.gain.value = 0.07;
+    src.connect(g).connect(masterGain); src.start();
+  },
+  boom:   () => {
+    if (!ac) return;
+    beep(140, 0.6, 'sawtooth', 0.18, 30);
+    beep(70, 0.8, 'triangle', 0.2, 25);
+    setTimeout(() => beep(100, 0.4, 'sawtooth', 0.1, 30), 150);
+    // white-noise blast
+    const len = ac.sampleRate * 0.5, buf = ac.createBuffer(1, len, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    const src = ac.createBufferSource(), g = ac.createGain();
+    src.buffer = buf; g.gain.value = 0.15;
+    src.connect(g).connect(masterGain); src.start();
+  },
+  lose:   () => [330,262,196].forEach((f,i) => setTimeout(() => beep(f, 0.3, 'sawtooth', 0.05), i*180)),
+};
+
+// ---- background music: calm loop normally, energetic/tense loop for the round-10 and round-25 boss waves ----
+const SCALE = [220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00]; // A natural minor
+const TRACKS = {
+  calm: {
+    bpm: 96,
+    // bass (14 steps) and lead (24 steps) are different lengths on purpose — their combination
+    // doesn't fully repeat for 168 steps, so it doesn't feel like a short loop on replay
+    bass: [0, 2, 3, 2, 4, 3, 2, 0, 3, 4, 2, 0, 3, 2],
+    lead: [0, 2, 3, 4, 5, 4, 3, 2, 4, 5, 4, 3, 2, 3, 0, 2, 5, 4, 2, 0, 3, 4, 2, 0],
+    bassWave: 'sine', bassVol: 0.045, leadWave: 'triangle', leadVol: 0.03, drums: false,
+  },
+  intense: {
+    bpm: 152,
+    // bass (16 steps) and lead (24 steps) are different lengths on purpose — their combination
+    // doesn't fully repeat for 48 steps, so the loop feels much less like a short repeating riff
+    bass: [0, 0, 0, 3, 0, 0, 4, 4, 3, 3, 0, 0, 4, 4, 3, 0],
+    lead: [7, 6, 7, 6, 5, 4, 5, 4, 3, 2, 3, 2, 4, 5, 6, 7, 7, 4, 7, 4, 6, 3, 6, 3],
+    bassWave: 'sawtooth', bassVol: 0.065, leadWave: 'square', leadVol: 0.045, drums: true,
+  },
+};
+let musicMode = 'calm', musicStep = 0, musicTimer = null;
+function scheduleMusic() {
+  const trk = TRACKS[musicMode];
+  const stepTime = 60 / trk.bpm / 2; // 8th notes
+  if (state === 'playing') {
+    const bassNote = trk.bass[musicStep % trk.bass.length];
+    const leadNote = trk.lead[musicStep % trk.lead.length];
+    if (bassNote >= 0) beep(SCALE[bassNote] / 2, stepTime * 0.9, trk.bassWave, trk.bassVol);
+    if (leadNote >= 0) beep(SCALE[leadNote] * 2, stepTime * 0.4, trk.leadWave, trk.leadVol);
+    if (trk.drums && musicStep % 2 === 0) beep(90, 0.06, 'triangle', 0.06); // low thump on the beat
+    musicStep++;
+  }
+  musicTimer = setTimeout(scheduleMusic, stepTime * 1000);
+}
+
+// ---- decorations (seeded per map, so each layout always looks the same) ----
+let rngState = 7;
+const rng = () => (rngState = rngState * 16807 % 2147483647) / 2147483647;
+const DECOR = [];
+function rebuildDecor(seed) {
+  rngState = seed;
+  DECOR.length = 0;
+  let tries = 0;
+  while (DECOR.length < 60 && tries < 4000) {
+    tries++;
+    const x = 20 + rng()*920, y = 60 + rng()*520;
+    if (distToPath(x, y) > PATH_W/2 + 20 && OBSTACLES.every(o => obstacleDist(o, x, y) > 24))
+      DECOR.push({x, y, kind: Math.floor(rng()*3), s: 0.6 + rng()*0.8, hue: rng()});
+  }
+}
+rebuildDecor(7);
+
+let state = 'title'; // title | playing | won | lost
+let money, lives, wave, enemies, towers, spawnQueue, spawnTimer, waveActive, mouse = {x:-99,y:-99};
+let particles = [], texts = [], shots = [], traps = [], docs = [], selected = null, selectedAt = 0, placing = null; // placing = tower kind or null; docs = collectible banking documents/crates
+let abilityBtns = []; // rebuilt each frame by draw()
+// geometry for the title screen's map-picker buttons, shared by draw() and the click handler
+function mapBtn(i) {
+  const cols = 4, w = 138, h = 32, gapX = 10, gapY = 8;
+  const col = i % cols, row = Math.floor(i / cols);
+  const total = cols*w + (cols-1)*gapX;
+  return {x: 550 - total/2 + col*(w+gapX), y: 310 + row*(h+gapY), w, h};
+}
+const SIDEBAR = {x:960, cards:[{kind:'doba', x:975, y:80, w:110, h:93}, {kind:'ninjarie', x:975, y:201, w:110, h:93}, {kind:'cannon', x:975, y:322, w:110, h:93}, {kind:'bankingDoba', x:975, y:443, w:110, h:93}]};
+
+// points every ~12px along the track, for dropping traps onto it
+const PATH_PTS = [];
+function rebuildPathPts() {
+  PATH_PTS.length = 0;
+  for (let i = 0; i < PATH.length-1; i++) {
+    const a = PATH[i], b = PATH[i+1], d = Math.hypot(b.x-a.x, b.y-a.y);
+    for (let s = 0; s < d; s += 12) PATH_PTS.push({x:a.x + (b.x-a.x)*s/d, y:a.y + (b.y-a.y)*s/d});
+  }
+}
+rebuildPathPts();
+
+function selectMap(i) {
+  mapIndex = i; PATH = MAPS[i].path; OBSTACLES = MAPS[i].obstacles; THEME = MAPS[i].theme;
+  rebuildPathPts();
+  rebuildDecor(7 + i*1000);
+}
+
+let shake = 0;
+function burst(x, y, color, n, speed=120, size=3, life=0.4) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random()*7, s = speed*(0.3 + Math.random());
+    const l = life*(0.6 + Math.random()*0.8);
+    particles.push({x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:l, maxLife:l, r:size*(0.5+Math.random()), color, drag:1.5});
+  }
+}
+function boom(x, y, color) {
+  for (const [c, n, sp, sz] of [[color,60,350,7],['#fff',40,450,4],['#f0955c',50,250,6],['#ffe97a',40,150,5]])
+    burst(x, y, c, n, sp, sz, 1);
+  for (let i = 0; i < 3; i++)
+    particles.push({x, y, ring:true, r:10 + i*15, vr:350 - i*80, life:0.5, maxLife:0.5, color:'#fff'});
+  shake = 0.45;
+  sfx.boom();
+  // stragglers
+  setTimeout(() => burst(x + (Math.random()-0.5)*60, y + (Math.random()-0.5)*60, color, 25, 200, 5, 0.8), 120);
+  setTimeout(() => burst(x + (Math.random()-0.5)*60, y + (Math.random()-0.5)*60, '#ffe97a', 25, 200, 4, 0.8), 260);
+}
+
+// waves 1-25; debuts: lvl2 @ w3, lvl3 @ w5, lvl4 & camo (at the end) @ w6, boss @ w10, steel @ w12, 13, 15, 16 (none after),
+// lvl5 @ w12, lvl6 @ w13, ultraCamo @ w17, ultraSteel @ w17, 18, 20, 22, 24, lvl7 @ w20, boss2 @ w25
+const WAVES = [
+  Array(6).fill(1),
+  Array(10).fill(1),
+  [...Array(8).fill(1), 2, 2],
+  [...Array(6).fill(1), ...Array(6).fill(2)],
+  [...Array(6).fill(2), ...Array(4).fill(3)],
+  [...Array(5).fill(2), ...Array(4).fill(3), 4, 4, 'camo', 'camo'],
+  [...Array(6).fill(3), ...Array(3).fill(4), ...Array(3).fill('camo')],
+  [...Array(8).fill(3), ...Array(4).fill(4), ...Array(3).fill('camo')],
+  [...Array(6).fill(4), ...Array(6).fill('camo')],
+  [...Array(6).fill(4), ...Array(4).fill('camo'), 'boss'],
+  [...Array(8).fill(4), ...Array(6).fill('camo')],
+  [...Array(6).fill(4), ...Array(4).fill('camo'), ...Array(4).fill(5), ...Array(3).fill('steel')],
+  [...Array(4).fill(4), ...Array(4).fill('camo'), ...Array(4).fill(5), ...Array(4).fill(6), ...Array(3).fill('steel')],
+  [...Array(6).fill(5), ...Array(6).fill(6), ...Array(6).fill('camo')],
+  [...Array(8).fill(5), ...Array(8).fill(6), ...Array(4).fill('camo'), ...Array(3).fill('steel')],
+  [...Array(6).fill(4), ...Array(6).fill(5), ...Array(6).fill(6), ...Array(4).fill('camo'), ...Array(3).fill('steel')],
+  [...Array(6).fill(5), ...Array(6).fill(6), ...Array(7).fill('ultraCamo'), ...Array(3).fill('ultraSteel')],
+  [...Array(8).fill(5), ...Array(8).fill(6), ...Array(4).fill('ultraCamo'), ...Array(3).fill('ultraSteel')],
+  [...Array(6).fill(5), ...Array(6).fill(6), ...Array(11).fill('ultraCamo')],
+  [...Array(6).fill(5), ...Array(6).fill(6), ...Array(4).fill('ultraCamo'), ...Array(4).fill(7), ...Array(4).fill('ultraSteel')],
+  [...Array(8).fill(6), ...Array(8).fill(7), ...Array(6).fill('ultraCamo')],
+  [...Array(6).fill(5), ...Array(8).fill(6), ...Array(8).fill(7), ...Array(4).fill('ultraCamo'), ...Array(4).fill('ultraSteel')],
+  [...Array(10).fill(6), ...Array(8).fill(7), ...Array(6).fill('ultraCamo')],
+  [...Array(8).fill(7), ...Array(6).fill('ultraCamo'), ...Array(6).fill(6), ...Array(6).fill('ultraSteel')],
+  [...Array(6).fill(7), ...Array(4).fill('ultraCamo'), ...Array(4).fill(6), 'boss2'],
+];
+
+const qs = new URLSearchParams(location.search); // debug: ?money=1000&wave=10
+let sandbox = false;
+function reset(sb = false) {
+  sandbox = sb;
+  money = sb ? Infinity : (+qs.get('money') || 650);
+  lives = sb ? Infinity : 10;
+  wave = Math.min(Math.max(+qs.get('wave') || 1, 1), WAVES.length) - 1;
+  enemies = []; towers = []; spawnQueue = []; waveActive = false;
+  particles = []; texts = []; shots = []; traps = []; docs = []; selected = null; placing = null;
+  musicMode = 'calm'; musicStep = 0;
+}
+
+// Fisher-Yates: mixes each wave's enemy types together so camo/steel/ultraCamo
+// spawn scattered throughout the round instead of always trailing at the end
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function startWave() {
+  if (waveActive || wave >= WAVES.length) return;
+  // bosses always bring up the rear; everything else in the wave gets shuffled together
+  const list = WAVES[wave], bosses = list.filter(x => x === 'boss' || x === 'boss2');
+  spawnQueue = shuffled(list.filter(x => x !== 'boss' && x !== 'boss2')).concat(bosses);
+  spawnTimer = 0; waveActive = true; wave++;
+  musicMode = (wave === 10 || wave === 25) ? 'intense' : 'calm';
+}
+
+// an enemy's current velocity vector (it turns at waypoints, so this is only exact until the next one)
+function enemyVelocity(e) {
+  if (e.seg >= PATH.length - 1) return {vx:0, vy:0};
+  const a = PATH[e.seg], b = PATH[e.seg+1];
+  const d = Math.hypot(b.x-a.x, b.y-a.y) || 1;
+  return {vx:(b.x-a.x)/d*e.speed, vy:(b.y-a.y)/d*e.speed};
+}
+// where to aim a projSpeed-mph shot from (fx,fy) so it actually meets a moving target — fixes slow
+// cannonballs missing enemies that simply walked away from where they were when the shot left the barrel
+function leadAngle(fx, fy, e, projSpeed) {
+  const rx = e.x - fx, ry = e.y - fy;
+  const v = enemyVelocity(e);
+  const a = v.vx*v.vx + v.vy*v.vy - projSpeed*projSpeed;
+  const b = 2*(rx*v.vx + ry*v.vy);
+  const c = rx*rx + ry*ry;
+  let time = 0;
+  if (Math.abs(a) < 1e-6) {
+    if (b < -1e-6) time = -c/b;
+  } else {
+    const disc = b*b - 4*a*c;
+    if (disc >= 0) {
+      const sq = Math.sqrt(disc);
+      const roots = [(-b+sq)/(2*a), (-b-sq)/(2*a)].filter(x => x > 0);
+      if (roots.length) time = Math.min(...roots);
+    }
+  }
+  return Math.atan2(ry + v.vy*time, rx + v.vx*time);
+}
+
+// ---- geometry helpers ----
+function distToPath(x, y) {
+  let min = Infinity;
+  for (let i = 0; i < PATH.length-1; i++) {
+    const a = PATH[i], b = PATH[i+1];
+    const dx = b.x-a.x, dy = b.y-a.y, len2 = dx*dx+dy*dy;
+    const t = Math.max(0, Math.min(1, ((x-a.x)*dx + (y-a.y)*dy) / len2));
+    min = Math.min(min, Math.hypot(x-(a.x+t*dx), y-(a.y+t*dy)));
+  }
+  return min;
+}
+// distance from (x,y) to an obstacle's edge — obstacles are either circles (r) or rects (w,h), like rivers
+function obstacleDist(o, x, y) {
+  if (o.w) {
+    const hx = o.w/2, hy = o.h/2;
+    const cx = Math.max(o.x-hx, Math.min(x, o.x+hx)), cy = Math.max(o.y-hy, Math.min(y, o.y+hy));
+    return Math.hypot(x-cx, y-cy);
+  }
+  return Math.hypot(o.x-x, o.y-y) - o.r;
+}
+function canPlace(x, y) {
+  if (x<30||x>930||y<60||y>570) return false;
+  if (distToPath(x,y) < PATH_W/2 + 10) return false;
+  if (OBSTACLES.some(o => obstacleDist(o, x, y) < 34)) return false; // buildings/rocks/water block placement
+  return towers.every(t => Math.hypot(t.x-x, t.y-y) > 56);
+}
+
+// ---- update ----
+function spawnEnemy(type) {
+  const t = ETYPES[type];
+  enemies.push({...t, maxHp:t.hp, seg:0, x:PATH[0].x, y:PATH[0].y});
+}
+
+// next tier info for a tower's path; tier 3+ locks when the OTHER path is already at 3+
+function pathNext(t, path) {
+  const arr = TKINDS[t.kind].paths[path-1];
+  const cur = path === 1 ? t.p1 : t.p2, other = path === 1 ? t.p2 : t.p1;
+  if (cur + 1 >= arr.length) return {maxed:true};
+  return {def:arr[cur+1], locked:cur + 1 >= 3 && other >= 3};
+}
+
+// can this tower target this enemy? camo blobs are only seen by ninjarie
+const canSee = (t, e) => !e.dead && (!e.camo || TKINDS[t.kind].seesCamo);
+
+// buildings block line of sight — a straight shot from (x0,y0) to (x1,y1) can't pass through one
+function losBlocked(x0, y0, x1, y1) {
+  const dx = x1-x0, dy = y1-y0, len2 = dx*dx + dy*dy;
+  return OBSTACLES.some(o => {
+    if (o.type !== 'building') return false;
+    let t = len2 ? ((o.x-x0)*dx + (o.y-y0)*dy) / len2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(o.x - (x0+t*dx), o.y - (y0+t*dy)) < o.r;
+  });
+}
+
+// a tower's live range (cannon upgrades nudge it up)
+function twrRange(t) {
+  let r = TKINDS[t.kind].range;
+  if (t.kind === 'cannon') { if (t.p1 >= 1) r += 15; if (t.p2 >= 3) r += 15; }
+  return r;
+}
+
+// mega/atomic punch: manually activated from the ability bar (camo excluded — doba can't see it)
+function slam(t) {
+  const p2def = TKINDS[t.kind].paths[1][t.p2];
+  if (t.aoeCd > 0) return;
+  if (p2def.icbm) { // ICBM: launch a big homing missile at the toughest blob on screen
+    const tgt = enemies.filter(e => !e.dead && !e.camo).sort((a, b) => b.hp - a.hp)[0];
+    if (!tgt) return;
+    t.aoeCd = ICBM_CD;
+    const d = Math.hypot(tgt.x - t.x, tgt.y - t.y) || 1;
+    shots.push({x:t.x, y:t.y, vx:(tgt.x-t.x)/d*480, vy:(tgt.y-t.y)/d*480,
+      icbm:true, tgt, tx:tgt.x, ty:tgt.y, dmg:p2def.icbm, blastR:350, src:t, // blast radius only — the boom() visual stays its normal fixed size
+      life:Infinity, hit:[], pierce:0, spin:0});
+    beep(120, 0.7, 'sawtooth', 0.1, 700); // launch roar
+    return;
+  }
+  const aoe = p2def.aoe;
+  if (!aoe) return;
+  t.aoeCd = AOE_CD;
+  shake = Math.max(shake, 0.3);
+  sfx.boom();
+  particles.push({x:t.x, y:t.y, ring:true, r:20, vr:(AOE_RADIUS-20)/0.4, life:0.4, maxLife:0.4, color:'#ffe97a'});
+  for (const e of [...enemies]) { // snapshot: boss splits spawned mid-slam shouldn't eat this slam
+    if (!canSee(t, e) || Math.hypot(e.x-t.x, e.y-t.y) > AOE_RADIUS) continue;
+    t.dmgDone += Math.min(aoe, e.hp); e.hp -= aoe;
+    burst(e.x, e.y, '#ffe97a', 8);
+    if (e.hp <= 0) kill(e, t);
+  }
+}
+
+// 1450 -> "1.5k", 1620 -> "1.6k", 100000+ -> "100k" (whole number, no decimal)
+function fmtDmg(n) {
+  if (n >= 100000) return Math.round(n / 1000) + 'k';
+  if (n >= 1000) return (Math.round(n / 100) / 10) + 'k';
+  return '' + n;
+}
+// banking doba: a document/crate spawns on top of the tower and flies out to a random resting spot
+function spawnDoc(t, value, crate) {
+  const a = Math.random() * 6.28, d = 50 + Math.random() * 50;
+  const tx = Math.max(20, Math.min(935, t.x + Math.cos(a) * d));
+  const ty = Math.max(20, Math.min(590, t.y + Math.sin(a) * d));
+  docs.push({x:t.x, y:t.y, tx, ty, value, age:0, crate, tower:t});
+}
+function collectDoc(d) {
+  money += d.value;
+  if (d.tower) d.tower.moneyMade += d.value;
+  sfx.cash();
+  burst(d.x, d.y, '#ffe97a', d.crate ? 14 : 8, 140, d.crate ? 4 : 3);
+  texts.push({x:d.x, y:d.y-14, life:0.8, str:'+$'+d.value});
+}
+function kill(e, killer) {
+  e.dead = true; money += e.reward;
+  if (killer) killer.kills++;
+  texts.push({x:e.x, y:e.y-20, life:0.8, str:'+$'+e.reward});
+  if (e.boss) {
+    boom(e.x, e.y, e.color);
+    // bosses split into 4 of their configured child type
+    const b = ETYPES[e.splitInto];
+    for (let i = 0; i < 4; i++) {
+      enemies.push({...b, maxHp:b.hp, seg:e.seg, x:e.x + (Math.random()-0.5)*30, y:e.y + (Math.random()-0.5)*30});
+    }
+  } else { sfx.pop(); burst(e.x, e.y, e.color, 10); }
+}
+
+// cannon missile / atomic missile detonation — shared by an enemy hit and a building hit
+function missileExplode(s) {
+  sfx.missileBoom();
+  shake = Math.max(shake, 0.2);
+  particles.push({x:s.x, y:s.y, ring:true, r:8, vr:(s.blastR-8)/0.35, life:0.35, maxLife:0.35, color:s.atomic ? '#aef05a' : '#f0955c'});
+  burst(s.x, s.y, s.atomic ? '#aef05a' : '#f0955c', 25, 220, 5, 0.6);
+  for (const v of [...enemies]) {
+    if (v.dead || v.camo || Math.hypot(v.x-s.x, v.y-s.y) > s.blastR) continue;
+    if (s.src) s.src.dmgDone += Math.min(s.boomDmg, v.hp);
+    v.hp -= s.boomDmg;
+    if (v.hp <= 0) kill(v, s.src);
+  }
+  s.life = 0;
+}
+function update(dt) {
+  if (state !== 'playing') return;
+
+  if (selected && performance.now() - selectedAt > 5000) selected = null;
+
+  // spawning
+  if (waveActive && spawnQueue.length) {
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) { spawnEnemy(spawnQueue.shift()); spawnTimer = 0.8; }
+  }
+
+  // enemies walk the path
+  for (const e of enemies) {
+    let move = e.speed * dt;
+    while (move > 0 && e.seg < PATH.length-1) {
+      const tgt = PATH[e.seg+1];
+      const d = Math.hypot(tgt.x-e.x, tgt.y-e.y);
+      if (d <= move) { e.x = tgt.x; e.y = tgt.y; e.seg++; move -= d; }
+      else { e.x += (tgt.x-e.x)/d*move; e.y += (tgt.y-e.y)/d*move; move = 0; }
+    }
+    if (e.seg >= PATH.length-1) { e.dead = true; lives--; sfx.leak(); }
+  }
+
+  // towers act
+  for (const t of towers) {
+    t.cd -= dt; t.anim -= dt; t.recoil -= dt; t.aoeCd -= dt; t.trapCd -= dt; t.bombCd -= dt;
+    const def = TKINDS[t.kind], range = twrRange(t);
+    const tgt = t.kind === 'bankingDoba' ? null : enemies.find(e => canSee(t, e) && Math.hypot(e.x-t.x, e.y-t.y) <= range && !losBlocked(t.x, t.y, e.x, e.y));
+    if (tgt) {
+      // the cannon faces where it's actually firing (its lead point), everyone else faces the enemy directly;
+      // grape shot / Cloud of Cannonballs (p1 >= 3) skip smart lead targeting — straight spread at the current position
+      t.angle = t.kind === 'cannon'
+        ? (t.p1 >= 3 ? Math.atan2(tgt.y-t.y, tgt.x-t.x) : leadAngle(t.x, t.y, tgt, t.p1 >= 1 ? 180 : 120))
+        : Math.atan2(tgt.y-t.y, tgt.x-t.x);
+    }
+
+    if (t.kind === 'doba') {
+      const rate = def.paths[0][t.p1].rate, damage = def.paths[1][t.p2].damage;
+      if (tgt && t.cd <= 0) {
+        t.cd = 1/rate;
+        t.anim = Math.min(0.2, 0.5/rate); t.fist = !t.fist;
+        sfx.punch();
+        burst(tgt.x, tgt.y, '#fff', 4);
+        if (!tgt.armored) { t.dmgDone += Math.min(damage, tgt.hp); tgt.hp -= damage; if (tgt.hp <= 0) kill(tgt, t); }
+        else sfx.ting();
+      }
+    } else if (t.kind === 'cannon') {
+      if (tgt && t.cd <= 0) {
+        t.cd = t.p1 >= 2 ? 2 : 3;
+        t.anim = 0.5; t.recoil = 1.0; // 0.5s flame frame, then a 0.5s recoil frame
+        const speed = t.p1 >= 1 ? 180 : 120; // cannonballs move very slow
+        const missile = t.p2 >= 3;
+        let n = 1, dmg = t.p2 >= 2 ? 450 : t.p2 >= 1 ? 300 : 150, pierce = 20, ballR = 12;
+        if (t.p1 >= 3) { n = t.p1 >= 4 ? 27 : 7; dmg = (t.p1 >= 4 ? 500 : 200) + Math.min(t.p2, 2)*50; pierce = 3; ballR = 8; } // grape shot: Harder Hits/Even Harder Hits still add +50 each, the rest of path 2 does nothing
+        for (let i = 0; i < n; i++) {
+          const ang = t.angle + (n > 1 ? (Math.random() - 0.5) * 1.22 : 0); // 70-degree cone; t.angle already leads the target
+          const pelletSpeed = speed + (Math.random() - 0.5) * 40; // +/- 20 px/s so pellets fired together still drift apart
+          shots.push({x:t.x, y:t.y, vx:Math.cos(ang)*pelletSpeed, vy:Math.sin(ang)*pelletSpeed,
+            dmg, pierce, hit:[], life:Infinity, spin:0, src:t, // cannonballs never expire, they fly off the map
+            cannon:true, ballR, popsSteel:true,
+            missile, atomic:t.p2 >= 4, boomDmg:t.p2 >= 4 ? 5000 : 1500, blastR:t.p2 >= 4 ? 70 : 55}); // atomic blast bigger than the regular missile
+        }
+        sfx.cannon();
+      }
+    } else if (t.kind === 'bankingDoba') {
+      if (waveActive) {
+        if (t.roundWave !== wave) { // fresh production count each round, timed to exactly this round's spawning phase
+          t.roundWave = wave; t.roundCount = 0;
+          t.spawnPhaseLen = (spawnQueue.length + 1) * 0.8; // enemies spawn one every 0.8s — this is how long that takes
+        }
+        // no "still spawning" gate here on purpose: the interval is already sized to exactly the spawn-phase
+        // length, so the full count always lands during it — gating on spawnQueue too could shave off the
+        // last event on a same-frame race. Capping on roundCount (not on time) is what kills the old
+        // stall-the-round exploit: dragging the round out after spawning ends can never produce more than this.
+        if (t.p2 >= 3) { // online deposits: a lump sum, a fixed number of times a round — no documents at all
+          const cap = 15;
+          const chunk = t.p2 >= 4 ? (t.p1 >= 2 ? 250 : t.p1 >= 1 ? 200 : 150) // Gigabyte Transfer: explicit flat values, not halved
+                                   : Math.round((t.p1 >= 2 ? 180 : t.p1 >= 1 ? 135 : 90) / 2); // Online Deposits: halved
+          t.docCd -= dt;
+          if (t.docCd <= 0 && t.roundCount < cap) {
+            t.docCd = t.spawnPhaseLen / cap;
+            t.roundCount++;
+            money += chunk; t.moneyMade += chunk;
+            sfx.cash();
+            texts.push({x:t.x, y:t.y-14, life:0.8, str:'+$'+chunk});
+          }
+        } else if (t.p1 >= 3) { // document crates: only crates now, a fixed number a round (typing-speed upgrades raise the count)
+          const cap = t.p2 >= 2 ? 5 : t.p2 >= 1 ? 4 : 3;
+          t.crateCd -= dt;
+          if (t.crateCd <= 0 && t.roundCount < cap) {
+            t.crateCd = t.spawnPhaseLen / cap;
+            t.roundCount++;
+            spawnDoc(t, t.p1 >= 4 ? 2500 : 500, true); // ...except crates and hyper crates, which are their own flat values, not halved
+          }
+        } else { // plain documents: a fixed number a round (typing-speed upgrades raise the count, document-value upgrades raise the payout)
+          const cap = t.p2 >= 2 ? 8 : t.p2 >= 1 ? 6 : 4, docValue = (t.p1 >= 2 ? 200 : t.p1 >= 1 ? 150 : 100) / 2;
+          t.docCd -= dt;
+          if (t.docCd <= 0 && t.roundCount < cap) {
+            t.docCd = t.spawnPhaseLen / cap;
+            t.roundCount++;
+            spawnDoc(t, docValue, false);
+          }
+        }
+      }
+    } else { // ninjarie
+      // path 1: shurikens — wind up (arm back, shuriken in hand), then release (arm forward)
+      const rate = t.p1 >= 4 ? 5 : t.p1 >= 3 ? 3 : 1;
+      const pierce = t.p1 >= 1 ? 3 : 2;
+      if (tgt && t.cd <= 0 && !t.windup) {
+        t.cd = 1/rate; // cycle starts at wind-up, so the throw rate stays true
+        t.windup = Math.min(0.15, 0.4/rate);
+      }
+      if (t.windup && (t.windup -= dt) <= 0) {
+        t.windup = 0;
+        t.anim = Math.min(0.15, 0.3/rate); // follow-through, arm forward
+        t.thrown = (t.thrown||0) + 1;
+        // jitsu: every shuriken is gold and does quadruple (180)
+        const gold = t.p1 >= 4 || (t.p1 >= 2 && t.thrown % 2 === 0);
+        const dmg = t.p1 >= 4 ? 180 : 45 * (gold ? 2 : 1);
+        const spreads = t.p1 >= 4 ? [-0.4,-0.2,0,0.2,0.4] : [0];
+        const dual = t.p1 === 3 ? [-7, 7] : [0];
+        // smart targeting for regular throws (Snapper Jitsu's fan spread stays a straight read on t.angle)
+        const throwAngle = (tgt && t.p1 < 4) ? leadAngle(t.x, t.y, tgt, 420) : t.angle;
+        for (const a of spreads) for (const o of dual) {
+          const ang = throwAngle + a;
+          shots.push({x:t.x - Math.sin(ang)*o, y:t.y + Math.cos(ang)*o,
+            vx:Math.cos(ang)*420, vy:Math.sin(ang)*420,
+            dmg, gold, pierce, hit:[], life:(range+50)/420, spin:0, src:t});
+        }
+        beep(700, 0.05, 'square', 0.03, 900); // whoosh
+      }
+      // path 2: caltrops
+      if (t.p2 >= 1 && t.trapCd <= 0) {
+        t.trapCd = 2;
+        const spots = PATH_PTS.filter(p => Math.hypot(p.x-t.x, p.y-t.y) <= range);
+        if (spots.length) {
+          const s = spots[Math.floor(Math.random()*spots.length)];
+          t.dropped = (t.dropped||0) + 1;
+          const golden = t.p2 >= 2 && t.dropped % 10 === 0;
+          traps.push({x:s.x, y:s.y, type:'caltrop', dmg:golden ? 250 : 25, life:golden ? 30 : 10, golden, src:t});
+        }
+      }
+      // path 2 tier 3+: sticky / boss bombs
+      if (t.p2 >= 3 && t.bombCd <= 0) {
+        t.bombCd = 5;
+        const spots = PATH_PTS.filter(p => Math.hypot(p.x-t.x, p.y-t.y) <= range);
+        if (spots.length) {
+          const s = spots[Math.floor(Math.random()*spots.length)];
+          const bossNear = t.p2 >= 4 && enemies.some(e => e.boss && !e.dead && Math.hypot(e.x-t.x, e.y-t.y) <= range);
+          traps.push({x:s.x, y:s.y, type:'bomb', dmg:bossNear ? 15000 : 250, life:30, bossBomb:bossNear, src:t});
+        }
+      }
+    }
+  }
+
+  // banking documents: fly out to their resting spot, age, and either get collected (hover/tap) or expire
+  for (const d of docs) {
+    const dx = d.tx - d.x, dy = d.ty - d.y, dist = Math.hypot(dx, dy);
+    if (dist > 2) { const m = Math.min(240 * dt, dist); d.x += dx/dist*m; d.y += dy/dist*m; }
+    d.age += dt;
+  }
+  docs = docs.filter(d => {
+    if (Math.hypot(mouse.x-d.x, mouse.y-d.y) <= DOC_GRAB_R) { collectDoc(d); return false; } // desktop: just hover, no click needed
+    return d.age < 20; // 20s uncollected and it's gone for good
+  });
+
+  // shurikens fly (ninjarie sees camo, so shurikens hit everything)
+  for (const s of shots) {
+    s.x += s.vx*dt; s.y += s.vy*dt; s.life -= dt; s.spin += 15*dt;
+    if (s.cannon && !s.missile) { // cannonballs (and grape shot) bounce off rocks and buildings, not water
+      for (const o of OBSTACLES) {
+        if (o.type === 'water') continue;
+        const dx = s.x - o.x, dy = s.y - o.y, dist = Math.hypot(dx, dy), minD = o.r + (s.ballR||6);
+        if (dist > 0.001 && dist < minD) {
+          const nx = dx/dist, ny = dy/dist, dot = s.vx*nx + s.vy*ny;
+          if (dot < 0) {
+            s.vx -= 2*dot*nx; s.vy -= 2*dot*ny;
+            s.x = o.x + nx*minD; s.y = o.y + ny*minD;
+            sfx.bounce();
+            burst(s.x, s.y, '#ccc', 5, 90, 2);
+          }
+        }
+      }
+    } else if (s.cannon && s.missile) { // missiles/atomic missiles detonate the instant they clip a building
+      for (const o of OBSTACLES) {
+        if (o.type !== 'building' || Math.hypot(s.x-o.x, s.y-o.y) > o.r) continue;
+        missileExplode(s);
+        break;
+      }
+    } else if (!s.icbm) { // shurikens (and anything else non-cannon) are simply stopped by a building
+      for (const o of OBSTACLES) {
+        if (o.type !== 'building' || Math.hypot(s.x-o.x, s.y-o.y) > o.r) continue;
+        burst(s.x, s.y, '#999', 4, 70, 2);
+        s.life = 0;
+        break;
+      }
+    }
+    if (!s.icbm && (s.x < -40 || s.x > 1140 || s.y < -40 || s.y > 640)) s.life = 0; // off the map
+    if (s.icbm) { // steer at the target's live position every frame — it can't miss
+      if (s.tgt && !s.tgt.dead) { s.tx = s.tgt.x; s.ty = s.tgt.y; }
+      const d = Math.hypot(s.tx - s.x, s.ty - s.y);
+      particles.push({x:s.x, y:s.y, vx:-s.vx*0.1, vy:-s.vy*0.1, life:0.3, maxLife:0.3, r:3, color:'#bbb', drag:2}); // smoke trail
+      if (d < 16) { // impact
+        boom(s.tx, s.ty, '#aef05a');
+        for (const e of [...enemies]) {
+          if (e.dead || e.camo || Math.hypot(e.x-s.tx, e.y-s.ty) > s.blastR) continue;
+          if (s.src) s.src.dmgDone += Math.min(s.dmg, e.hp);
+          e.hp -= s.dmg;
+          if (e.hp <= 0) kill(e, s.src);
+        }
+        s.life = 0;
+      } else { s.vx = (s.tx - s.x)/d*480; s.vy = (s.ty - s.y)/d*480; }
+      continue;
+    }
+    for (const e of enemies) {
+      if (e.dead || s.hit.includes(e) || Math.hypot(e.x-s.x, e.y-s.y) > e.r + 4) continue;
+      if (s.cannon && e.camo) continue; // the cannon can't touch camo
+      if (s.missile) { missileExplode(s); break; } // explodes on contact; the blast hurts steel too
+      s.hit.push(e); s.pierce--;
+      burst(e.x, e.y, s.cannon ? '#777' : s.gold ? '#ffe97a' : '#ddd', 3, 80, 2);
+      if (!e.armored || s.popsSteel) { if (s.src) s.src.dmgDone += Math.min(s.dmg, e.hp); e.hp -= s.dmg; if (e.hp <= 0) kill(e, s.src); }
+      else sfx.ting();
+      if (s.pierce <= 0) { s.life = 0; break; }
+    }
+  }
+  shots = shots.filter(s => s.life > 0);
+
+  // traps trigger underfoot
+  for (const tr of traps) {
+    tr.life -= dt;
+    const victim = enemies.find(e => !e.dead && Math.hypot(e.x-tr.x, e.y-tr.y) < e.r + 4);
+    if (!victim) continue;
+    tr.life = 0;
+    if (tr.type === 'bomb') {
+      sfx.boom();
+      shake = Math.max(shake, tr.bossBomb ? 0.4 : 0.2);
+      particles.push({x:tr.x, y:tr.y, ring:true, r:8, vr:120, life:0.35, maxLife:0.35, color:'#f0955c'});
+      burst(tr.x, tr.y, '#f0955c', 25, 220, 5, 0.6);
+      for (const e of [...enemies]) {
+        if (e.dead || Math.hypot(e.x-tr.x, e.y-tr.y) > 55) continue;
+        if (tr.src) tr.src.dmgDone += Math.min(tr.dmg, e.hp);
+        e.hp -= tr.dmg;
+        if (e.hp <= 0) kill(e, tr.src);
+      }
+    } else {
+      burst(tr.x, tr.y, tr.golden ? '#ffe97a' : '#999', 6, 100, 2.5);
+      if (!victim.armored) { if (tr.src) tr.src.dmgDone += Math.min(tr.dmg, victim.hp); victim.hp -= tr.dmg; if (victim.hp <= 0) kill(victim, tr.src); }
+      else sfx.ting();
+    }
+  }
+  traps = traps.filter(tr => tr.life > 0);
+
+  enemies = enemies.filter(e => !e.dead);
+
+  for (const p of particles) {
+    if (p.ring) { p.r += p.vr*dt; }
+    else {
+      p.x += p.vx*dt; p.y += p.vy*dt;
+      const k = 1 - (p.drag||0)*dt;
+      p.vx *= k; p.vy *= k;
+    }
+    p.life -= dt;
+  }
+  particles = particles.filter(p => p.life > 0);
+  shake = Math.max(0, shake - dt);
+  for (const t of texts) { t.y -= 30*dt; t.life -= dt; }
+  texts = texts.filter(t => t.life > 0);
+
+  if (lives <= 0) { state = 'lost'; sfx.lose(); }
+  else if (waveActive && !spawnQueue.length && !enemies.length && !particles.length) {
+    waveActive = false; money += 150;
+    musicMode = 'calm';
+    if (!sandbox && wave >= WAVES.length) { state = 'won'; sfx.win(); }
+    else sfx.clear();
+  }
+}
+
+// ---- draw ----
+function drawBackground() {
+  ctx.fillStyle = THEME_COLORS[THEME].bg;
+  ctx.fillRect(0, 0, 1100, 600);
+}
+function drawPath() {
+  const c = THEME_COLORS[THEME];
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.strokeStyle = c.pathOuter; ctx.lineWidth = PATH_W + 8;
+  ctx.beginPath(); PATH.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y)); ctx.stroke();
+  ctx.strokeStyle = c.pathInner; ctx.lineWidth = PATH_W;
+  ctx.stroke();
+  // dashed centre stripe
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 3;
+  ctx.setLineDash([14, 18]);
+  ctx.beginPath(); PATH.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y)); ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawObstacles() {
+  for (const o of OBSTACLES) {
+    if (o.type === 'water') {
+      ctx.fillStyle = '#3a6fa5';
+      if (o.w) { // river / basin strip
+        ctx.fillRect(o.x-o.w/2, o.y-o.h/2, o.w, o.h);
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2;
+        const wavy = o.w > o.h; // ripple lines run along the long axis
+        for (let k = -1; k <= 1; k++) {
+          ctx.beginPath();
+          if (wavy) ctx.moveTo(o.x-o.w/2+8, o.y+k*o.h*0.28), ctx.lineTo(o.x+o.w/2-8, o.y+k*o.h*0.28);
+          else ctx.moveTo(o.x+k*o.w*0.28, o.y-o.h/2+8), ctx.lineTo(o.x+k*o.w*0.28, o.y+o.h/2-8);
+          ctx.stroke();
+        }
+      } else {
+        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 7); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(o.x, o.y, o.r*0.6, 0, 5); ctx.stroke();
+        ctx.beginPath(); ctx.arc(o.x, o.y, o.r*0.85, 1, 4); ctx.stroke();
+      }
+    } else if (o.type === 'building') { // ancient stone pillar, seen from directly above
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; // drop shadow implies height
+      ctx.beginPath(); ctx.arc(o.x+4, o.y+4, o.r, 0, 7); ctx.fill();
+      ctx.fillStyle = '#a89a7c';
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 7); ctx.fill();
+      ctx.fillStyle = '#8f8267';
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r*0.78, 0, 7); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 2;
+      for (let a = 0; a < 6.3; a += Math.PI/6) { // fluting grooves radiating from the column's core
+        ctx.beginPath();
+        ctx.moveTo(o.x+Math.cos(a)*o.r*0.32, o.y+Math.sin(a)*o.r*0.32);
+        ctx.lineTo(o.x+Math.cos(a)*o.r*0.95, o.y+Math.sin(a)*o.r*0.95);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = '#4f4736'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 7); ctx.stroke();
+      ctx.fillStyle = 'rgba(120,140,90,0.35)'; // moss creeping up one side
+      ctx.beginPath(); ctx.ellipse(o.x-o.r*0.3, o.y+o.r*0.35, o.r*0.35, o.r*0.22, 0.4, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(o.x+o.r*0.15, o.y-o.r*0.45, o.r*0.22, o.r*0.14, 1.1, 0, 7); ctx.fill();
+    } else if (o.type === 'container') { // shipping container, top-down
+      ctx.save(); ctx.translate(o.x, o.y);
+      ctx.fillStyle = '#a5453a';
+      ctx.fillRect(-o.r, -o.r*0.6, o.r*2, o.r*1.2);
+      ctx.strokeStyle = '#5c241d'; ctx.lineWidth = 2;
+      ctx.strokeRect(-o.r, -o.r*0.6, o.r*2, o.r*1.2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1.5;
+      for (let rx = -o.r+6; rx < o.r; rx += 7) { ctx.beginPath(); ctx.moveTo(rx, -o.r*0.6+2); ctx.lineTo(rx, o.r*0.6-2); ctx.stroke(); }
+      ctx.restore();
+    } else if (o.type === 'crane') { // gantry crane, top-down: a boom arm swung across a fixed base — every part scales with o.r, so a huge crane still reads as sturdy rather than a thin wire
+      ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(0.5);
+      ctx.strokeStyle = '#e8b93d'; ctx.lineWidth = o.r*0.27; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-o.r*1.6, 0); ctx.lineTo(o.r*1.1, 0); ctx.stroke();
+      ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = o.r*0.09;
+      ctx.beginPath(); ctx.moveTo(-o.r*1.6, 0); ctx.lineTo(o.r*1.1, 0); ctx.stroke();
+      ctx.fillStyle = '#4a4a4a';
+      ctx.beginPath(); ctx.arc(0, 0, o.r*0.32, 0, 7); ctx.fill(); // slewing base
+      ctx.strokeStyle = '#8a8a8a'; ctx.lineWidth = o.r*0.07;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(o.r*1.1, -o.r*0.18); ctx.stroke(); // hook cable
+      ctx.restore();
+    } else { // rock / boulder
+      ctx.fillStyle = '#7d7d78';
+      ctx.beginPath(); ctx.ellipse(o.x, o.y, o.r, o.r*0.8, 0.3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#9a9a92';
+      ctx.beginPath(); ctx.ellipse(o.x-o.r*0.25, o.y-o.r*0.25, o.r*0.5, o.r*0.35, 0.3, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#4a4a45'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(o.x, o.y, o.r, o.r*0.8, 0.3, 0, 7); ctx.stroke();
+    }
+  }
+}
+
+function drawDecor() {
+  const pal = THEME_DECOR[THEME];
+  for (const d of DECOR) {
+    ctx.save(); ctx.translate(d.x, d.y); ctx.scale(d.s, d.s);
+    if (d.kind === 0) { // bush-shaped clump
+      ctx.fillStyle = pal[0][0];
+      ctx.beginPath(); ctx.arc(-6,2,8,0,7); ctx.arc(6,2,8,0,7); ctx.arc(0,-5,9,0,7); ctx.fill();
+      ctx.fillStyle = pal[0][1];
+      ctx.beginPath(); ctx.arc(-3,-2,6,0,7); ctx.arc(4,0,5,0,7); ctx.fill();
+    } else if (d.kind === 1) { // dot-cluster (flower / sparkle / rubble)
+      ctx.fillStyle = d.hue > 0.5 ? pal[1][0] : pal[1][1];
+      for (let i = 0; i < 5; i++) {
+        const a = i/5*7;
+        ctx.beginPath(); ctx.arc(Math.cos(a)*4, Math.sin(a)*4, 3, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = THEME === 'ruins' ? '#666' : '#e8a33d'; ctx.beginPath(); ctx.arc(0,0,2.5,0,7); ctx.fill();
+    } else { // small rock / block
+      ctx.fillStyle = pal[2][0];
+      ctx.beginPath(); ctx.ellipse(0,0,9,6,0.3,0,7); ctx.fill();
+      ctx.fillStyle = pal[2][1];
+      ctx.beginPath(); ctx.ellipse(-2,-2,5,3,0.3,0,7); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function drawShuriken(x, y, spin, gold, size) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(spin);
+  ctx.fillStyle = gold ? '#ffe97a' : '#ccc';
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 0; i < 4; i++) {
+    ctx.lineTo(Math.cos(i*1.57)*size, Math.sin(i*1.57)*size);
+    ctx.lineTo(Math.cos(i*1.57 + 0.785)*size*0.36, Math.sin(i*1.57 + 0.785)*size*0.36);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function drawSnapper(x, y, angle, spr, scale, kind='doba') {
+  const set = SPRS[kind], img = set.img();
+  if (!img.complete) return;
+  const s = set[spr];
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const w = s.w*scale, h = s.h*scale;
+  ctx.drawImage(img, s.x, s.y, s.w, s.h, -w/2, -h*0.45, w, h);
+  ctx.restore();
+}
+
+function draw() {
+  ctx.clearRect(0,0,1100,600);
+
+  if (state === 'title') {
+    ctx.fillStyle = '#234a23'; ctx.fillRect(0,0,1100,600);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#aef05a'; ctx.font = 'bold 44px system-ui';
+    ctx.fillText('SNAPPER', 550, 68);
+    ctx.fillText('TOWER DEFENSE', 550, 116);
+    // big snapper filling the gap between the title and the map picker
+    if (sheet.complete) drawSnapper(550, 203, 0, 'idle', 1.1);
+    // map picker
+    ctx.fillStyle = '#cbe8b0'; ctx.font = 'bold 15px system-ui';
+    ctx.fillText('CHOOSE A MAP', 550, 300);
+    for (let i = 0; i < MAPS.length; i++) {
+      const b = mapBtn(i);
+      ctx.fillStyle = i === mapIndex ? '#aef05a' : 'rgba(255,255,255,0.12)';
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+      ctx.strokeStyle = i === mapIndex ? '#fff' : '#8ab86a'; ctx.lineWidth = 2;
+      ctx.strokeRect(b.x, b.y, b.w, b.h);
+      ctx.fillStyle = i === mapIndex ? '#1a2a1a' : '#cbe8b0';
+      ctx.font = 'bold 12px system-ui';
+      ctx.fillText(MAPS[i].name, b.x + b.w/2, b.y + 21);
+    }
+    ctx.fillStyle = '#fff'; ctx.font = '20px system-ui';
+    ctx.fillText('Blobs are invading. Only the Snappers can punch them back.', 550, 420);
+    ctx.fillStyle = Math.floor(Date.now()/500)%2 ? '#ffe97a' : '#fff';
+    ctx.font = 'bold 27px system-ui';
+    ctx.fillText('CLICK TO START', 550, 465);
+    ctx.strokeStyle = '#8ab86a'; ctx.lineWidth = 2;
+    ctx.strokeRect(440, 488, 220, 34);
+    ctx.fillStyle = '#8ab86a'; ctx.font = 'bold 16px system-ui';
+    ctx.fillText('SANDBOX MODE', 550, 510);
+    return;
+  }
+
+  ctx.save();
+  if (shake > 0) ctx.translate((Math.random()-0.5)*shake*30, (Math.random()-0.5)*shake*30);
+
+  drawBackground();
+  drawObstacles();
+  drawPath();
+  drawDecor();
+
+  // enemies
+  for (const e of enemies) {
+    if (e.ultraCamo && ultraCamoSheet.complete) {
+      ctx.drawImage(ultraCamoSheet, ULTRACAMO_SPR.x, ULTRACAMO_SPR.y, ULTRACAMO_SPR.w, ULTRACAMO_SPR.h, e.x-e.r-2, e.y-e.r-2, (e.r+2)*2, (e.r+2)*2);
+    } else if (e.camo && camoSheet.complete) {
+      ctx.drawImage(camoSheet, CAMO_SPR.x, CAMO_SPR.y, CAMO_SPR.w, CAMO_SPR.h, e.x-e.r-2, e.y-e.r-2, (e.r+2)*2, (e.r+2)*2);
+    } else if (e.ultraSteel) { // bolted steel plates: heavier gradient plus a seam and rivets
+      ctx.save(); ctx.translate(e.x, e.y);
+      ctx.beginPath(); ctx.arc(0, 0, e.r, 0, 7);
+      ctx.fillStyle = ULTRASTEEL_GRAD; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = '#1c1c1c'; ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(-e.r*0.8, 0); ctx.lineTo(e.r*0.8, 0); ctx.stroke();
+      const rivetR = e.r * 0.16;
+      for (const [rx, ry] of [[-e.r*0.55,-e.r*0.4],[e.r*0.55,-e.r*0.4],[-e.r*0.55,e.r*0.4],[e.r*0.55,e.r*0.4],[0,0]]) {
+        ctx.fillStyle = '#4a4a4a';
+        ctx.beginPath(); ctx.arc(rx, ry, rivetR, 0, 7); ctx.fill();
+        ctx.fillStyle = '#9a9a9a';
+        ctx.beginPath(); ctx.arc(rx-rivetR*0.3, ry-rivetR*0.3, rivetR*0.4, 0, 7); ctx.fill();
+      }
+      ctx.restore();
+    } else if (e.steel) { // brushed-steel look: dark top-left fading to light bottom-right, like the sheet
+      ctx.save(); ctx.translate(e.x, e.y);
+      ctx.beginPath(); ctx.arc(0, 0, e.r, 0, 7);
+      ctx.fillStyle = STEEL_GRAD; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = '#333'; ctx.stroke();
+      ctx.restore();
+    } else {
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, 7);
+      ctx.fillStyle = e.color; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = '#333'; ctx.stroke();
+    }
+    if (e.boss) { // boss double ring, like the sheet
+      ctx.strokeStyle = e.ringColor || '#333';
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r-7, 0, 7); ctx.stroke();
+    }
+    // hp bar
+    ctx.fillStyle = '#300'; ctx.fillRect(e.x-16, e.y-e.r-10, 32, 5);
+    ctx.fillStyle = '#4f4'; ctx.fillRect(e.x-16, e.y-e.r-10, 32*e.hp/e.maxHp, 5);
+  }
+
+  // traps (under towers)
+  for (const tr of traps) {
+    if (tr.type === 'bomb') {
+      ctx.fillStyle = tr.bossBomb ? '#8a1f1f' : '#222';
+      ctx.beginPath(); ctx.arc(tr.x, tr.y, tr.bossBomb ? 10 : 7, 0, 7); ctx.fill();
+      ctx.fillStyle = '#f0955c';
+      ctx.beginPath(); ctx.arc(tr.x - 2, tr.y - (tr.bossBomb ? 11 : 8), 2, 0, 7); ctx.fill(); // fuse spark
+    } else {
+      ctx.strokeStyle = tr.golden ? '#e8b93d' : '#444'; ctx.lineWidth = tr.golden ? 3 : 2;
+      const r = tr.golden ? 7 : 5;
+      for (let i = 0; i < 3; i++) {
+        const a = i*2.094 - 1.57;
+        ctx.beginPath(); ctx.moveTo(tr.x, tr.y); ctx.lineTo(tr.x + Math.cos(a)*r, tr.y + Math.sin(a)*r); ctx.stroke();
+      }
+    }
+  }
+
+  // towers
+  for (const t of towers) {
+    let spr;
+    if (t.kind === 'ninjarie') spr = t.windup ? 'punchR' : t.anim > 0 ? 'punchL' : 'idle'; // back → forward → idle
+    else if (t.kind === 'cannon') spr = t.anim > 0 ? 'punchR' : t.recoil > 0 ? 'punchL' : 'idle'; // fire → recoil → idle
+    else if (t.kind === 'bankingDoba') spr = Math.floor(Date.now()/400) % 2 === 0 ? 'idle' : 'idle2'; // gentle two-frame idle
+    else spr = t.anim > 0 ? (t.fist ? 'punchR' : 'punchL') : 'idle';
+    drawSnapper(t.x, t.y, t.angle - Math.PI/2, spr, 0.32 + (t.p1 + t.p2)*0.02, t.kind);
+    if (t.kind === 'ninjarie' && t.windup) { // shuriken in the raised hand
+      const a = t.angle - Math.PI/2;
+      drawShuriken(t.x + Math.cos(a)*40 - Math.sin(a)*20, t.y + Math.sin(a)*40 + Math.cos(a)*20, Date.now()/100, false, 6);
+    }
+    // path pips: cyan = path 1, gold = path 2
+    ctx.fillStyle = '#6ad8f0';
+    for (let i = 0; i < t.p1; i++) { ctx.beginPath(); ctx.arc(t.x - 20 + i*11, t.y + 28, 3.5, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#ffe97a';
+    for (let i = 0; i < t.p2; i++) { ctx.beginPath(); ctx.arc(t.x - 20 + i*11, t.y + 38, 3.5, 0, 7); ctx.fill(); }
+    // selected tower: total damage dealt & kills, just this one tower (not its whole type)
+    // the upgrade panel sits above the tower normally, or below it when the tower is near the top of the map —
+    // so put these stats on whichever side the panel ISN'T, or the panel can cover them
+    if (t === selected) {
+      const panelBelow = t.y <= 190;
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 12px system-ui';
+      if (t.kind === 'bankingDoba') {
+        const moneyY = t.y + (panelBelow ? -50 : 50);
+        ctx.fillStyle = '#000'; ctx.fillText('MONEY MADE $' + fmtDmg(t.moneyMade), t.x + 1, moneyY + 1);
+        ctx.fillStyle = '#ffe97a'; ctx.fillText('MONEY MADE $' + fmtDmg(t.moneyMade), t.x, moneyY);
+      } else {
+        const dmgY = t.y + (panelBelow ? -50 : 50), killY = t.y + (panelBelow ? -62 : 62);
+        ctx.fillStyle = '#000';
+        ctx.fillText('DMG ' + fmtDmg(t.dmgDone), t.x + 1, dmgY + 1);
+        ctx.fillText('KILLS ' + t.kills, t.x + 1, killY + 1);
+        ctx.fillStyle = '#ffe97a';
+        ctx.fillText('DMG ' + fmtDmg(t.dmgDone), t.x, dmgY);
+        ctx.fillStyle = '#8ef0ff';
+        ctx.fillText('KILLS ' + t.kills, t.x, killY);
+      }
+      ctx.textAlign = 'left';
+    }
+  }
+
+  // banking documents & crates — the real cropped artwork, same sprites as drawn
+  for (const d of docs) {
+    if (d.age >= 15 && Math.floor(d.age * 6) % 2 === 0) continue; // flashes for its last 5 seconds
+    if (bankingDobaSheet.complete) {
+      const s = d.crate ? CRATE_SPR : DOC_SPR;
+      ctx.drawImage(bankingDobaSheet, s.x, s.y, s.w, s.h, d.x - s.w/2, d.y - s.h/2, s.w, s.h);
+    }
+    ctx.textAlign = 'center'; ctx.font = 'bold 10px system-ui';
+    ctx.fillStyle = '#000'; ctx.fillText('$'+d.value, d.x+1, d.y+31);
+    ctx.fillStyle = '#ffe97a'; ctx.fillText('$'+d.value, d.x, d.y+30);
+  }
+
+  // shurikens
+  for (const s of shots) {
+    if (s.icbm) { // the big one
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(Math.atan2(s.vy, s.vx));
+      ctx.fillStyle = '#ffe97a'; // exhaust flame
+      ctx.beginPath(); ctx.moveTo(-18, -5); ctx.lineTo(-30 - Math.random()*10, 0); ctx.lineTo(-18, 5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#1e3d1e';
+      ctx.fillRect(-18, -7, 30, 14);
+      ctx.fillStyle = '#aef05a';
+      ctx.beginPath(); ctx.moveTo(12, -7); ctx.lineTo(26, 0); ctx.lineTo(12, 7); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if (s.missile) {
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(Math.atan2(s.vy, s.vx));
+      ctx.fillStyle = s.atomic ? '#1e3d1e' : '#666'; // atomic missiles look green and black
+      ctx.fillRect(-9, -3.5, 14, 7);
+      ctx.fillStyle = s.atomic ? '#aef05a' : '#f07070';
+      ctx.beginPath(); ctx.moveTo(5, -3.5); ctx.lineTo(11, 0); ctx.lineTo(5, 3.5); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if (s.cannon) {
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.ballR, 0, 7);
+      ctx.fillStyle = '#2b2b2b'; ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+    } else drawShuriken(s.x, s.y, s.spin, s.gold, 7);
+  }
+
+  // particles & floating cash
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(p.life/p.maxLife, 0);
+    if (p.ring) {
+      ctx.strokeStyle = p.color; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.stroke();
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'center'; ctx.font = 'bold 15px system-ui';
+  for (const t of texts) {
+    ctx.globalAlpha = Math.min(t.life/0.4, 1);
+    ctx.fillStyle = '#ffe97a'; ctx.fillText(t.str, t.x, t.y);
+  }
+  ctx.globalAlpha = 1;
+
+  // selected tower: range + one upgrade button per path
+  if (selected) {
+    const t = selected, icons = TKINDS[t.kind].icons;
+    ctx.beginPath(); ctx.arc(t.x, t.y, twrRange(t), 0, 7);
+    ctx.strokeStyle = 'rgba(255,233,122,0.6)'; ctx.lineWidth = 2; ctx.stroke();
+    const bx = Math.max(125, Math.min(835, t.x)), by = t.y > 190 ? t.y - 130 : t.y + 56;
+    [[1, icons[0], '#6ad8f0'], [2, icons[1], '#ffe97a']].forEach(([path, icon, color], row) => {
+      const n = pathNext(t, path), y = by + row*38;
+      const btn = {x:bx-115, y, w:230, h:32};
+      t['btn'+path] = n.def && !n.locked ? btn : null;
+      ctx.fillStyle = n.def && !n.locked ? (money >= n.def.cost ? color : '#999') : '#555';
+      ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
+      ctx.fillStyle = '#000'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
+      const label = n.maxed ? icon+' MAX' : n.locked ? icon+' 🔒 path locked' : `${icon} ${n.def.name} $${n.def.cost}`;
+      ctx.fillText(label, bx, y+21);
+    });
+    // sell button
+    t.btnS = {x:bx-115, y:by+76, w:230, h:26};
+    ctx.fillStyle = '#c96a5a';
+    ctx.fillRect(t.btnS.x, t.btnS.y, t.btnS.w, t.btnS.h);
+    ctx.fillStyle = '#000'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('SELL +$' + Math.round(t.spent * 0.8), bx, by + 94);
+  }
+
+  // ability bar: one icon per tower with an ability, bottom-left
+  abilityBtns = [];
+  let ax = 20;
+  for (const t of towers) {
+    const p2def = TKINDS[t.kind].paths[1][t.p2];
+    if (!p2def.aoe && !p2def.icbm) continue;
+    const btn = {x:ax, y:540, w:44, h:44, t};
+    abilityBtns.push(btn);
+    const ready = t.aoeCd <= 0;
+    ctx.fillStyle = ready ? '#ffe97a' : '#666';
+    ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.strokeRect(btn.x, btn.y, btn.w, btn.h);
+    ctx.font = '26px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(p2def.icbm ? '\uD83D\uDE80' : p2def.aoe >= 10000 ? '☢️' : '👊', btn.x + 22, btn.y + 32);
+    if (!ready) { // cooldown sweep
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(btn.x, btn.y, btn.w, btn.h * t.aoeCd / AOE_CD);
+    }
+    ax += 52;
+  }
+
+  // placement preview (only while a tower is picked from the sidebar)
+  if (state === 'playing' && placing && mouse.x > 0 && mouse.x < SIDEBAR.x) {
+    const def = TKINDS[placing];
+    const ok = canPlace(mouse.x, mouse.y) && money >= def.cost;
+    ctx.beginPath(); ctx.arc(mouse.x, mouse.y, def.range, 0, 7);
+    ctx.fillStyle = ok ? 'rgba(255,255,255,0.15)' : 'rgba(255,60,60,0.15)';
+    ctx.fill();
+    ctx.strokeStyle = ok ? 'rgba(255,255,255,0.5)' : 'rgba(255,60,60,0.5)';
+    ctx.lineWidth = 2; ctx.stroke();
+    ctx.globalAlpha = 0.6; drawSnapper(mouse.x, mouse.y, 0, 'idle', 0.32, placing); ctx.globalAlpha = 1;
+  }
+
+  // sidebar
+  ctx.fillStyle = '#1d3a1d'; ctx.fillRect(SIDEBAR.x, 0, 140, 600);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#aef05a'; ctx.font = 'bold 18px system-ui';
+  ctx.fillText('TOWERS', 1030, 66);
+  for (const c of SIDEBAR.cards) {
+    const def = TKINDS[c.kind], afford = money >= def.cost, armed = placing === c.kind;
+    ctx.fillStyle = armed ? '#4a7a3a' : '#2b512b';
+    ctx.fillRect(c.x, c.y, c.w, c.h);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = armed ? '#ffe97a' : (afford ? '#6a9a5a' : '#555');
+    ctx.strokeRect(c.x, c.y, c.w, c.h);
+    ctx.fillStyle = '#cde3cd'; ctx.font = 'bold 12px system-ui';
+    ctx.fillText(def.name, c.x + c.w/2, c.y + 16);
+    ctx.globalAlpha = afford ? 1 : 0.4;
+    drawSnapper(c.x + c.w/2, c.y + 55, 0, 'idle', c.kind === 'bankingDoba' ? 0.16 : 0.26, c.kind); // banking doba's sheet art is much bigger than the others, so shrink just its card preview
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = afford ? '#ffe97a' : '#888'; ctx.font = 'bold 16px system-ui';
+    ctx.fillText('$' + def.cost, c.x + c.w/2, c.y + c.h - 10);
+    const cap = def.seesCamo ? 'sees camo' : def.note;
+    if (cap) { ctx.fillStyle = '#9db89d'; ctx.font = '11px system-ui'; ctx.fillText(cap, c.x + c.w/2, c.y + c.h + 14); }
+  }
+  ctx.fillStyle = '#9db89d'; ctx.font = '12px system-ui';
+  ctx.fillText(placing ? 'click grass to place' : 'click a card to buy', 1030, 566);
+
+  // HUD
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0,0,1100,44);
+  ctx.textAlign = 'left'; ctx.fillStyle = '#ffe97a'; ctx.font = 'bold 20px system-ui';
+  ctx.fillText(money === Infinity ? '$∞' : '$' + money, 20, 29);
+  ctx.fillStyle = '#ff8a8a'; ctx.fillText('♥ ' + (lives === Infinity ? '∞' : lives), 130, 29);
+  ctx.fillStyle = '#fff'; ctx.fillText('Wave ' + wave + '/' + WAVES.length, 230, 29);
+  if (sandbox && !waveActive) { // wave picker arrows
+    ctx.fillStyle = '#ffe97a'; ctx.font = 'bold 20px system-ui';
+    ctx.fillText('◀', 355, 29); ctx.fillText('▶', 385, 29);
+  }
+  ctx.fillStyle = '#ccc'; ctx.font = '16px system-ui';
+  ctx.fillText(sandbox ? 'SANDBOX · pick any wave with ◀ ▶' : 'Click a Snapper to upgrade · Esc cancels', 425, 28);
+
+  // start wave button
+  if (!waveActive && state === 'playing') {
+    ctx.fillStyle = '#ffe97a'; ctx.fillRect(810, 6, 140, 32);
+    ctx.fillStyle = '#000'; ctx.font = 'bold 17px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(wave === 0 ? 'START WAVE' : 'NEXT WAVE', 880, 28);
+  }
+
+  if (state === 'won' || state === 'lost') {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0,0,1100,600);
+    ctx.textAlign = 'center'; ctx.font = 'bold 56px system-ui';
+    ctx.fillStyle = state === 'won' ? '#aef05a' : '#ff8a8a';
+    ctx.fillText(state === 'won' ? 'SNAPPERS WIN!' : 'THE BLOBS GOT THROUGH', 550, 280);
+    ctx.fillStyle = '#fff'; ctx.font = '24px system-ui';
+    ctx.fillText('Click to return to title', 550, 340);
+  }
+  ctx.restore();
+}
+
+// ---- input ----
+function evtPos(e) {
+  const r = cvs.getBoundingClientRect();
+  return {x:(e.clientX - r.left) * cvs.width / r.width, y:(e.clientY - r.top) * cvs.height / r.height};
+}
+cvs.addEventListener('mousemove', e => mouse = evtPos(e));
+cvs.addEventListener('click', e => {
+  if (!ac) { ac = new AudioContext(); masterGain = ac.createGain(); masterGain.gain.value = 3; masterGain.connect(ac.destination); scheduleMusic(); } // audio needs a user gesture
+  const p = evtPos(e);
+  if (state === 'title') {
+    for (let i = 0; i < MAPS.length; i++) {
+      const b = mapBtn(i);
+      if (p.x >= b.x && p.x <= b.x+b.w && p.y >= b.y && p.y <= b.y+b.h) { selectMap(i); return; }
+    }
+    const sb = p.x >= 440 && p.x <= 660 && p.y >= 488 && p.y <= 522;
+    reset(sb); state = 'playing';
+    return;
+  }
+  if (state === 'won' || state === 'lost') { state = 'title'; return; }
+  // wave button
+  if (!waveActive && p.x > 810 && p.x < 950 && p.y < 44) { startWave(); return; }
+  // sandbox wave picker arrows
+  if (sandbox && !waveActive && p.y < 44 && p.x > 345 && p.x < 405) {
+    wave = Math.max(0, Math.min(WAVES.length - 1, wave + (p.x < 375 ? -1 : 1)));
+    return;
+  }
+  // sidebar tower cards: arm/disarm placement
+  for (const c of SIDEBAR.cards) {
+    if (p.x >= c.x && p.x <= c.x+c.w && p.y >= c.y && p.y <= c.y+c.h) {
+      if (money >= TKINDS[c.kind].cost) { placing = placing === c.kind ? null : c.kind; selected = null; }
+      return;
+    }
+  }
+  if (p.x >= SIDEBAR.x) return;
+  // banking documents: a tap collects one directly, since mobile has no hover to trigger the per-frame check
+  for (let i = 0; i < docs.length; i++) {
+    if (Math.hypot(p.x-docs[i].x, p.y-docs[i].y) <= DOC_GRAB_R) { collectDoc(docs[i]); docs.splice(i, 1); return; }
+  }
+  // ability bar
+  for (const b of abilityBtns) {
+    if (p.x >= b.x && p.x <= b.x+b.w && p.y >= b.y && p.y <= b.y+b.h) { slam(b.t); return; }
+  }
+  // placing mode: click grass to drop the tower
+  if (placing) {
+    if (money >= TKINDS[placing].cost && canPlace(p.x, p.y)) {
+      money -= TKINDS[placing].cost;
+      towers.push({x:p.x, y:p.y, kind:placing, spent:TKINDS[placing].cost, p1:0, p2:0, cd:0, aoeCd:0, trapCd:0, bombCd:0, docCd:0, crateCd:0, roundWave:-1, roundCount:0, spawnPhaseLen:8, anim:0, recoil:0, angle:Math.PI/2, fist:false, dmgDone:0, kills:0, moneyMade:0});
+      sfx.place();
+      placing = null;
+    }
+    return;
+  }
+  // upgrade buttons of the selected tower
+  if (selected) {
+    for (const path of [1, 2]) {
+      const b = selected['btn'+path];
+      if (!b || p.x < b.x || p.x > b.x+b.w || p.y < b.y || p.y > b.y+b.h) continue;
+      const n = pathNext(selected, path);
+      if (n.def && !n.locked && money >= n.def.cost) {
+        money -= n.def.cost;
+        selected.spent += n.def.cost;
+        path === 1 ? selected.p1++ : selected.p2++;
+        selectedAt = performance.now(); sfx.upgrade();
+      }
+      return;
+    }
+    // sell button: 80% of everything spent on this tower
+    const b = selected.btnS;
+    if (b && p.x >= b.x && p.x <= b.x+b.w && p.y >= b.y && p.y <= b.y+b.h) {
+      money += Math.round(selected.spent * 0.8);
+      burst(selected.x, selected.y, '#ffe97a', 15, 150, 4);
+      texts.push({x:selected.x, y:selected.y-20, life:0.8, str:'+$'+Math.round(selected.spent*0.8)});
+      towers = towers.filter(t => t !== selected);
+      selected = null;
+      sfx.pop();
+      return;
+    }
+  }
+  // select a tower; any other click deselects
+  const hit = towers.find(t => Math.hypot(t.x-p.x, t.y-p.y) < 30);
+  selected = (hit && hit !== selected) ? hit : null;
+  if (selected) selectedAt = performance.now();
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { selected = null; placing = null; }
+  if (e.code === 'Space' && state === 'playing' && !waveActive) {
+    e.preventDefault(); // don't let the page scroll
+    if (!ac) { ac = new AudioContext(); masterGain = ac.createGain(); masterGain.gain.value = 3; masterGain.connect(ac.destination); scheduleMusic(); } // audio needs a user gesture
+    startWave();
+  }
+});
+
+// ---- loop ----
+let last = performance.now();
+function loop(now) {
+  update(Math.min((now - last)/1000, 0.05));
+  last = now;
+  draw();
+  requestAnimationFrame(loop);
+}
+reset();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
