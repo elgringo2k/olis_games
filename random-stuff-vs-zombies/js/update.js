@@ -652,14 +652,14 @@ function update(dt) {
     if (e.hp > 0) return;
     maybeDropCoin(e);
     if (e.eaten) return; // swallowed by a Snapper: nothing left to show
-    if (e.kind === 'car') {
-      // caught in an explosion or destroyed in one hit, the car blows apart on the spot; otherwise it breaks down first:
-      // it sits there sputtering and smoking, then blows apart (see the puff loop below)
-      if (e.ashed || e.instakill) blowUpCar(e.x, e.lane * CELL + 92);
-      else state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
-    } else if (e.ashed) {
-      // blown up by a Temper-lotl: a charred statue that crumbles to ash
+    if (e.ashed) {
+      // blown up by a Temper-lotl or Chog-chog: a charred statue that crumbles to ash
       state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: e.kind === 'mutant' ? 170 : 105 });
+    } else if (e.kind === 'car') {
+      // destroyed in one hit, the car blows apart on the spot; otherwise it breaks down first:
+      // it sits there sputtering and smoking, then blows apart (see the puff loop below)
+      if (e.instakill) blowUpCar(e.x, e.lane * CELL + 92);
+      else state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.kind === 'mutant') {
       // the Mutant's huge head pops off, then the body topples over with a thud
       state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
