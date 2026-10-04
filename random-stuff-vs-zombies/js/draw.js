@@ -39,6 +39,7 @@ function draw() {
     else if (t.type === 'tesla') drawTesla(ctx, c * CELL + 100, r * CELL + 90, 1, t, state.time);
     else if (t.type === 'loo') drawLoo(ctx, c * CELL + 50, r * CELL + 60, 1, t, state.time);
     else if (t.type === 'battery') drawBattery(ctx, c * CELL + 50, r * CELL + 58, 1, t, state.time);
+    else if (t.type === 'cobra') drawCobra(ctx, c * CELL + 50, r * CELL + 60, 1, t, state.time);
     else if (t.type === 'hsquid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep, true);
     else if (t.type === 'squid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep);
     // the boat goes on after the defender, so the defender sits down inside it
@@ -156,6 +157,14 @@ function draw() {
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-24, 2); ctx.stroke();
       ctx.fillStyle = '#6f8d5c'; ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       ctx.restore(); continue;
+    }
+    if (p.magnetItem) {
+      // a soup can or helmet whizzing off a zombie's head onto a Magneticobra's magnet
+      const kk = p.t / p.life, ease = kk * kk;
+      ctx.save(); ctx.translate(p.x + (p.tx - p.x) * ease, p.y + (p.ty - p.y) * ease - Math.sin(kk * Math.PI) * 20); ctx.rotate(kk * Math.PI / 2);
+      if (p.magnetItem === 'can') { ctx.scale(0.8, 0.8); drawCan(ctx, 0, 13, 1); } else { ctx.scale(0.75, 0.75); drawKnightHelm(1, 0); }
+      ctx.restore();
+      continue;
     }
     if (p.carParts) {
       // the pieces of a blown-up car: wheels, red panels, glass and the bumper, fading out once they've landed

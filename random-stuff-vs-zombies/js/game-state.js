@@ -124,6 +124,7 @@ const DESCRIPTIONS = {
   boat: 'Floats on the water. Plant a defender in it to use the pool lanes.',
   loo: 'Bursts into 12 sheets flying in every direction. 250 to the first zombie each hits, 125 to the second.',
   battery: 'Tap it and pay 50 energy to zap the zombie closest to your house for 500. Every 5 s.',
+  cobra: 'Its magnet steals soup cans and knight helmets, and pulls in cars and rips them open. Holds what it took for 10 s (car parts 20 s).',
   hsquid: 'Plant on a Sun Squid. Makes big 50-energy orbs. Falls asleep at night.',
   mini: 'A tiny night turtle. Free. Throws rocks up to 3 tiles ahead. 10 s recharge.',
   vamp: 'Makes small 10-energy orbs for 90 s, then grows up and makes normal 25-energy orbs.',

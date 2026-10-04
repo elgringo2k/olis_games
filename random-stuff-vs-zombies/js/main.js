@@ -54,6 +54,8 @@ const looCtx = document.getElementById('looArt').getContext('2d');
 looCtx.scale(2, 2); drawLoo(looCtx, 26, 26, 0.75);
 const btCtx = document.getElementById('batteryArt').getContext('2d');
 btCtx.scale(2, 2); drawBattery(btCtx, 26, 22, 0.55);
+const cbCtx = document.getElementById('cobraArt').getContext('2d');
+cbCtx.scale(2, 2); drawCobra(cbCtx, 22, 30, 0.5);
 const hsqCtx = document.getElementById('hsquidArt').getContext('2d');
 hsqCtx.scale(2, 2); drawSquid(hsqCtx, 26, 30, 0.58, 0, 0, false, true);
 const muCtx = document.getElementById('multiArt').getContext('2d');

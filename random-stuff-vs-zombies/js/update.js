@@ -80,6 +80,32 @@ function update(dt) {
       if (t.zap) { t.zap.t += dt; if (t.zap.t > 0.3) t.zap = null; }
       continue;
     }
+    if (t.type === 'cobra') {
+      // Magneticobra: steals a soup can or a knight's helmet, or pulls in a car and rips it open,
+      // then holds what it took (10 s, or 20 s for car parts) before it can steal again
+      t.pullAnim = Math.max(0, t.pullAnim - dt);
+      t.hold = Math.max(0, t.hold - dt);
+      if (t.hold <= 0) t.holding = null;
+      if (t.pulling && !(t.pulling.hp > 0 && state.enemies.includes(t.pulling))) t.pulling = null; // the car got destroyed on the way
+      if (t.holding || t.pulling) continue;
+      // the closest bit of metal in reach: its own lane and the lanes either side, up to 3 tiles ahead
+      const cx = c * CELL + CELL / 2;
+      let prey = null;
+      for (const e of state.enemies) {
+        if (!(e.hp > 0) || Math.abs(e.lane - r) > 1 || e.x < cx - CELL / 2) continue;
+        if (e.x - (e.kind === 'car' ? CAR.halfLen : 0) > cx + COBRA.reach * CELL) continue;
+        if ((e.kind === 'car' && !e.pulledBy) || e.canUp || e.knightUp) if (!prey || e.x < prey.x) prey = e;
+      }
+      if (!prey) continue;
+      if (prey.kind === 'car') { prey.pulledBy = { r, c, t }; t.pulling = prey; Sound.play('zap'); continue; }
+      const item = prey.canUp ? 'can' : 'helm';
+      if (item === 'can') prey.canUp = false; else prey.knightUp = false;
+      prey.hp = Math.min(prey.hp, prey.base); // its armour goes with it
+      state.puffs.push({ t: 0, life: 0.35, magnetItem: item, x: prey.x, y: prey.lane * CELL + (item === 'can' ? -10 : 14), tx: c * CELL + 50 + COBRA_TIP.x, ty: r * CELL + 60 + COBRA_TIP.y });
+      t.holding = item; t.hold = COBRA.hold; t.pullAnim = 0.35;
+      Sound.play('metal');
+      continue;
+    }
     if (t.type === 'hsquid') {
       t.make -= dt;
       t.glow = Math.max(0, 1 - t.make / 2.5);
@@ -593,6 +619,21 @@ function update(dt) {
       if (e.trickTimer <= 0) { e.tricks = !e.tricks; e.trickTimer = e.tricks ? NINJA.tricks : NINJA.walk; }
       if (e.tricks) { e.spinA += dt * 22; e.walking = false; continue; } // busy showing off: no walking, no biting
     }
+    if (e.pulledBy) {
+      // yanked along its lane toward a Magneticobra, which rips it open once it's right in front
+      const p = e.pulledBy, cobra = state.grid[p.r][p.c];
+      if (cobra !== p.t) e.pulledBy = null; // the cobra is gone: the car drives on
+      else {
+        e.walking = false;
+        const d = (p.c + 1) * CELL + CAR.halfLen - e.x;
+        e.x += Math.sign(d) * Math.min(Math.abs(d), COBRA.pullSpeed * dt);
+        if (Math.abs(d) < 2) {
+          e.hp = 0; e.ripped = true; e.pulledBy = null;
+          cobra.pulling = null; cobra.holding = 'car'; cobra.hold = COBRA.carHold; cobra.pullAnim = 0.35;
+        }
+        continue;
+      }
+    }
     const front = e.kind === 'car' ? CAR.halfLen : 30;
     const col = Math.floor((e.x - front) / CELL);
     const cell = col >= 0 && col < COLS ? state.grid[e.lane][col] : null;
@@ -656,9 +697,9 @@ function update(dt) {
       // blown up by a Temper-lotl or Chog-chog: a charred statue that crumbles to ash
       state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: e.kind === 'mutant' ? 170 : 105 });
     } else if (e.kind === 'car') {
-      // destroyed in one hit, the car blows apart on the spot; otherwise it breaks down first:
+      // destroyed in one hit or ripped open by a Magneticobra, the car blows apart on the spot; otherwise it breaks down first:
       // it sits there sputtering and smoking, then blows apart (see the puff loop below)
-      if (e.instakill) blowUpCar(e.x, e.lane * CELL + 92);
+      if (e.instakill || e.ripped) blowUpCar(e.x, e.lane * CELL + 92);
       else state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.kind === 'mutant') {
       // the Mutant's huge head pops off, then the body topples over with a thud
@@ -779,7 +820,7 @@ function update(dt) {
       Sound.play(p.big ? 'die' : p.crack ? 'whip' : p.splat ? 'squish' : p.sting ? 'sting' : p.zap ? 'zap' : p.pinch ? 'pinch'
         : p.chomp ? 'chomp' : p.dirt ? 'dig' : p.stomp ? 'thud' : p.canFall ? 'clank' : p.splinter ? 'woodBreak' : p.shards ? 'metal'
         : p.paper ? 'paper' : p.boom ? 'boom' : p.merge ? 'merge' : p.fortify ? 'upgrade' : p.fireHit ? 'fire' : p.crash ? 'crash'
-        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : p.carParts ? 'metal' : 'rockHit');
+        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : p.carParts ? 'metal' : p.magnetItem ? null : 'rockHit');
     }
     p.t += dt;
     if (p.carWreck && !p.blown && p.t >= p.life) {

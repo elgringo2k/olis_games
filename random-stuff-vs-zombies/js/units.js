@@ -48,7 +48,10 @@ const BATTERY = { cost: 125, hp: 300, shotCost: 50, dmg: 500, reload: 5, boltSpe
 // Loo Roll: bursts into 12 sheets as soon as it's planted; each sheet hits 2 zombies (250, then 125)
 const BOAT   = { cost: 25, hp: 300, recharge: 3 };
 const LOO    = { cost: 150, hp: 300, fuse: 0.35, sheets: 12, dmg: [250, 125], speed: 280, size: 1.6, maxPerZombie: 4 };
-const UNITS  = { boat: BOAT, loo: LOO, tesla: TESLA, battery: BATTERY, hsquid: HSQUID, multi: MULTI, mini: MINI, vamp: VAMP, ultima: ULTIMA, chog: CHOG, snapper: SNAPPER, digger: DIGGER, dragon: DRAGON, enraged: ENRAGED, angry: ANGRY, clean: CLEAN, hyper: HYPER_SEED, jic: JIC, lotl: LOTL, badger: BADGER, forti: FORTI, shark: SHARK, lobster: LOBSTER, laser: LASER, turtle: TURTLE, squid: SQUID, whip: WHIP, mau: MAU, bee: BEE, spray: SPRAY, shampoo: SHAMPOO };
+// Magneticobra: steals soup cans and knight helmets (holds one for 10 s), and pulls in cars and rips them open (holds the parts for 20 s)
+const COBRA  = { cost: 100, hp: 300, reach: 3, hold: 10, carHold: 20, pullSpeed: 420 };
+const COBRA_TIP = { x: 38, y: -36 }; // where the magnet's tips are, from the middle of its tile
+const UNITS  = { cobra: COBRA, boat: BOAT, loo: LOO, tesla: TESLA, battery: BATTERY, hsquid: HSQUID, multi: MULTI, mini: MINI, vamp: VAMP, ultima: ULTIMA, chog: CHOG, snapper: SNAPPER, digger: DIGGER, dragon: DRAGON, enraged: ENRAGED, angry: ANGRY, clean: CLEAN, hyper: HYPER_SEED, jic: JIC, lotl: LOTL, badger: BADGER, forti: FORTI, shark: SHARK, lobster: LOBSTER, laser: LASER, turtle: TURTLE, squid: SQUID, whip: WHIP, mau: MAU, bee: BEE, spray: SPRAY, shampoo: SHAMPOO };
 // lanes and x-range a spray at (r, c) covers
 function sprayArea(r, c) {
   return { r0: Math.max(0, r - 1), r1: Math.min(ROWS - 1, r + 1), x0: (c + 1) * CELL - 10, x1: (c + 1 + SPRAY.length) * CELL };
