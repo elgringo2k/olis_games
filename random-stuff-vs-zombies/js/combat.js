@@ -62,6 +62,19 @@ function doMerge(r, c) {
   state.puffs.push({ x: c * CELL + 50, y: r * CELL + 50, t: 0, merge: true, life: 0.9, palette: recipe.kind });
   return true;
 }
+// a car blowing up: a fireball, and the car bursts into pieces that bounce across the grass
+function blowUpCar(x, baseY) {
+  state.puffs.push({ x, y: baseY - 32, t: 0, boom: true, life: 0.7, scale: 0.8 });
+  const parts = [];
+  const add = (kind, w, h, ox, oy) => parts.push({ kind, w, h, x: x + ox, y: baseY + oy,
+    vx: ox * 3 + (Math.random() - 0.5) * 160, vy: -220 - Math.random() * 260, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 18 });
+  add('wheel', 11, 11, -46, -12); add('wheel', 11, 11, 46, -12);
+  for (const [w, h, ox, oy] of [[24, 12, -50, -30], [20, 14, -10, -60], [26, 10, 30, -28], [16, 12, 52, -34], [18, 16, 10, -40]]) add('panel', w, h, ox, oy);
+  for (let i = 0; i < 5; i++) add('glass', 6 + Math.random() * 5, 6, -24 + i * 14, -54);
+  add('bumper', 30, 5, -70, -18);
+  state.puffs.push({ t: 0, life: 1.8, carParts: parts, floor: baseY - 4 });
+  state.shake = 0.3;
+}
 function chogBlast(t, r, c) {
   const b = CHOG.blasts[t.stage];
   for (const e of state.enemies) {

@@ -157,6 +157,30 @@ function draw() {
       ctx.fillStyle = '#6f8d5c'; ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       ctx.restore(); continue;
     }
+    if (p.carParts) {
+      // the pieces of a blown-up car: wheels, red panels, glass and the bumper, fading out once they've landed
+      const fade = 1 - Math.max(0, (p.t - (p.life - 0.5)) / 0.5);
+      ctx.save(); ctx.globalAlpha = fade;
+      for (const k of p.carParts) {
+        ctx.save(); ctx.translate(k.x, k.y - k.h / 2); ctx.rotate(k.rot);
+        if (k.kind === 'wheel') {
+          ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(0, 0, k.w, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#9aa3a8'; ctx.beginPath(); ctx.arc(0, 0, k.w * 0.45, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#222'; ctx.fillRect(-1.5, -k.w * 0.45, 3, k.w * 0.9);
+        } else if (k.kind === 'panel') {
+          ctx.fillStyle = '#c0392b'; roundRect(ctx, -k.w / 2, -k.h / 2, k.w, k.h, 3); ctx.fill();
+          ctx.fillStyle = '#962d22'; ctx.fillRect(-k.w / 2, k.h / 2 - 3, k.w, 3);
+          ctx.fillStyle = 'rgba(40,30,25,.5)'; ctx.beginPath(); ctx.arc(k.w * 0.2, -k.h * 0.1, 2.5, 0, Math.PI * 2); ctx.fill();
+        } else if (k.kind === 'glass') {
+          ctx.fillStyle = 'rgba(191,227,242,.9)'; ctx.beginPath(); ctx.moveTo(-k.w / 2, k.h / 2); ctx.lineTo(0, -k.h / 2); ctx.lineTo(k.w / 2, k.h / 2); ctx.closePath(); ctx.fill();
+        } else {
+          ctx.fillStyle = '#9aa3a8'; roundRect(ctx, -k.w / 2, -k.h / 2, k.w, k.h, 2); ctx.fill();
+        }
+        ctx.restore();
+      }
+      ctx.restore();
+      continue;
+    }
     if (p.carWreck) {
       // a broken-down car: shudders harder and harder while smoke pours out of the bonnet
       if (p.blown) continue;
