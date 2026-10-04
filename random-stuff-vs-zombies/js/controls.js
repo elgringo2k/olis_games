@@ -111,6 +111,8 @@ function layoutHotbar() {
 }
 const pickerGrid = document.getElementById('pickerGrid');
 const pickButtons = [];
+// the board area grows to fit the picker while it's open, pushing the rest of the page down
+new ResizeObserver(() => { startOverlay.parentElement.style.minHeight = startOverlay.offsetHeight ? startOverlay.offsetHeight + 'px' : ''; }).observe(startOverlay);
 function buildPicker() {
   cards.forEach(cd => {
     const u = cd.dataset.unit;
