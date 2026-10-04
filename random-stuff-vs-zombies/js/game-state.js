@@ -127,10 +127,11 @@ function ownedUnits() {
   return own;
 }
 // the defenders you have: everything that joins you in a level you've unlocked, the Shop's defenders
-// you've bought, the Jicjajic once its Challenge is beaten (and its fusions with it), or all of them after Unlock all
+// you've bought, the Jicjajic once its Challenge is beaten, the fusions once you've made them, or all of them after Unlock all
 function hasDefender(u) {
   if (progress.unlockAll) return true;
-  if (u === 'jic' || (UNITS[u] && UNITS[u].seed)) return jicUnlocked();
+  if (UNITS[u] && UNITS[u].seed) return !!(progress.made && progress.made[u]); // a fusion: once you've made it
+  if (u === 'jic') return jicUnlocked();
   if (SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) return boughtInShop(u);
   return ownedUnits().has(u);
 }

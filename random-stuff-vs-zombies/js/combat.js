@@ -59,6 +59,9 @@ function doMerge(r, c) {
     state.puffs.push({ x: fc * CELL + 50, y: fr * CELL + 50, t: 0, fortify: true, life: 0.6 });
   }
   state.packets.push({ kind: recipe.kind, x: c * CELL + 50, y: r * CELL + 45, life: PACKET_LIFE, bob: Math.random() * 6 });
+  // remember you've made this fusion (in Sandbox too), so it shows up in the almanac
+  progress.made = progress.made || {};
+  if (!progress.made[recipe.kind]) { progress.made[recipe.kind] = true; saveProgress(); }
   state.puffs.push({ x: c * CELL + 50, y: r * CELL + 50, t: 0, merge: true, life: 0.9, palette: recipe.kind });
   return true;
 }
