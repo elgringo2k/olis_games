@@ -24,7 +24,7 @@ const ALMANAC_DEFENDERS = {
   enraged: { name: 'Enraged Turtle', dmg: 5, tough: 3, speed: 'Normal', range: 'Whole lane', special: 'Planted on an Angry Turtle. 4 rocks at a time.' },
   dragon:  { name: 'Rusty', dmg: 4, tough: 3, speed: 'Normal', range: '3 tiles ahead', special: 'Tap to switch gears. Asleep, he turns passing rocks into lava.' },
   digger:  { name: 'Digger', dmg: 4, tough: 3, speed: 'Very slow', range: 'Anywhere you aim', special: 'Tap, aim, and throw a boulder with 3×3 splash.' },
-  snapper: { name: 'Snapper', dmg: 5, tough: 3, speed: 'Very slow', range: '1 tile ahead', special: 'Swallows zombies whole, then chews for 10 s. Too small for the Mutant or a car: it bites those instead.' },
+  snapper: { name: 'Snapper', dmg: 5, tough: 3, speed: 'Very slow', range: '1 tile ahead', special: 'Swallows zombies whole, then chews for 10 s. Too small for the Mutant, a car or a Boat Zombie: it bites those instead.' },
   chog:    { name: 'Chog-chog', dmg: [2, 3, 4], tough: 3, speed: 'Once', range: '3×3 then 5×5', special: 'Explodes when eaten. Bigger the longer he waits.' },
   multi:   { name: 'Multurtle', dmg: 2, tough: 3, speed: 'Normal', range: '3 lanes', special: 'One rock in its lane and each lane next to it.' },
   boat:    { name: 'Boat', dmg: 0, tough: 3, speed: '—', range: '—', special: 'Pool only: goes on water so you can plant a defender in it.' },
@@ -34,7 +34,7 @@ const ALMANAC_DEFENDERS = {
   cobra:   { name: 'Magneticobra', dmg: 0, tough: 3, speed: 'Every 10 s (20 s after a car)', range: '3 lanes, 3 tiles ahead', special: 'Steals soup cans and knight helmets. Pulls in cars and rips them open.' },
   hyper:   { name: 'Hyper Turtle', dmg: 'deathly', tough: 4, speed: 'Normal', range: 'Whole lane', special: 'Fusion. 2 tiles. 300 up close, laser pierces the lane.' },
   clean:   { name: 'Squeaky Clean', dmg: 4, tough: 4, speed: 'Normal', range: '3 lanes × 2 tiles', special: 'Fusion. Leaves shampoo puddles.' },
-  ultima:  { name: 'Ultima Snapper', dmg: 5, tough: 4, speed: 'Very slow', range: '1 tile ahead', special: 'Fusion. 2 tiles. Gulps up to 5 zombies, even a Mutant or a car.' },
+  ultima:  { name: 'Ultima Snapper', dmg: 5, tough: 4, speed: 'Very slow', range: '1 tile ahead', special: 'Fusion. 2 tiles. Gulps up to 5 zombies, even a Mutant, a car or a Boat Zombie.' },
   tesla:   { name: 'Tesla Coil', dmg: 5, tough: 4, speed: 'Every 10 s', range: 'Closest zombie to your house', special: 'Fusion. 2 tiles. Tap and pay 100 energy: 1500 + 750 splash.' }
 };
 const ALMANAC_ZOMBIES = {

@@ -182,6 +182,16 @@ function draw() {
           ctx.fillStyle = '#c0392b'; roundRect(ctx, -k.w / 2, -k.h / 2, k.w, k.h, 3); ctx.fill();
           ctx.fillStyle = '#962d22'; ctx.fillRect(-k.w / 2, k.h / 2 - 3, k.w, 3);
           ctx.fillStyle = 'rgba(40,30,25,.5)'; ctx.beginPath(); ctx.arc(k.w * 0.2, -k.h * 0.1, 2.5, 0, Math.PI * 2); ctx.fill();
+        } else if (k.kind === 'hull') {
+          // a dented grey piece of a Boat Zombie's hull
+          ctx.fillStyle = '#7d8a96'; roundRect(ctx, -k.w / 2, -k.h / 2, k.w, k.h, 3); ctx.fill();
+          ctx.fillStyle = '#c0392b'; ctx.fillRect(-k.w / 2, k.h / 2 - 3, k.w, 3);
+          ctx.fillStyle = 'rgba(30,38,45,.45)'; ctx.beginPath(); ctx.ellipse(k.w * 0.15, -k.h * 0.1, 3, 2, 0, 0, Math.PI * 2); ctx.fill();
+        } else if (k.kind === 'motor') {
+          // the outboard motor, still with its propeller shaft
+          ctx.fillStyle = '#3b3f45'; roundRect(ctx, -k.w, -k.h, k.w * 2, k.h * 1.6, 3); ctx.fill();
+          ctx.fillStyle = '#e0a31a'; ctx.fillRect(-k.w + 2, -k.h + 3, k.w * 2 - 4, 3);
+          ctx.fillStyle = '#2a2d31'; ctx.fillRect(-2, k.h * 0.6, 4, 12);
         } else if (k.kind === 'glass') {
           ctx.fillStyle = 'rgba(191,227,242,.9)'; ctx.beginPath(); ctx.moveTo(-k.w / 2, k.h / 2); ctx.lineTo(0, -k.h / 2); ctx.lineTo(k.w / 2, k.h / 2); ctx.closePath(); ctx.fill();
         } else {

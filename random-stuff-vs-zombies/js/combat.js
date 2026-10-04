@@ -75,10 +75,12 @@ function blowUpCar(x, baseY) {
   state.puffs.push({ t: 0, life: 1.8, carParts: parts, floor: baseY - 4 });
   state.shake = 0.3;
 }
-// an Ultima Snapper that ate a car burps out a small blast and a few of its pieces
-function burpCarParts(mouthX, mouthY, floorY) {
+// an Ultima Snapper that ate a car (or a Boat Zombie) burps out a small blast and a few of its pieces
+function burpCarParts(mouthX, mouthY, floorY, boat = false) {
   state.puffs.push({ x: mouthX, y: mouthY, t: 0, boom: true, life: 0.6, scale: 0.4 });
-  const parts = [['wheel', 11, 11], ['panel', 20, 12], ['panel', 16, 12], ['glass', 9, 6], ['bumper', 30, 5]].map(([kind, w, h]) => ({ kind, w, h,
+  const kinds = boat ? [['motor', 8, 10], ['hull', 22, 12], ['hull', 18, 10], ['bumper', 30, 5]]
+    : [['wheel', 11, 11], ['panel', 20, 12], ['panel', 16, 12], ['glass', 9, 6], ['bumper', 30, 5]];
+  const parts = kinds.map(([kind, w, h]) => ({ kind, w, h,
     x: mouthX, y: mouthY, vx: 120 + Math.random() * 200, vy: -150 - Math.random() * 200, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 18 }));
   state.puffs.push({ t: 0, life: 1.8, carParts: parts, floor: floorY });
   state.shake = Math.max(state.shake || 0, 0.15);

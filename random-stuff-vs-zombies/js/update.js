@@ -302,7 +302,7 @@ function update(dt) {
         if (t.chew <= 0) {
           t.chew = 0; t.mode = 'burp'; t.burp = ULTIMA.burp; state.puffs.push({ x: c * CELL + 170, y: r * CELL + 20, t: 0, burp: true, life: 1.0 });
           // a car doesn't go down well: out comes a little blast and some of its pieces
-          if (t.ateCar) { t.ateCar = false; burpCarParts(c * CELL + 160, r * CELL + 40, r * CELL + 88); }
+          if (t.ateCar || t.ateBoat) { burpCarParts(c * CELL + 160, r * CELL + 40, r * CELL + 88, t.ateBoat); t.ateCar = t.ateBoat = false; }
         }
       } else if (t.mode === 'burp') {
         t.burp -= dt;
@@ -321,7 +321,7 @@ function update(dt) {
             if (mutant) gulp = [mutant];
             for (const e of gulp) { e.eaten = true; e.hp = 0; state.puffs.push({ x: e.x - 10, y: r * CELL + 50, t: 0, chomp: true }); }
             state.shake = 0.2;
-            t.prey = null; t.mode = 'chew'; t.chew = ULTIMA.chew; t.openK = 0; t.ate = gulp.length; t.ateCar = gulp.some(e => e.kind === 'car');
+            t.prey = null; t.mode = 'chew'; t.chew = ULTIMA.chew; t.openK = 0; t.ate = gulp.length; t.ateCar = gulp.some(e => e.kind === 'car'); t.ateBoat = gulp.some(e => e.kind === 'boatZ');
           }
         }
       } else {
@@ -351,7 +351,7 @@ function update(dt) {
       // -> chews for 10 s -> opens up to burp -> closes again
       const tx = c * CELL + CELL / 2, headX = c * CELL + 40 + 30;
       const eatTo = (c + 2) * CELL + 15, seeTo = (c + 2.25) * CELL + 15;
-      const tooBig = e => e.kind === 'mutant' || e.kind === 'car';
+      const tooBig = e => e.kind === 'mutant' || e.kind === 'car' || e.kind === 'boatZ';
       const ok = e => e && e.hp > 0 && e.lane === r && !tooBig(e) && e.x >= tx - 20 && state.enemies.includes(e);
       const nearest = (limit) => {
         let best = null;
@@ -379,8 +379,8 @@ function update(dt) {
           }
         }
       } else {
-        // too big to swallow, so a Mutant or a Car Zombie in reach gets bitten instead:
-        // 300 every 1.5 s for the Mutant, 200 every 2 s for the car
+        // too big to swallow, so a Mutant, a Car Zombie or a Boat Zombie in reach gets bitten instead:
+        // 300 every 1.5 s for the Mutant, 200 every 2 s for a car or a boat
         let mutant = null;
         for (const e of state.enemies) if (tooBig(e) && e.hp > 0 && e.lane === r && e.x >= tx - 20 && e.x <= eatTo + 30 && (!mutant || e.x < mutant.x)) mutant = e;
         t.mutantCool = Math.max(0, (t.mutantCool || 0) - dt);
@@ -389,7 +389,7 @@ function update(dt) {
         const prey = t.openK > 0.75 ? nearest(eatTo) : null;
         if (prey) { t.mode = 'lunge'; t.prey = prey; t.lungeT = 0; }
         else if (mutant && t.openK > 0.75 && t.mutantCool <= 0) {
-          const car = mutant.kind === 'car';
+          const car = mutant.kind === 'car' || mutant.kind === 'boatZ'; // cars and Boat Zombies get the same bite
           damage(mutant, car ? SNAPPER.carBite : SNAPPER.mutantBite);
           t.mutantCool = car ? SNAPPER.carEvery : SNAPPER.mutantEvery; t.biteAnim = 1;
           state.puffs.push({ x: mutant.x - 30, y: r * CELL + 50, t: 0, chomp: true });
