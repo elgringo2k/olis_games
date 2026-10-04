@@ -325,8 +325,8 @@ canvas#board {
 }
 .bar.picking .card { cursor: pointer; }
 .bar.picking .card:hover { border-color: #e0634a; }
-/* the picker grows to fit the whole list (rather than scrolling inside the board), so the page scrolls as one */
-.overlay.picker { justify-content: flex-start; padding: 16px; gap: 12px; right: 34%; bottom: auto; min-height: 100%; border-radius: 6px 0 0 18px; }
+/* the defender list scrolls on its own; when it reaches the end it stays put rather than handing the scroll to the page */
+.overlay.picker { justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; padding: 16px; gap: 12px; right: 34%; border-radius: 6px 0 0 18px; }
 .overlay.picker .picker-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .zombie-preview-label {
   position: absolute; top: 10px; right: 0; width: 34%; text-align: center; pointer-events: none; display: none;
