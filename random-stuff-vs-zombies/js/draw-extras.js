@@ -190,22 +190,25 @@ function snapshotHead(e) {
 }
 
 // ---------- Winning ----------
-// the reward seed packet: the new defender's picture on the front (or a gold star if there isn't one),
-// with light rays turning behind it
-function drawRewardPacket(g, x, y, s, unit, time = 0, rays = 0) {
+// light rays turning behind a reward (a seed packet or a bag of coins)
+function drawRewardRays(g, x, y, s, time = 0, rays = 1) {
   g.save(); g.translate(x, y); g.scale(s, s);
-  if (rays > 0) {
-    g.save(); g.rotate(time * 0.6);
-    for (let i = 0; i < 12; i++) {
-      g.rotate(Math.PI / 6);
-      g.fillStyle = `rgba(255,245,190,${0.35 * rays})`;
-      g.beginPath(); g.moveTo(0, 0); g.lineTo(-7, -70); g.lineTo(7, -70); g.closePath(); g.fill();
-    }
-    g.restore();
-    const gr = g.createRadialGradient(0, 0, 6, 0, 0, 52);
-    gr.addColorStop(0, `rgba(255,250,210,${0.8 * rays})`); gr.addColorStop(1, 'rgba(255,250,210,0)');
-    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 52, 0, Math.PI * 2); g.fill();
+  g.save(); g.rotate(time * 0.6);
+  for (let i = 0; i < 12; i++) {
+    g.rotate(Math.PI / 6);
+    g.fillStyle = `rgba(255,245,190,${0.35 * rays})`;
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(-7, -70); g.lineTo(7, -70); g.closePath(); g.fill();
   }
+  g.restore();
+  const gr = g.createRadialGradient(0, 0, 6, 0, 0, 52);
+  gr.addColorStop(0, `rgba(255,250,210,${0.8 * rays})`); gr.addColorStop(1, 'rgba(255,250,210,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 52, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+// the reward seed packet: the new defender's picture on the front, with light rays turning behind it
+function drawRewardPacket(g, x, y, s, unit, time = 0, rays = 0) {
+  if (rays > 0) drawRewardRays(g, x, y, s, time, rays);
+  g.save(); g.translate(x, y); g.scale(s, s);
   // paper packet with a crimped top and a green stripe
   g.fillStyle = 'rgba(0,0,0,.18)'; roundRect(g, -20, -26, 44, 60, 5); g.fill();
   g.fillStyle = '#f7f1dc'; roundRect(g, -22, -30, 44, 60, 5); g.fill();
@@ -219,13 +222,6 @@ function drawRewardPacket(g, x, y, s, unit, time = 0, rays = 0) {
   g.fillStyle = '#dff0d0'; roundRect(g, -17, -21, 34, 36, 5); g.fill();
   const art = unit && document.querySelector(`.card[data-unit="${unit}"] canvas`);
   if (art) { try { g.drawImage(art, -17, -21, 34, 34); } catch (err) {} }
-  else {
-    // a gold star
-    g.fillStyle = '#f2c230'; g.strokeStyle = '#b8860b'; g.lineWidth = 1.5;
-    g.beginPath();
-    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 6 : 14; g.lineTo(Math.cos(a) * r, -3 + Math.sin(a) * r); }
-    g.closePath(); g.fill(); g.stroke();
-  }
   g.restore();
 }
 // a fat sack of coins, tied at the top, with coins spilling out in front
