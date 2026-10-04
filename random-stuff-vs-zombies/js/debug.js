@@ -58,8 +58,11 @@ wbSend.addEventListener('click', () => {
   state.banner = 2.4; state.bannerText = 'INCOMING!';
 });
 
+// the pool map is there once you've beaten a pool level (or after Unlock all)
+const poolUnlocked = () => !!progress.unlockAll || Object.keys(progress.beaten).some(k => LEVELS[k] && LEVELS[k].pool);
 // Sandbox only lets you fight the zombies you've beaten (and the pool zombies only on the pool map)
 function refreshSandboxZombies() {
+  document.getElementById('poolPreset').hidden = !poolUnlocked();
   const pool = !!LEVELS.sandbox.pool;
   debugBar.querySelectorAll('[data-spawn]').forEach(b => { b.hidden = !zombieBeaten(b.dataset.spawn) || (b.classList.contains('pool-only') && !pool); });
   [...wbGrid.children].forEach(row => {
