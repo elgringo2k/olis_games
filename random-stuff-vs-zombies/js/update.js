@@ -707,8 +707,8 @@ function update(dt) {
       if (e.instakill || e.ripped) blowUpCar(e.x, e.lane * CELL + 92);
       else state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.kind === 'boatZ') {
-      // the boat and its zombie sink under the water with a stream of bubbles
-      state.puffs.push({ t: 0, life: 1.4, sink: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
+      // the boat breaks down like a car (stalled, shuddering, smoke from the motor), then sinks (see the puff loop)
+      state.puffs.push({ t: 0, life: BOATZ.breakdown, carWreck: true, boat: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.kind === 'mutant') {
       // the Mutant's huge head pops off, then the body topples over with a thud
       state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
@@ -833,9 +833,10 @@ function update(dt) {
     }
     p.t += dt;
     if (p.carWreck && !p.blown && p.t >= p.life) {
-      // the broken-down car finally blows apart
+      // the broken-down car finally blows apart; a broken-down boat sinks
       p.blown = true;
-      blowUpCar(p.x, p.y);
+      if (p.boat) state.puffs.push({ t: 0, life: 1.4, sink: true, snap: p.snap, x: p.x, y: p.y });
+      else blowUpCar(p.x, p.y);
     }
     if (p.carParts) for (const k of p.carParts) {
       // pieces fly, fall and bounce to a stop on the grass

@@ -209,15 +209,16 @@ function draw() {
       continue;
     }
     if (p.carWreck) {
-      // a broken-down car: shudders harder and harder while smoke pours out of the bonnet
+      // a broken-down car (or boat): shudders harder and harder while smoke pours out of the bonnet (or the motor)
       if (p.blown) continue;
       const kk = p.t / p.life, shudder = 1 + kk * 3;
+      const smokeX = p.boat ? p.x + 46 : p.x - 58, smokeY = p.boat ? p.y - 50 : p.y - 42;
       ctx.drawImage(p.snap, p.x - SNAP_FOOT_X + Math.sin(p.t * 47) * shudder, p.y - SNAP_FOOT_Y + Math.abs(Math.sin(p.t * 31)) * -shudder);
       ctx.save();
       for (let i = 0; i < 10; i++) {
         const ph = (p.t * 0.9 + i / 10) % 1;
         if (p.t < i * 0.08) continue; // the smoke builds up at first
-        const sx = p.x - 58 + Math.sin(i * 2.3 + p.t * 2) * 6 + ph * 18, sy = p.y - 42 - ph * 70;
+        const sx = smokeX + Math.sin(i * 2.3 + p.t * 2) * 6 + ph * 18, sy = smokeY - ph * 70;
         const dark = 110 - kk * 70;
         ctx.fillStyle = `rgba(${dark | 0},${dark | 0},${dark | 0},${(0.35 + kk * 0.35) * (1 - ph)})`;
         ctx.beginPath(); ctx.arc(sx, sy, 7 + ph * 14 + kk * 4, 0, Math.PI * 2); ctx.fill();
@@ -225,7 +226,7 @@ function draw() {
       // sparks spitting out once it's about to go
       if (kk > 0.6 && Math.sin(p.t * 37) > 0.3) {
         ctx.fillStyle = '#ffd84a';
-        for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(p.x - 66 + ((p.t * 900 + i * 37) % 22), p.y - 36 - ((p.t * 700 + i * 23) % 14), 2, 0, Math.PI * 2); ctx.fill(); }
+        for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(smokeX - 8 + ((p.t * 900 + i * 37) % 22), smokeY + 6 - ((p.t * 700 + i * 23) % 14), 2, 0, Math.PI * 2); ctx.fill(); }
       }
       ctx.restore();
       continue;

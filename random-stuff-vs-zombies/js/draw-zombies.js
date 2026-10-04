@@ -181,6 +181,28 @@ function drawBoatZombie(e) {
   ctx.fillStyle = '#5d6a75'; ctx.fillRect(x - 46, top - 2, 88, 4);
   ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.moveTo(x - 40, water - 6); ctx.lineTo(x + 40, water - 6); ctx.lineTo(x + 40, water - 2); ctx.lineTo(x - 34, water - 2); ctx.closePath(); ctx.fill();
   ctx.fillStyle = '#4b5660'; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(x - 34 + i * 14, top + 8, 1.6, 0, Math.PI * 2); ctx.fill(); }
+  // damage in 3 stages like the car: shiny, then dented, then battered with the motor smoking
+  const hpK = e.hurtOverride != null ? 1 - e.hurtOverride : Math.max(0, e.hp / e.maxHp);
+  const stage = hpK > 2 / 3 ? 1 : hpK > 1 / 3 ? 2 : 3;
+  const dent = (dx, dy, rx, ry, rot = 0) => {
+    ctx.fillStyle = 'rgba(30,38,45,.45)'; ctx.beginPath(); ctx.ellipse(x + dx, top + dy, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(220,230,238,.5)'; ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.ellipse(x + dx, top + dy, rx, ry, rot, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+  };
+  if (stage === 1) { ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.fillRect(x - 40, top + 2, 36, 2); }
+  if (stage >= 2) { dent(-36, 8, 6, 4, 0.2); dent(-4, 10, 5, 3.5); dent(24, 7, 6, 4, -0.2); }
+  if (stage === 3) {
+    dent(-20, 11, 7, 4, -0.2); dent(10, 9, 5, 4, 0.3); dent(34, 11, 4, 3);
+    // a bent-in nose and a patch of rust
+    ctx.fillStyle = '#5d6a75'; ctx.beginPath(); ctx.moveTo(x - 52, top - 4); ctx.lineTo(x - 42, top + 2); ctx.lineTo(x - 46, top + 8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(150,80,35,.55)'; ctx.beginPath(); ctx.ellipse(x - 8, top + 13, 9, 3, 0, 0, Math.PI * 2); ctx.fill();
+    // the motor coughs out smoke
+    for (let i = 0; i < 3; i++) {
+      const ph = (state.time * 0.8 + i / 3) % 1;
+      ctx.fillStyle = `rgba(90,90,90,${0.45 * (1 - ph)})`;
+      ctx.beginPath(); ctx.arc(x + 46 + ph * 10, top - 14 - ph * 36, 5 + ph * 9, 0, Math.PI * 2); ctx.fill();
+    }
+  }
   // waterline splash
   ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.beginPath(); ctx.ellipse(x - 4, water + 1, 52, 5, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
