@@ -233,7 +233,14 @@ canvas#board {
     radial-gradient(1.5px 1.5px at 8% 82%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 58% 90%, #fff 50%, transparent 51%); }
 .sky-tint .sky-moon { position: absolute; top: 8%; right: 12%; width: 40px; height: 40px; border-radius: 50%; opacity: 0;
   background: #fff6d8; box-shadow: 0 0 26px rgba(255,246,216,.7); }
-#levelOverlay > *:not(.sky-tint) { position: relative; z-index: 1; }
+#levelOverlay > *:not(.sky-tint):not(.pool-bg) { position: relative; z-index: 1; }
+/* the pool: three lanes of water across the lawn, fading in as the Pool level scrolls into view */
+.pool-bg { position: absolute; left: 0; right: 0; top: 50%; height: min(360px, 60%); transform: translateY(-50%); opacity: 0; pointer-events: none;
+  border-block: 12px solid #d8dfe2; box-shadow: 0 -3px 0 #b9c4c9, 0 3px 0 #b9c4c9, inset 0 3px 0 #eef3f5, inset 0 -3px 0 #eef3f5;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23fff' stroke-opacity='.32' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M14 34q8-7 17 0t17 0'/%3E%3Cpath d='M64 84q8-7 17 0t17 0'/%3E%3C/g%3E%3C/svg%3E") var(--lawn-x, 0px) 0 / 120px 120px,
+    linear-gradient(rgba(20,80,140,.28), rgba(20,80,140,0) 12%, rgba(20,80,140,0) 88%, rgba(20,80,140,.18)),
+    repeating-conic-gradient(#4fb3e3 0 25%, #62c3ee 0 50%) var(--lawn-x, 0px) 0 / 120px 120px; }
 #levelOverlay > .menu-back { position: absolute; }
 .overlay .level-card[hidden] { display: none; }
 .overlay .level-card.pool-card { background: linear-gradient(135deg, #e3f6ff, #bfe7f7); border-color: #3a9cc9; }

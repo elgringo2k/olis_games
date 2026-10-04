@@ -96,6 +96,7 @@ function updateSky() {
   const nightK = p <= 2 ? Math.max(0, p - 1) : Math.max(0, 1 - (p - 2) * 1.2);
   tint.querySelector('.sky-stars').style.opacity = nightK.toFixed(2);
   tint.querySelector('.sky-moon').style.opacity = nightK.toFixed(2);
+  document.getElementById('poolBg').style.opacity = sPool.toFixed(2);
   // the title follows whichever part of the world you're looking at
   // the sky goes orange at sunset, but it's still the Grass world until night falls
   document.getElementById('levelsTitle').textContent = sPool >= 0.5 ? 'Pool' : s6 >= 0.5 ? 'Night' : 'Grass';
