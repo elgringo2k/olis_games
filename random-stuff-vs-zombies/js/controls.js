@@ -2,7 +2,7 @@
 function reset() {
   state = {
     energy: ((level && level.startEnergy) || (level && level.night ? 50 : 150)) + (level && !level.sandbox && !level.plan ? (level.night ? owned('energyNight') : Math.min(1, owned('energy'))) * 50 : 0), grid: Array.from({length: ROWS}, () => Array(COLS).fill(null)),
-    enemies: [], rocks: [], puffs: [], orbs: [], puddles: [], packets: [], boulders: [], bolts: [], sheets: [], coins: [], aiming: null, seeds: { hyper: 0, clean: 0, ultima: 0, tesla: 0 }, recharge: {}, selected: null, hover: null,
+    enemies: [], divers: [], rocks: [], puffs: [], orbs: [], puddles: [], packets: [], boulders: [], bolts: [], sheets: [], coins: [], aiming: null, seeds: { hyper: 0, clean: 0, ultima: 0, tesla: 0 }, recharge: {}, selected: null, hover: null,
     time: 0, energyTimer: 0, spawnTimer: 20, spawnEvery: 16, kills: 0, wave: 1, running: false, over: false
   };
   syncUI();

@@ -51,6 +51,7 @@ function draw() {
       ctx.fillStyle = '#6fd18a'; ctx.fillRect(c * CELL + 20, r * CELL + 2, bw * (Math.max(0, t.hp) / t.maxHp), 6);
     }
   }
+  state.divers.forEach(drawDiver); // Swimmer Zombies underwater: just ripples
   [...state.enemies].sort((a, b) => a.lane - b.lane).forEach(drawEnemy);
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
     const t = state.grid[r][c]; if (t && t.type === 'whip') drawLash(c, r, t);
@@ -188,6 +189,19 @@ function draw() {
         }
         ctx.restore();
       }
+      ctx.restore();
+      continue;
+    }
+    if (p.splash) {
+      // a Swimmer Zombie bursting up out of the water: a ring of droplets
+      const kk = p.t / p.life;
+      ctx.save(); ctx.fillStyle = `rgba(255,255,255,${0.9 * (1 - kk)})`;
+      for (let i = 0; i < 9; i++) {
+        const a = Math.PI + (i / 8) * Math.PI, d = 10 + kk * 34;
+        ctx.beginPath(); ctx.arc(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d * 0.9 + kk * kk * 30, 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.strokeStyle = `rgba(255,255,255,${0.7 * (1 - kk)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(p.x, p.y + 6, 14 + kk * 30, 4 + kk * 6, 0, 0, Math.PI * 2); ctx.stroke();
       ctx.restore();
       continue;
     }
@@ -484,7 +498,7 @@ function draw() {
     const others = kinds.filter(k => k !== 'mutant');
     let spots;
     if (level.pool) {
-      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube' || k === 'boatZ';
+      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube' || k === 'boatZ' || k === 'swimmer';
       const wet = others.filter(swims), dry = others.filter(k => !swims(k));
       const dryLanes = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l));
       spots = [

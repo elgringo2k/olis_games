@@ -612,6 +612,23 @@ function update(dt) {
   for (const pd of state.puddles) pd.life -= dt;
   state.puddles = state.puddles.filter(pd => pd.life > 0);
 
+  // Swimmer Zombies underwater: out of reach of every defender, until they reach one and surface to eat it
+  for (const e of state.divers) {
+    e.wob += dt * 5;
+    const col = Math.floor((e.x - 30) / CELL);
+    const cell = col >= 0 && col < COLS ? state.grid[e.lane][col] : null;
+    const blocker = cell && !(UNITS[cell.type] && UNITS[cell.type].underfoot) ? cell : null;
+    if (blocker && e.x - 30 - (col * CELL + CELL / 2) < 25) {
+      e.submerged = false; // up it comes, into the open where it can be hit
+      state.puffs.push({ x: e.x, y: e.lane * CELL + 70, t: 0, splash: true, life: 0.6 });
+    } else {
+      e.x -= ENEMY.speed * e.speedMul * dt;
+      if (e.x < -10 && !state.over) endGame();
+    }
+  }
+  for (const e of state.divers) if (!e.submerged) state.enemies.push(e);
+  state.divers = state.divers.filter(e => e.submerged);
+
   // Enemies
   for (const e of state.enemies) {
     const ecol = Math.floor(e.x / CELL);
@@ -689,10 +706,11 @@ function update(dt) {
     } else {
       if (e.kind === 'mutant') e.smashCool = null;
       e.x -= ENEMY.speed * e.speedMul * (e.slowed ? 1 - SHAMPOO.slow : 1) * dt; e.walking = true;
+      if (e.kind === 'swimmer') e.submerged = true; // nothing left to eat: back under the water
     }
     if (e.x < -10 && !state.over) endGame();
   }
-  if (state.spawningDone && !state.enemies.length && !state.over) { winLevel(); return; }
+  if (state.spawningDone && !state.enemies.length && !state.divers.length && !state.over) { winLevel(); return; }
   const before = state.enemies.length;
   state.enemies.forEach(e => {
     if (e.hp > 0) return;
@@ -723,6 +741,9 @@ function update(dt) {
   });
   state.enemies = state.enemies.filter(e => e.hp > 0);
   if (state.enemies.length !== before) { state.kills += before - state.enemies.length; syncUI(); }
+  // Swimmer Zombies that finished eating dive back under
+  for (const e of state.enemies) if (e.submerged) state.divers.push(e);
+  state.enemies = state.enemies.filter(e => !e.submerged);
 
   // Loo roll sheets in flight
   for (const sh of state.sheets) {
@@ -829,7 +850,7 @@ function update(dt) {
       Sound.play(p.big ? 'die' : p.crack ? 'whip' : p.splat ? 'squish' : p.sting ? 'sting' : p.zap ? 'zap' : p.pinch ? 'pinch'
         : p.chomp ? 'chomp' : p.dirt ? 'dig' : p.stomp ? 'thud' : p.canFall ? 'clank' : p.splinter ? 'woodBreak' : p.shards ? 'metal'
         : p.paper ? 'paper' : p.boom ? 'boom' : p.merge ? 'merge' : p.fortify ? 'upgrade' : p.fireHit ? 'fire' : p.crash ? 'crash'
-        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : p.carParts ? 'metal' : p.magnetItem ? null : p.sink ? 'squish' : 'rockHit');
+        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : p.carParts ? 'metal' : p.magnetItem ? null : p.sink ? 'squish' : p.splash ? 'squish' : 'rockHit');
     }
     p.t += dt;
     if (p.carWreck && !p.blown && p.t >= p.life) {

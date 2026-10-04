@@ -152,7 +152,7 @@ function drawMutantBody(e, baseY, step, chomp) {
 }
 
 function drawEnemy(e) {
-  if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube' || (e.kind === 'noodler' && e.swimming)) return drawSwimmer(e);
+  if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube' || e.kind === 'swimmer' || (e.kind === 'noodler' && e.swimming)) return drawSwimmer(e);
   if (e.kind === 'boatZ') return drawBoatZombie(e);
   drawEnemyBody(e);
 }
@@ -207,19 +207,44 @@ function drawBoatZombie(e) {
   ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.beginPath(); ctx.ellipse(x - 4, water + 1, 52, 5, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
+// a Swimmer Zombie underwater: a dark shape gliding under the surface, ripples spreading above it
+// and a trail of bubbles behind
+function drawDiver(e) {
+  const y = e.lane * CELL + 62, x = e.x;
+  ctx.save();
+  ctx.fillStyle = 'rgba(20,70,110,.28)'; ctx.beginPath(); ctx.ellipse(x + 6, y + 4, 30, 8, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i++) {
+    const ph = ((e.wob || 0) * 0.25 + i / 3) % 1;
+    ctx.globalAlpha = 0.9 * (1 - ph);
+    ctx.beginPath(); ctx.ellipse(x - 6, y, 10 + ph * 26, 3 + ph * 7, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  // a V of wake behind it
+  ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(x - 14, y); ctx.lineTo(x + 34, y - 9); ctx.moveTo(x - 14, y); ctx.lineTo(x + 34, y + 9); ctx.stroke();
+  ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(255,255,255,.8)';
+  for (let i = 0; i < 3; i++) { const ph = ((e.wob || 0) * 0.4 + i / 3) % 1; ctx.beginPath(); ctx.arc(x + 20 + i * 9, y - 2 - ph * 6, 1.6 + (i % 2), 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
 // a zombie bobbing along in a rubber ring: only the top half shows above the water
 function drawSwimmer(e) {
   const baseY = e.lane * CELL + 92, bob = Math.sin((e.wob || 0) * 1.3) * 2;
-  const noodler = e.kind === 'noodler';
+  const noodler = e.kind === 'noodler', diver = e.kind === 'swimmer';
   // a Pool Noodler keeps swinging his noodle while he swims; the others just float
-  const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : e.kind === 'soupTube' ? 'soup' : noodler ? 'noodler' : 'basic', noShadow: true, walking: noodler ? e.walking : false });
-  ctx.save(); ctx.translate(0, 18 + bob);
-  ctx.save(); ctx.beginPath(); ctx.rect(e.x - 90, baseY - 220, 180, 220 - 36); ctx.clip();
+  const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : e.kind === 'soupTube' ? 'soup' : noodler ? 'noodler' : diver ? 'swimmer' : 'basic', noShadow: true, walking: noodler ? e.walking : false });
+  // a Swimmer Zombie (up out of the water to eat) sits lower, with just its head and shoulders showing
+  ctx.save(); ctx.translate(0, (diver ? 30 : 18) + bob);
+  const cut = diver ? 56 : 36; // how far up the body the water comes
+  ctx.save(); ctx.beginPath(); ctx.rect(e.x - 90, baseY - 220, 180, 220 - cut); ctx.clip();
   drawEnemyBody(as);
   ctx.restore();
-  const ry = baseY - 38;
+  const ry = baseY - cut - 2;
   ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(e.x, ry + 6, 30, 7, 0, 0, Math.PI * 2); ctx.fill();
-  if (noodler) {
+  if (diver) {
+    // no float: just water churning around it
+    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2;
+    for (let i = 0; i < 2; i++) { const ph = ((e.wob || 0) * 0.3 + i / 2) % 1; ctx.globalAlpha = 1 - ph; ctx.beginPath(); ctx.ellipse(e.x, ry + 2, 20 + ph * 16, 5 + ph * 4, 0, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+  } else if (noodler) {
     // a second pool noodle, a blue one, bent round his waist as a float
     ctx.strokeStyle = '#2f8fe0'; ctx.lineWidth = 9;
     ctx.beginPath(); ctx.ellipse(e.x, ry, 21, 7, 0, 0, Math.PI * 2); ctx.stroke();
@@ -263,7 +288,7 @@ function drawEnemyBody(e) {
   ctx.strokeStyle = '#7f9c6c'; ctx.lineWidth = 7;
   if (run && e.walking) { ctx.beginPath(); ctx.moveTo(4, -58); ctx.lineTo(12 - step * 8, -44); ctx.lineTo(4 - step * 6, -36); ctx.stroke(); }
   else { ctx.beginPath(); ctx.moveTo(4, -58); ctx.lineTo(-26, -54 + chomp * 4); ctx.stroke(); }
-  const swim = e.kind === 'noodler';
+  const swim = e.kind === 'noodler' || e.kind === 'swimmer';
   // torso: torn shirt (swimmers get bare skin and striped trunks)
   ctx.fillStyle = swim ? '#8fae7a' : run ? '#d9a33a' : teacher ? '#8a5a9e' : ninja ? '#e8892a' : '#5b7085';
   ctx.beginPath(); ctx.moveTo(-14, -66); ctx.lineTo(14, -66); ctx.lineTo(13, -32);
@@ -406,7 +431,7 @@ function drawEnemyBody(e) {
       // just a stump left
       ctx.beginPath(); ctx.moveTo(-8, -60); ctx.lineTo(-15, -56); ctx.stroke();
       ctx.fillStyle = '#6f8d5c'; ctx.beginPath(); ctx.arc(-15, -56, 3.5, 0, Math.PI * 2); ctx.fill();
-    } else if (swim) {
+    } else if (e.kind === 'noodler') {
       // swinging the pool noodle overhead when bonking, held forward when walking
       const swing = e.walking ? 0.15 + step * 0.08 : -1.1 + Math.max(0, Math.sin(e.wob * 3)) * 1.4;
       ctx.beginPath(); ctx.moveTo(-8, -60); ctx.lineTo(-26, -56 - (e.walking ? 0 : 6)); ctx.stroke();

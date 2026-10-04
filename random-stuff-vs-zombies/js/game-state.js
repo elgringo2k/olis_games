@@ -54,13 +54,13 @@ const LEVELS = {
         waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube'] },
   // soup cans that end up in a water lane swim in a rubber ring here
   p2: { name: 'Level 12', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog'],
-        waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube'], finalAtLeast: { soup: 3 } },
+        waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'swimmer'], finalAtLeast: { soup: 3 }, joins: { swimmer: 4 } },
   // Pool Noodlers join from wave 5 (in the water lanes they swim in a noodle float); Lewis Lobster joins your defenders
   p3: { name: 'Level 13', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster'],
-        waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler'] },
+        waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler', 'swimmer'], joins: { swimmer: 3 } },
   // like Level 13, but Pool Noodlers come from wave 4, Boat Zombies roar in from wave 3, and Sammy swims in the pool
   p4: { name: 'Level 14', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster', 'shark'],
-        waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler', 'boatZ'], noodlersFrom: 4, joins: { boatZ: 3 } },
+        waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler', 'boatZ', 'swimmer'], noodlersFrom: 4, joins: { boatZ: 3, swimmer: 3 } },
   endless: { name: 'Endless', units: null, waves: Infinity },
   sandbox: { name: 'Sandbox', units: null, waves: Infinity, sandbox: true }
 };

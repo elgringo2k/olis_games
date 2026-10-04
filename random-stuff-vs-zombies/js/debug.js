@@ -13,9 +13,9 @@ function setDebug(on) {
 }
 // Sandbox: build your own wave by choosing how many of each zombie to send
 const WB_KINDS = [['basic', 'Zombie'], ['shield', 'Shield Bearer'], ['soup', 'Soup Can Head'], ['runner', 'Runnererer'], ['noodler', 'Pool Noodler'],
-  ['knight', 'Charging Knight'], ['teacher', 'Teacher'], ['mini', 'Mini Teacher'], ['ninja', 'Nunjaka'], ['car', 'Car Zombie'], ['mutant', 'Mutant'], ['boatZ', 'Boat Zombie']];
+  ['knight', 'Charging Knight'], ['teacher', 'Teacher'], ['mini', 'Mini Teacher'], ['ninja', 'Nunjaka'], ['car', 'Car Zombie'], ['mutant', 'Mutant'], ['boatZ', 'Boat Zombie'], ['swimmer', 'Swimmer Zombie']];
 // only on the pool map (in the water lanes, the other zombies turn into their swimming versions by themselves)
-const WB_POOL_ONLY = ['boatZ'];
+const WB_POOL_ONLY = ['boatZ', 'swimmer'];
 const wbCounts = {};
 const wbGrid = document.getElementById('wbGrid'), wbTotal = document.getElementById('wbTotal'), wbSend = document.getElementById('wbSend');
 const wbPanel = document.getElementById('waveBuilder'), wbOpen = document.getElementById('openWaveBuilder');
@@ -68,7 +68,7 @@ function setSandboxMap(pool) {
   if (level !== LEVELS.sandbox) return;
   // the lanes change, so start from an empty board, and bring the Boat along only in the pool
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) state.grid[r][c] = null;
-  state.enemies = []; state.puddles = []; state.customQueue = [];
+  state.enemies = []; state.divers = []; state.puddles = []; state.customQueue = [];
   loadout.clear();
   cards.forEach(cd => { if (unitAllowed(cd.dataset.unit)) loadout.add(cd.dataset.unit); });
   syncUI();
