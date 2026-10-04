@@ -21,7 +21,7 @@ document.querySelectorAll('.level-card[data-level]').forEach(b => b.addEventList
   setDebug(false);
   reset();
   loadout.clear();
-  menuScreens.forEach(o => o.classList.remove('show'));
+  [...menuScreens, winOverlay, rewardOverlay, endOverlay].forEach(o => o.classList.remove('show'));
   if (level.sandbox) {
     // every defender at once, straight into the game with the sandbox tools on
     cards.forEach(cd => { if (unitAllowed(cd.dataset.unit)) loadout.add(cd.dataset.unit); });
@@ -118,9 +118,13 @@ function scrollToLevel(k) {
 }
 window.addEventListener('resize', refreshArrows);
 setTimeout(refreshArrows, 0);
-document.getElementById('winAgainBtn').onclick = () => {
-  reset(); if (debug) { savedEnergy = state.energy; state.energy = 999999; syncUI(); }
-  winOverlay.classList.remove('show'); state.running = true; syncUI();
+// after a win: Next on the new-defender screen goes on to the win screen, which leads to the levels,
+// the main menu, or straight into the next level
+document.getElementById('rewardNextBtn').onclick = () => winLevel();
+document.getElementById('winMenuBtn').onclick = () => showScreen(menuOverlay);
+document.getElementById('winNextBtn').onclick = e => {
+  const card = document.querySelector(`.level-card[data-level="${e.currentTarget.dataset.level}"]`);
+  if (card) card.click(); else showLevels();
 };
 document.getElementById('startBtn').onclick = () => {
   if (!loadout.size) return;

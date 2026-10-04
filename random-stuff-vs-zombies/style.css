@@ -363,3 +363,21 @@ canvas#board {
 .pick:disabled { cursor: not-allowed; opacity: .45; }
 .pick:focus-visible { outline: 3px solid var(--energy); outline-offset: 2px; }
 .hint { color: var(--ink-soft); font-size: .9rem; font-weight: 600; margin: 10px 4px 0; }
+/* winning a level: the white light that pours out of the reward packet and fills the screen */
+.win-flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .8s ease-in; z-index: 50; }
+.win-flash.on { opacity: 1; }
+/* the new-defender screen: the packet, big, with what it does */
+.overlay.reward-screen { background: radial-gradient(circle at 50% 40%, #fffbe6, #f3e7b8 60%, #d9c27a); overflow-y: auto; justify-content: safe center; }
+.reward-screen h2 { color: #5a3d00; text-shadow: 0 2px 0 rgba(255,255,255,.8); }
+.reward-list { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+.reward-item { max-width: 240px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.reward-item h3 { margin: 0; font-family: "Lilita One", "Arial Black", sans-serif; font-size: 1.5rem; color: #2f5a2a; }
+.overlay .reward-item p { color: #4a3a10; font-weight: 700; }
+.reward-packet { width: 140px; height: auto; }
+/* the win screen: sunshine rays, a bag of coins, and the way on */
+.overlay.win-screen { background: repeating-conic-gradient(from 0deg at 50% 40%, #ffd84a 0 10deg, #ffe98a 10deg 20deg); overflow-y: auto; justify-content: safe center; }
+.win-screen h2 { color: #fff; font-size: clamp(2.6rem, 9vw, 4.6rem); text-shadow: 0 4px 0 #c47f00, 0 0 24px rgba(255,255,255,.7); }
+.overlay.win-screen p { color: #5a3d00; font-size: 1.1rem; background: rgba(255,255,255,.8); padding: 8px 16px; border-radius: 12px; max-width: none; }
+#coinBag { width: 190px; height: auto; }
+.overlay.win-screen button.secondary { color: #5a3d00; box-shadow: inset 0 0 0 3px #5a3d00; background: rgba(255,255,255,.55); }
+#winNextBtn[hidden] { display: none; }

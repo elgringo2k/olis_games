@@ -550,5 +550,27 @@ function draw() {
       wob: state.time * 5, shieldUp: dz.kind === 'shield' || dz.kind === 'shieldTube', canUp: dz.kind === 'soup' || dz.kind === 'soupTube', knightUp: dz.kind === 'knight', testUp: dz.kind === 'teacher' || dz.kind === 'mini' });
     ctx.restore();
   }
+  // the reward packet: pops out where the last zombie fell and bobs, glowing; once tapped it grows into the middle
+  const rw = state.reward;
+  if (rw) {
+    let x = rw.x, y = rw.y + Math.sin(state.time * 3) * 4, s = 1.2;
+    if (rw.stage === 'drop') {
+      const pop = Math.min(1, rw.t / 0.35);
+      s = 1.2 * (0.3 + 0.7 * pop); y -= Math.sin(pop * Math.PI) * 30;
+    } else {
+      const k = rw.stage === 'grow' ? Math.min(1, rw.t / 0.9) : 1, ease = 1 - (1 - k) * (1 - k);
+      x = rw.fromX + (board.width / 2 - rw.fromX) * ease; y = rw.fromY + (board.height / 2 - rw.fromY) * ease;
+      s = 1.2 + 2.4 * ease;
+    }
+    const units = rw.units.length ? rw.units.slice(0, 3) : [null];
+    for (let i = units.length - 1; i >= 0; i--) drawRewardPacket(ctx, x + i * 14 * s, y - i * 8 * s, s, units[i], state.time, i === 0 ? 1 : 0);
+    if (rw.stage === 'drop' && rw.t > 0.6) {
+      ctx.save(); ctx.globalAlpha = 0.6 + 0.4 * Math.sin(state.time * 5);
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(30,50,25,.8)'; ctx.lineWidth = 4;
+      ctx.font = 'bold 18px Nunito, sans-serif'; ctx.textAlign = 'center';
+      ctx.strokeText('Tap me!', x, y + 62); ctx.fillText('Tap me!', x, y + 62);
+      ctx.restore();
+    }
+  }
   ctx.restore();
 }

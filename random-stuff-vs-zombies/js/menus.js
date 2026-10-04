@@ -1,6 +1,7 @@
 // Switching between the menu screens
 const levelOverlay = document.getElementById('levelOverlay');
 const winOverlay = document.getElementById('winOverlay');
+const rewardOverlay = document.getElementById('rewardOverlay');
 const menuOverlay = document.getElementById('menuOverlay');
 const bonusOverlay = document.getElementById('bonusOverlay');
 const nightOverlay = document.getElementById('nightOverlay');
@@ -9,7 +10,8 @@ function showScreen(which) {
   setDebug(false);
   reset();
   loadout.clear(); picking = true;
-  [endOverlay, winOverlay, startOverlay, ...menuScreens].forEach(o => o.classList.remove('show'));
+  [endOverlay, winOverlay, rewardOverlay, startOverlay, ...menuScreens].forEach(o => o.classList.remove('show'));
+  document.getElementById('winFlash').classList.remove('on');
   which.classList.add('show');
   Sound.setMood('menu');
   syncUI();

@@ -188,3 +188,67 @@ function snapshotHead(e) {
   }
   return full;
 }
+
+// ---------- Winning ----------
+// the reward seed packet: the new defender's picture on the front (or a gold star if there isn't one),
+// with light rays turning behind it
+function drawRewardPacket(g, x, y, s, unit, time = 0, rays = 0) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  if (rays > 0) {
+    g.save(); g.rotate(time * 0.6);
+    for (let i = 0; i < 12; i++) {
+      g.rotate(Math.PI / 6);
+      g.fillStyle = `rgba(255,245,190,${0.35 * rays})`;
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(-7, -70); g.lineTo(7, -70); g.closePath(); g.fill();
+    }
+    g.restore();
+    const gr = g.createRadialGradient(0, 0, 6, 0, 0, 52);
+    gr.addColorStop(0, `rgba(255,250,210,${0.8 * rays})`); gr.addColorStop(1, 'rgba(255,250,210,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 52, 0, Math.PI * 2); g.fill();
+  }
+  // paper packet with a crimped top and a green stripe
+  g.fillStyle = 'rgba(0,0,0,.18)'; roundRect(g, -20, -26, 44, 60, 5); g.fill();
+  g.fillStyle = '#f7f1dc'; roundRect(g, -22, -30, 44, 60, 5); g.fill();
+  g.strokeStyle = '#c9bf94'; g.lineWidth = 2; g.stroke();
+  g.fillStyle = '#e6dcb8';
+  g.beginPath(); g.moveTo(-22, -24);
+  for (let i = 0; i <= 8; i++) g.lineTo(-22 + i * 5.5, i % 2 ? -30 : -26);
+  g.lineTo(22, -24); g.closePath(); g.fill();
+  g.fillStyle = '#4caf50'; g.fillRect(-22, 18, 44, 8);
+  // the picture window
+  g.fillStyle = '#dff0d0'; roundRect(g, -17, -21, 34, 36, 5); g.fill();
+  const art = unit && document.querySelector(`.card[data-unit="${unit}"] canvas`);
+  if (art) { try { g.drawImage(art, -17, -21, 34, 34); } catch (err) {} }
+  else {
+    // a gold star
+    g.fillStyle = '#f2c230'; g.strokeStyle = '#b8860b'; g.lineWidth = 1.5;
+    g.beginPath();
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 6 : 14; g.lineTo(Math.cos(a) * r, -3 + Math.sin(a) * r); }
+    g.closePath(); g.fill(); g.stroke();
+  }
+  g.restore();
+}
+// a fat sack of coins, tied at the top, with coins spilling out in front
+function drawCoinBag(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(0, 40, 48, 8, 0, 0, Math.PI * 2); g.fill();
+  // the sack
+  g.fillStyle = '#b5834a';
+  g.beginPath(); g.moveTo(-14, -26); g.quadraticCurveTo(-46, -6, -42, 18); g.quadraticCurveTo(-38, 42, 0, 42);
+  g.quadraticCurveTo(38, 42, 42, 18); g.quadraticCurveTo(46, -6, 14, -26); g.closePath(); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.15)'; g.beginPath(); g.ellipse(-18, 6, 8, 18, -0.3, 0, Math.PI * 2); g.fill();
+  // the gathered neck and the rope
+  g.fillStyle = '#9c6c37';
+  g.beginPath(); g.moveTo(-14, -26); g.lineTo(-20, -40); g.lineTo(-6, -34); g.lineTo(0, -42); g.lineTo(6, -34); g.lineTo(20, -40); g.lineTo(14, -26); g.closePath(); g.fill();
+  g.strokeStyle = '#6b4220'; g.lineWidth = 4; g.beginPath(); g.moveTo(-15, -26); g.lineTo(15, -26); g.stroke();
+  // a big coin symbol on the front
+  g.fillStyle = '#f2c230'; g.beginPath(); g.arc(0, 10, 15, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#b8860b'; g.lineWidth = 2; g.stroke();
+  g.fillStyle = '#8a6200'; g.font = '900 18px Nunito, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('C', 0, 11);
+  // coins spilling out
+  for (const [cx, cy] of [[-46, 36], [-34, 40], [40, 37], [50, 33], [30, 41]]) {
+    g.fillStyle = '#f2c230'; g.beginPath(); g.ellipse(cx, cy, 9, 4.5, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#b8860b'; g.lineWidth = 1.2; g.stroke();
+  }
+  g.restore();
+}

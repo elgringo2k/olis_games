@@ -712,11 +712,18 @@ function update(dt) {
     }
     if (e.x < -10 && !state.over) endGame();
   }
-  if (state.spawningDone && !state.enemies.length && !state.divers.length && !state.over) { winLevel(); return; }
+  if (state.spawningDone && !state.enemies.length && !state.divers.length && !state.over && !state.reward) {
+    // the last zombie is down: wait for its death animation to finish, then 2 more seconds, then the reward packet drops
+    const dying = state.puffs.some(p => p.topple || p.headPop || p.ash || p.sink || p.carWreck || p.carParts || p.boom);
+    state.winWait = dying ? 2 : (state.winWait ?? 2) - dt;
+    if (state.winWait <= 0) dropReward();
+  }
+  if (state.reward) updateReward(dt);
   const before = state.enemies.length;
   state.enemies.forEach(e => {
     if (e.hp > 0) return;
     maybeDropCoin(e);
+    state.lastDeath = { x: e.x, lane: e.lane }; // where the reward packet drops if this is the last one
     if (e.eaten) return; // swallowed by a Snapper: nothing left to show
     if (e.ashed) {
       // blown up by a Temper-lotl or Chog-chog: a charred statue that crumbles to ash
@@ -895,17 +902,80 @@ function update(dt) {
   state.puffs = state.puffs.filter(p => p.t < (p.life || 0.45));
 }
 
+// ---------- Winning a level ----------
+const WIN_COINS = 250;
+const levelKey = L => Object.keys(LEVELS).find(k => LEVELS[k] === L);
+// the level a beaten level unlocks (the card that needs it), if there is one
+function nextLevelKey(key) {
+  const card = document.querySelector(`.level-card[data-needs="${key}"]`);
+  return card ? card.dataset.level : null;
+}
+// the new defenders you get for winning: the ones the next level brings that this one didn't
+// (the Jicjajic Challenge gives you the Jicjajic)
+function rewardUnits(key) {
+  if (level.rounds) return ['jic'];
+  const next = nextLevelKey(key), L = next && LEVELS[next];
+  if (!L || !Array.isArray(L.units)) return [];
+  const had = Array.isArray(level.units) ? level.units : [];
+  return L.units.filter(u => !had.includes(u));
+}
+// the reward packet drops where the last zombie fell; the level counts as beaten from here
+function dropReward() {
+  const key = levelKey(level);
+  if (key) { progress.beaten[key] = true; saveProgress(); refreshLevelCards(); }
+  const at = state.lastDeath || { x: board.width / 2, lane: 2 };
+  state.reward = { key, units: key ? rewardUnits(key) : [], x: Math.max(70, Math.min(board.width - 70, at.x)), y: at.lane * CELL + 50, t: 0, stage: 'drop' };
+  Sound.play('win');
+}
+// tap the packet: it grows into the middle of the lawn, white light pours out and fills the screen,
+// then the new defender is shown
+function openReward() {
+  const rw = state.reward;
+  if (!rw || rw.stage !== 'drop') return;
+  rw.stage = 'grow'; rw.t = 0; rw.fromX = rw.x; rw.fromY = rw.y;
+  Sound.play('upgrade');
+}
+function updateReward(dt) {
+  const rw = state.reward;
+  rw.t += dt;
+  if (rw.stage === 'grow' && rw.t >= 0.9) {
+    rw.stage = 'flash'; rw.t = 0;
+    document.getElementById('winFlash').classList.add('on');
+  } else if (rw.stage === 'flash' && rw.t >= 0.9) {
+    rw.stage = 'shown';
+    state.running = false;
+    if (rw.units.length) showRewardScreen(rw.units); else winLevel();
+    document.getElementById('winFlash').classList.remove('on');
+  }
+}
+function showRewardScreen(units) {
+  const box = document.getElementById('rewardList'); box.innerHTML = '';
+  for (const u of units) {
+    const item = document.createElement('div'); item.className = 'reward-item';
+    const cv = document.createElement('canvas'); cv.width = 180; cv.height = 220; cv.className = 'reward-packet';
+    const g = cv.getContext('2d');
+    if (g) try { drawRewardPacket(g, 90, 112, 2.6, u, 0); } catch (err) {}
+    const name = ALMANAC_DEFENDERS[u] ? ALMANAC_DEFENDERS[u].name : u;
+    const h = document.createElement('h3'); h.textContent = name;
+    const p = document.createElement('p'); p.textContent = DESCRIPTIONS[u] || (ALMANAC_DEFENDERS[u] && ALMANAC_DEFENDERS[u].special) || '';
+    item.append(cv, h, p); box.appendChild(item);
+  }
+  document.getElementById('rewardTitle').textContent = units.length > 1 ? 'You got new defenders!' : 'You got a new defender!';
+  rewardOverlay.classList.add('show');
+}
+// the win screen: 250 coins and the way on
 function winLevel() {
   state.over = true; state.running = false;
+  rewardOverlay.classList.remove('show');
+  progress.coins = (progress.coins || 0) + WIN_COINS; saveProgress(); syncCoins();
   Sound.play('win');
-  const key = Object.keys(LEVELS).find(k => LEVELS[k] === level);
-  if (key) { progress.beaten[key] = true; saveProgress(); refreshLevelCards(); }
-  document.getElementById('winTitle').textContent = `${level.name} complete!`;
-  document.getElementById('winText').textContent = level.rounds
-    ? `You survived all ${level.rounds.length} hordes and knocked out ${state.kills} zombies! The Jicjajic is now unlocked in Endless and Sandbox.`
-    : `You held off all ${level.waves} waves and the final wave, knocking out ${state.kills} zombies.`;
-  const nextBtn = document.querySelector('#winOverlay .to-levels');
-  if (nextBtn) nextBtn.textContent = key === '5' ? 'On to Level 6 🌙' : 'Levels';
+  const key = levelKey(level), next = key && nextLevelKey(key);
+  document.getElementById('winTitle').textContent = 'You win!!!';
+  document.getElementById('winText').textContent = `You beat ${level.name}! Here's ${WIN_COINS} coins for winning.`;
+  const nextBtn = document.getElementById('winNextBtn');
+  nextBtn.hidden = !next; nextBtn.dataset.level = next || '';
+  const bag = document.getElementById('coinBag'), g = bag.getContext('2d');
+  if (g) try { g.clearRect(0, 0, bag.width, bag.height); drawCoinBag(g, bag.width / 2, bag.height / 2 + 8, 1.6); } catch (err) {}
   winOverlay.classList.add('show');
 }
 function endGame() {

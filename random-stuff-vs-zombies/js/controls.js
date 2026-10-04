@@ -157,6 +157,9 @@ board.addEventListener('pointerdown', e => {
   if (!state.running) return;
   // collecting an orb always comes first
   const p = pointFromEvent(e);
+  // the reward packet at the end of a level
+  const rw = state.reward;
+  if (rw && rw.stage === 'drop' && Math.abs(p.x - rw.x) < 50 && Math.abs(p.y - rw.y) < 60) { openReward(); return; }
   const pk = state.packets.find(k => Math.hypot(k.x - p.x, k.y - p.y) < 44);
   if (pk) {
     state.packets.splice(state.packets.indexOf(pk), 1);
