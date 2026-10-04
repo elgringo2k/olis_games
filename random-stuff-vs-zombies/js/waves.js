@@ -99,7 +99,8 @@ function spawnZombie(kind, lane, x = board.width + 30) {
     const waterOnly = kind === 'boatZ' || kind === 'swimmer' || kind === 'aquaMutant';
     if (waterOnly && !WATER_LANES.includes(lane)) lane = WATER_LANES[Math.floor(Math.random() * WATER_LANES.length)];
     const wet = WATER_LANES.includes(lane);
-    if (wet && SWIMMERS[kind]) kind = SWIMMERS[kind];
+    // (in Sandbox a zombie only turns into a swimmer you've beaten; otherwise it goes to the grass)
+    if (wet && SWIMMERS[kind] && !(level.sandbox && !zombieBeaten(SWIMMERS[kind]))) kind = SWIMMERS[kind];
     else if (wet && !swimmer && !waterOnly && kind !== 'noodler') { const dry = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l)); lane = dry[Math.floor(Math.random() * dry.length)]; }
     else if (!wet && swimmer) kind = Object.keys(SWIMMERS).find(k => SWIMMERS[k] === kind);
   }

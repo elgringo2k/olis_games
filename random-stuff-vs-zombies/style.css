@@ -144,7 +144,7 @@ canvas#board {
 .reset-world:focus-visible, .debug-toggle:focus-visible { outline: 3px solid var(--energy); outline-offset: 3px; }
 .debug-bar .wave-btn { background: #ff4d5e; color: #fff; }
 .debug-bar .preset-btn[aria-pressed="true"] { background: #3a9cc9; color: #fff; }
-.debug-bar .pool-only[hidden] { display: none; }
+.debug-bar [data-spawn][hidden] { display: none; }
 .wave-builder {
   margin-top: 6px; padding: 10px 12px; border-radius: 8px; border: 2px solid #ff4d5e;
   background: var(--panel); color: var(--ink); font-weight: 700;

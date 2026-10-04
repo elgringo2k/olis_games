@@ -4,7 +4,7 @@ function setDebug(on) {
   on = !!on;
   if (on === debug) return;
   debug = on;
-  if (on) { savedEnergy = state.energy; state.energy = 999999; state.recharge = {}; }
+  if (on) { savedEnergy = state.energy; state.energy = 999999; state.recharge = {}; refreshSandboxZombies(); }
   else state.energy = savedEnergy;
   debugBar.classList.toggle('show', on);
   if (!on && LEVELS.sandbox.pool) setSandboxMap(false); // leaving Sandbox goes back to the lawn
@@ -58,13 +58,21 @@ wbSend.addEventListener('click', () => {
   state.banner = 2.4; state.bannerText = 'INCOMING!';
 });
 
+// Sandbox only lets you fight the zombies you've beaten (and the pool zombies only on the pool map)
+function refreshSandboxZombies() {
+  const pool = !!LEVELS.sandbox.pool;
+  debugBar.querySelectorAll('[data-spawn]').forEach(b => { b.hidden = !zombieBeaten(b.dataset.spawn) || (b.classList.contains('pool-only') && !pool); });
+  [...wbGrid.children].forEach(row => {
+    const k = row.dataset.kind, show = zombieBeaten(k) && (!WB_POOL_ONLY.includes(k) || pool);
+    row.hidden = !show; if (!show) row._set(0);
+  });
+}
 // Sandbox map: the normal lawn, or the pool (three water lanes, boats, and the pool zombies)
 const poolPresetBtn = document.getElementById('poolPreset');
 function setSandboxMap(pool) {
   LEVELS.sandbox.pool = pool;
   poolPresetBtn.setAttribute('aria-pressed', pool ? 'true' : 'false');
-  debugBar.querySelectorAll('.pool-only').forEach(b => { b.hidden = !pool; });
-  [...wbGrid.children].forEach(row => { if (WB_POOL_ONLY.includes(row.dataset.kind)) { row.hidden = !pool; if (!pool) row._set(0); } });
+  refreshSandboxZombies();
   if (level !== LEVELS.sandbox) return;
   // the lanes change, so start from an empty board, and bring the Boat along only in the pool
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) state.grid[r][c] = null;
