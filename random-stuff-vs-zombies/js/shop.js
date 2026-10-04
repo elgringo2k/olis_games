@@ -7,7 +7,8 @@ const SHOP = [
   { id: 'shovel', name: 'Golden Shovel', desc: 'Digging up a defender gives you back half its cost.', costs: [1000] },
   { id: 'enraged', name: 'Enraged Turtle', desc: 'Seed packet: unlocks the Enraged Turtle in every level that has the Angry Turtle.', costs: [2500], seed: 'enraged' },
   { id: 'hsquid', name: 'Hypersquid', desc: 'Seed packet: unlocks the Hypersquid in every level that has the Sun Squid.', costs: [3000], seed: 'hsquid' },
-  { id: 'forti', name: 'Forti Mau', desc: 'Seed packet: unlocks the Forti Mau in every level that has the Mau Mau.', costs: [3000], seed: 'forti' }
+  { id: 'forti', name: 'Forti Mau', desc: 'Seed packet: unlocks the Forti Mau in every level that has the Mau Mau.', costs: [3000], seed: 'forti' },
+  { id: 'battery', name: 'Battery Tower', desc: 'Seed packet: unlocks the Battery Tower in every level.', costs: [4500], seed: 'battery' }
 ];
 function owned(id) { return (typeof progress !== 'undefined' && progress.shop && progress.shop[id]) || 0; }
 function syncCoins() {
@@ -19,14 +20,14 @@ function drawShopIcon(g, id) {
   const W = g.canvas.width, H = g.canvas.height;
   g.clearRect(0, 0, W, H);
   g.save(); g.translate(W / 2, H / 2);
-  if (SHOP_SEEDS[id]) {
+  if (SHOP_SEEDS[id] || SHOP_UNITS.includes(id)) {
     g.restore(); g.save();
     // a seed packet with the Enraged Turtle on it
     g.fillStyle = '#c9971a'; roundRect(g, 10, 6, W - 20, H - 12, 10); g.fill();
     g.fillStyle = '#fff3c4'; roundRect(g, 14, 10, W - 28, H - 20, 8); g.fill();
     const src = document.querySelector(`.card[data-unit="${id}"] canvas`);
     if (src) try { g.drawImage(src, 16, 12, W - 32, W - 32); } catch (err) {}
-    g.fillStyle = id === 'hsquid' ? '#2f7de0' : id === 'forti' ? '#7a838b' : '#b8323a'; g.fillRect(14, H - 22, W - 28, 10);
+    g.fillStyle = id === 'hsquid' ? '#2f7de0' : id === 'forti' ? '#7a838b' : id === 'battery' ? '#3d8b4a' : '#b8323a'; g.fillRect(14, H - 22, W - 28, 10);
   } else if (id === 'slots') {
     // a defender card with a big plus
     g.fillStyle = '#c9bf94'; roundRect(g, -30, -36, 60, 72, 10); g.fill();
