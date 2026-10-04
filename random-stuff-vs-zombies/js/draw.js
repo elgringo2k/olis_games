@@ -38,6 +38,7 @@ function draw() {
     else if (t.type === 'vamp') { drawVampSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob, t.grown, !!t.asleep); if (t.asleep) drawSleepy(c * CELL + 66, r * CELL + 22); }
     else if (t.type === 'tesla') drawTesla(ctx, c * CELL + 100, r * CELL + 90, 1, t, state.time);
     else if (t.type === 'loo') drawLoo(ctx, c * CELL + 50, r * CELL + 60, 1, t, state.time);
+    else if (t.type === 'wipes') drawWipes(ctx, c * CELL + 50, r * CELL + 60, 1, t, state.time);
     else if (t.type === 'battery') drawBattery(ctx, c * CELL + 50, r * CELL + 58, 1, t, state.time);
     else if (t.type === 'cobra') drawCobra(ctx, c * CELL + 50, r * CELL + 60, 1, t, state.time);
     else if (t.type === 'hsquid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep, true);
@@ -372,6 +373,17 @@ function draw() {
     // a square of loo paper with perforations; after its first zombie it's torn
     ctx.save(); ctx.translate(sh.x, sh.y); ctx.rotate(sh.spin); ctx.scale(LOO.size, LOO.size);
     ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(-10, -8, 22, 20);
+    if (sh.wipe) {
+      // a wet wipe: soft pale-blue cloth with a quilted pattern and a few suds
+      ctx.fillStyle = '#e4f3fb'; ctx.strokeStyle = '#a9cfe2'; ctx.lineWidth = 1.2;
+      roundRect(ctx, -11, -11, 22, 22, 4); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(140,190,215,.6)'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); for (const d of [-6, 0, 6]) { ctx.moveTo(d - 5, -11); ctx.lineTo(d + 5, 11); ctx.moveTo(d + 5, -11); ctx.lineTo(d - 5, 11); } ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-5, 6, 2.6, 0, Math.PI * 2); ctx.arc(6, -5, 2, 0, Math.PI * 2); ctx.arc(2, 8, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      continue;
+    }
     ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#c9c2b2'; ctx.lineWidth = 1.2;
     ctx.beginPath();
     if (sh.hits === 0) {

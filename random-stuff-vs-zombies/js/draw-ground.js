@@ -115,6 +115,7 @@ function drawGround() {
       else if (state.selected === 'hsquid') drawSquid(ctx, h.c * CELL + 50, h.r * CELL + 60, 1, 0, 0, false, true);
       else if (state.selected === 'boat') drawBoat(ctx, h.c * CELL + 50, h.r * CELL + 82, 1);
       else if (state.selected === 'loo') drawLoo(ctx, h.c * CELL + 50, h.r * CELL + 60, 1);
+      else if (state.selected === 'wipes') drawWipes(ctx, h.c * CELL + 50, h.r * CELL + 60, 1);
       else if (state.selected === 'battery') drawBattery(ctx, h.c * CELL + 50, h.r * CELL + 58, 1);
       else if (state.selected === 'cobra') {
         // its reach: its own lane and the lanes either side, up to 3 tiles ahead

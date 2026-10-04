@@ -315,6 +315,21 @@ function drawShampoo(g, x, y, s, squeeze, bob) {
 function drawPuddle(pd) {
   const fade = Math.min(1, pd.life / 2);
   const x0 = pd.col * CELL, y0 = pd.lane * CELL;
+  if (pd.foam) {
+    // foam: a soft white heap of bubbles that gently wobble
+    ctx.save(); ctx.globalAlpha = 0.5 * fade;
+    ctx.fillStyle = '#eef6fb'; roundRect(ctx, x0 + 5, y0 + 5, CELL - 10, CELL - 10, 22); ctx.fill();
+    for (let i = 0; i < 16; i++) {
+      const bx = x0 + 14 + ((i * 41 + pd.seed * 13) % 72), by = y0 + 14 + ((i * 29 + pd.seed * 7) % 72);
+      const br = 7 + (i % 4) * 2.5 + Math.sin(state.time * 2 + i + pd.seed) * 1;
+      ctx.globalAlpha = 0.85 * fade;
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(160,190,210,.6)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = 'rgba(190,225,245,.8)'; ctx.beginPath(); ctx.arc(bx - br * 0.35, by - br * 0.35, br * 0.25, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    return;
+  }
   ctx.save(); ctx.globalAlpha = 0.6 * fade;
   ctx.fillStyle = '#ff8fc6';
   roundRect(ctx, x0 + 3, y0 + 3, CELL - 6, CELL - 6, 14); ctx.fill();
@@ -756,6 +771,29 @@ function drawBoat(g, x, y, s, bob = 0) {
   g.fillStyle = '#a8743f'; g.fillRect(-44, -12, 88, 5);
   g.strokeStyle = 'rgba(60,35,15,.5)'; g.lineWidth = 1.2;
   g.beginPath(); g.moveTo(-36, -2); g.lineTo(36, -2); g.moveTo(-30, 4); g.lineTo(30, 4); g.stroke();
+  g.restore();
+}
+function drawWipes(g, x, y, s, t = null, time = 0) {
+  // a soft pack of wet wipes with a flip-top lid and a wipe poking out; it puffs up just before it bursts
+  const swell = t ? 1 + (1 - t.fuse / WIPES.fuse) * 0.25 : 1;
+  const wob = t ? Math.sin(time * 40) * (1 - t.fuse / WIPES.fuse) * 3 : 0;
+  g.save(); g.translate(x + wob, y); g.scale(s * swell, s * swell);
+  g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(0, 26, 28, 6, 0, 0, Math.PI * 2); g.fill();
+  // the pack: a puffy rounded pillow shape
+  g.fillStyle = '#5cbfd6'; roundRect(g, -26, -16, 52, 42, 14); g.fill();
+  g.fillStyle = '#86d3e4'; roundRect(g, -22, -13, 44, 14, 8); g.fill();
+  // flip-top lid and the wipe poking out of it
+  g.fillStyle = '#2f8fb0'; g.beginPath(); g.ellipse(0, -16, 15, 5, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffffff'; g.strokeStyle = '#a9cfe2'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(-8, -16); g.quadraticCurveTo(-10, -30, -2, -34); g.quadraticCurveTo(4, -28, 10, -34); g.quadraticCurveTo(12, -24, 8, -16); g.closePath(); g.fill(); g.stroke();
+  // bubbles on the label
+  g.fillStyle = 'rgba(255,255,255,.75)';
+  g.beginPath(); g.arc(14, 14, 4, 0, Math.PI * 2); g.arc(19, 7, 2.5, 0, Math.PI * 2); g.arc(-17, 16, 3, 0, Math.PI * 2); g.fill();
+  // face
+  g.fillStyle = '#123a48'; g.beginPath(); g.arc(-7, 6, 2.4, 0, Math.PI * 2); g.arc(5, 6, 2.4, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#123a48'; g.lineWidth = 1.6; g.lineCap = 'round';
+  g.beginPath(); g.arc(-1, 11, 4, 0.2, Math.PI - 0.2); g.stroke();
+  g.fillStyle = 'rgba(255,140,160,.45)'; g.beginPath(); g.ellipse(-13, 12, 3, 2, 0, 0, Math.PI * 2); g.ellipse(11, 12, 3, 2, 0, 0, Math.PI * 2); g.fill();
   g.restore();
 }
 function drawLoo(g, x, y, s, t = null, time = 0) {

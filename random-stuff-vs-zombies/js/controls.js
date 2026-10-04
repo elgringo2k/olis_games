@@ -287,6 +287,7 @@ board.addEventListener('pointerdown', e => {
     state.selected === 'turtle' ? { type: 'turtle', hp: u.hp, maxHp: u.hp, cool: 0.4, throwAnim: 0, bob } :
     state.selected === 'boat'   ? { type: 'boat', hp: u.hp, maxHp: u.hp, bob } :
     state.selected === 'loo'    ? { type: 'loo', hp: u.hp, maxHp: u.hp, bob, fuse: u.fuse } :
+    state.selected === 'wipes'  ? { type: 'wipes', hp: u.hp, maxHp: u.hp, bob, fuse: u.fuse } :
     state.selected === 'battery' ? { type: 'battery', hp: u.hp, maxHp: u.hp, bob, cool: 0, zap: null, nope: 0 } :
     state.selected === 'cobra'  ? { type: 'cobra', hp: u.hp, maxHp: u.hp, bob, holding: null, hold: 0, pulling: null, pullAnim: 0 } :
     state.selected === 'hsquid' ? { type: 'hsquid', hp: u.hp, maxHp: u.hp, make: u.firstAfter, glow: 0, bob } :

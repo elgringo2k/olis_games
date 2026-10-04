@@ -201,14 +201,14 @@ function update(dt) {
       }
       continue;
     }
-    if (t.type === 'loo') {
+    if (t.type === 'loo' || t.type === 'wipes') {
       t.fuse -= dt;
       if (t.fuse <= 0) {
-        // POOF: 12 sheets fly out in 12 directions
+        // POOF: 12 sheets (or wipes) fly out in 12 directions
         const cx = c * CELL + 50, cy = r * CELL + 50, burst = (state.looBursts = (state.looBursts || 0) + 1);
         for (let i = 0; i < LOO.sheets; i++) {
           const a = i / LOO.sheets * Math.PI * 2;
-          state.sheets.push({ x: cx, y: cy, vx: Math.cos(a) * LOO.speed, vy: Math.sin(a) * LOO.speed, spin: a, hits: 0, hit: [], burst });
+          state.sheets.push({ x: cx, y: cy, vx: Math.cos(a) * LOO.speed, vy: Math.sin(a) * LOO.speed, spin: a, hits: 0, hit: [], burst, wipe: t.type === 'wipes' });
         }
         removeUnit(r, c);
         state.puffs.push({ x: cx, y: cy, t: 0, paper: true, life: 0.6 });
@@ -732,6 +732,11 @@ function update(dt) {
         if ((e.looHits[sh.burst] || 0) >= LOO.maxPerZombie) { sh.hit.push(e); continue; }
         e.looHits[sh.burst] = (e.looHits[sh.burst] || 0) + 1;
         damage(e, LOO.dmg[sh.hits]);
+        if (sh.wipe) {
+          // a wipe leaves foam on the 3x3 tiles around the zombie it hit
+          const ec = Math.floor(e.x / CELL);
+          for (let dl = -1; dl <= 1; dl++) for (let dc = -1; dc <= 1; dc++) addPuddle(e.lane + dl, ec + dc, true);
+        }
         sh.hit.push(e); sh.hits++;
         if (sh.hits >= LOO.dmg.length) {
           // second zombie: the sheet pops into bits of paper

@@ -93,11 +93,13 @@ function chogBlast(t, r, c) {
   state.puffs.push({ x: c * CELL + 50, y: r * CELL + 50, t: 0, boom: true, life: b.r > 1 ? 1.0 : 0.7, scale: b.r > 1 ? 1.8 : t.stage ? 1.1 : 0.8 });
   state.shake = b.r > 1 ? 0.8 : 0.4;
 }
-function addPuddle(lane, col) {
+// a slippery puddle on one tile; foam (from Wipes) slows zombies just the same, it only looks different
+function addPuddle(lane, col, foam = false) {
+  if (lane < 0 || lane >= ROWS) return;
   col = Math.max(0, Math.min(COLS - 1, col));
   const existing = state.puddles.find(pd => pd.lane === lane && pd.col === col);
-  if (existing) existing.life = SHAMPOO.puddleLife;
-  else state.puddles.push({ lane, col, x: col * CELL + CELL / 2, life: SHAMPOO.puddleLife, seed: Math.random() * 10 });
+  if (existing) { existing.life = SHAMPOO.puddleLife; if (foam) existing.foam = true; }
+  else state.puddles.push({ lane, col, x: col * CELL + CELL / 2, life: SHAMPOO.puddleLife, seed: Math.random() * 10, foam });
 }
 
 function damage(e, n) {

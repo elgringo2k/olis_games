@@ -52,6 +52,8 @@ const boatCtx = document.getElementById('boatArt').getContext('2d');
 if (boatCtx) { boatCtx.fillStyle = '#5cc4ec'; boatCtx.fillRect(0, 60, 104, 44); boatCtx.scale(2, 2); drawBoat(boatCtx, 26, 34, 0.5); boatCtx.setTransform(1, 0, 0, 1, 0, 0); }
 const looCtx = document.getElementById('looArt').getContext('2d');
 looCtx.scale(2, 2); drawLoo(looCtx, 26, 26, 0.75);
+const wpCtx = document.getElementById('wipesArt').getContext('2d');
+wpCtx.scale(2, 2); drawWipes(wpCtx, 26, 28, 0.7);
 const btCtx = document.getElementById('batteryArt').getContext('2d');
 btCtx.scale(2, 2); drawBattery(btCtx, 26, 22, 0.55);
 const cbCtx = document.getElementById('cobraArt').getContext('2d');

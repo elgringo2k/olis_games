@@ -123,6 +123,7 @@ const DESCRIPTIONS = {
   multi: 'A brown-shelled turtle. Throws a rock down its lane and both lanes next to it.',
   boat: 'Floats on the water. Plant a defender in it to use the pool lanes.',
   loo: 'Bursts into 12 sheets flying in every direction. 250 to the first zombie each hits, 125 to the second.',
+  wipes: 'Bursts into 12 wipes like a Loo Roll, and every zombie a wipe hits gets slippery foam on the 3×3 tiles around it.',
   battery: 'Tap it and pay 50 energy to zap the zombie closest to your house for 500. Every 5 s.',
   cobra: 'Its magnet steals soup cans and knight helmets, and pulls in cars and rips them open. Holds what it took for 10 s (car parts 20 s).',
   hsquid: 'Plant on a Sun Squid. Makes big 50-energy orbs. Falls asleep at night.',
