@@ -83,8 +83,8 @@ function renderShop() {
 // coins drop from 1 in 3 zombies: 7 in 10 are silver (10), 3 in 10 are gold (100)
 function maybeDropCoin(e) {
   if (level.sandbox) return;
-  // 1 in 150: a diamond worth 1000 instead (3 times rarer, 1 in 450, in Plan Your Defences)
-  if (Math.random() < 1 / (level.plan ? 450 : 150)) {
+  // 1 in 150: a diamond worth 1000 instead (rarer, 1 in 250, in Plan Your Defences)
+  if (Math.random() < 1 / (level.plan ? 250 : 150)) {
     state.coins.push({ x: e.x, y: e.lane * CELL + 50, vx: (Math.random() - 0.5) * 60, vy: -300, floor: e.lane * CELL + 78, life: 20, value: 1000, diamond: true, spin: 0 });
     return;
   }
