@@ -601,6 +601,15 @@ function update(dt) {
         t.forti = false; t.hp = MAU.hp; t.maxHp = MAU.hp;
         state.puffs.push({ x: col * CELL + 50, y: e.lane * CELL + 45, t: 0, splinter: true, life: 0.6 });
         state.shake = 0.25; e.bump = 0.6;
+      } else if (t.twoTile && (e.crushTarget !== t || e.crushT < CAR.crushTwoTile)) {
+        // a 2-tile fusion is too big to flatten in one go: the car grinds against it for 3 s
+        if (e.crushTarget !== t) { e.crushTarget = t; e.crushT = 0; }
+        e.crushT += dt; e.walking = false;
+        t.hp = Math.min(t.hp, t.maxHp * (1 - e.crushT / CAR.crushTwoTile));
+        if (Math.floor(e.crushT * 3) !== Math.floor((e.crushT - dt) * 3)) {
+          state.puffs.push({ x: e.x - front, y: e.lane * CELL + 80, t: 0, stomp: true, life: 0.4 });
+          state.shake = Math.max(state.shake || 0, 0.1);
+        }
       } else {
         if (t.type === 'chog') chogBlast(t, e.lane, col);
         removeUnit(e.lane, col);
