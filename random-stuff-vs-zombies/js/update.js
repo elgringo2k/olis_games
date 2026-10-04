@@ -268,7 +268,11 @@ function update(dt) {
       if (t.mode === 'chew') {
         t.chew -= dt;
         t.stretch += (0 - t.stretch) * Math.min(1, dt * 10);
-        if (t.chew <= 0) { t.chew = 0; t.mode = 'burp'; t.burp = ULTIMA.burp; state.puffs.push({ x: c * CELL + 170, y: r * CELL + 20, t: 0, burp: true, life: 1.0 }); }
+        if (t.chew <= 0) {
+          t.chew = 0; t.mode = 'burp'; t.burp = ULTIMA.burp; state.puffs.push({ x: c * CELL + 170, y: r * CELL + 20, t: 0, burp: true, life: 1.0 });
+          // a car doesn't go down well: out comes a little blast and some of its pieces
+          if (t.ateCar) { t.ateCar = false; burpCarParts(c * CELL + 160, r * CELL + 40, r * CELL + 88); }
+        }
       } else if (t.mode === 'burp') {
         t.burp -= dt;
         if (t.burp <= 0) t.mode = 'closed';
@@ -286,7 +290,7 @@ function update(dt) {
             if (mutant) gulp = [mutant];
             for (const e of gulp) { e.eaten = true; e.hp = 0; state.puffs.push({ x: e.x - 10, y: r * CELL + 50, t: 0, chomp: true }); }
             state.shake = 0.2;
-            t.prey = null; t.mode = 'chew'; t.chew = ULTIMA.chew; t.openK = 0; t.ate = gulp.length;
+            t.prey = null; t.mode = 'chew'; t.chew = ULTIMA.chew; t.openK = 0; t.ate = gulp.length; t.ateCar = gulp.some(e => e.kind === 'car');
           }
         }
       } else {
