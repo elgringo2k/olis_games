@@ -80,7 +80,7 @@ function renderShop() {
     const pic = card.querySelector('.shop-pic'), pg = pic && pic.getContext('2d'); if (pg) try { drawShopIcon(pg, it.id); } catch (err) {}
   }
 }
-// coins drop from 1 in 3 zombies: 7 in 10 are silver (10), 3 in 10 are gold (100)
+// coins drop from 1 in 3 zombies: 85 in 100 are silver (10), 15 in 100 are gold (100)
 function maybeDropCoin(e) {
   if (level.sandbox) return;
   // 1 in 150: a diamond worth 1000 instead (rarer, 1 in 250, in Plan Your Defences)
@@ -89,7 +89,7 @@ function maybeDropCoin(e) {
     return;
   }
   if (Math.random() >= 1 / 3) return;
-  const gold = Math.random() < 0.3;
+  const gold = Math.random() < 0.15;
   state.coins.push({ x: e.x, y: e.lane * CELL + 50, vx: (Math.random() - 0.5) * 80, vy: -240, floor: e.lane * CELL + 80, life: 15, value: gold ? 100 : 10, gold, spin: Math.random() * 6 });
 }
 function collectCoin(cn) {
