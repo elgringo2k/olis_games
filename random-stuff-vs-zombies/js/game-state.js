@@ -61,6 +61,10 @@ const LEVELS = {
   // like Level 13, but Pool Noodlers come from wave 4, Boat Zombies roar in from wave 3, and Sammy swims in the pool
   p4: { name: 'Level 14', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster', 'shark'],
         waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler', 'boatZ', 'swimmer'], noodlersFrom: 4, joins: { boatZ: 3, swimmer: 3 } },
+  // Level 14's zombies, then a Mutant and an Aqua Mutant at the end of the final wave; the Loo Roll joins your defenders
+  p5: { name: 'Level 15', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster', 'shark', 'loo'],
+        waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler', 'boatZ', 'swimmer'], noodlersFrom: 4, joins: { boatZ: 3, swimmer: 3 },
+        finalBoss: ['mutant', 'aquaMutant'] },
   endless: { name: 'Endless', units: null, waves: Infinity },
   sandbox: { name: 'Sandbox', units: null, waves: Infinity, sandbox: true }
 };
@@ -98,7 +102,7 @@ const ALL_ZOMBIES = ['basic', 'shield', 'soup', 'runner', 'noodler', 'knight', '
 function levelZombies() {
   if (level.rounds) return [...new Set(level.rounds.flatMap(rd => rd.trickle.kinds.concat(rd.horde.kind)))];
   const kinds = level.zombies ? level.zombies.slice() : ALL_ZOMBIES.slice();
-  if (level.finalBoss && !kinds.includes(level.finalBoss)) kinds.push(level.finalBoss);
+  for (const boss of [].concat(level.finalBoss || [])) if (!kinds.includes(boss)) kinds.push(boss);
   return kinds;
 }
 // Shop seed packets, and the defender each one is planted on top of
@@ -106,7 +110,7 @@ const SHOP_SEEDS = { enraged: 'angry', hsquid: 'squid', forti: 'mau' };
 // Shop seed packets for defenders that stand on their own
 const SHOP_UNITS = ['battery'];
 const boughtInShop = u => !!(SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) && !!owned(u);
-const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1', 'p2', 'p3', 'p4'];
+const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1', 'p2', 'p3', 'p4', 'p5'];
 const ENERGY_MAKERS = ['squid', 'vamp', 'hsquid'];
 function ownedUnits() {
   const own = new Set();

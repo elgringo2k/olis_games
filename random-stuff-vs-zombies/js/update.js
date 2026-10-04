@@ -56,7 +56,9 @@ function update(dt) {
     if (state.finalTimer <= 0) {
       // zombies pour in quickly, spread across the lanes
       const nextKind = state.finalQueue.pop();
-      if (level.finalBoss && nextKind === level.finalBoss && !state.finalQueue.length) { state.banner = 3.2; state.bannerText = 'MUTANT!'; state.shake = 0.5; }
+      // the boss (or bosses) come out last, with a warning
+      const bosses = [].concat(level.finalBoss || []);
+      if (bosses.includes(nextKind) && !state.bossWarned) { state.bossWarned = true; state.banner = 3.2; state.bannerText = bosses.length > 1 ? 'MUTANTS!' : 'MUTANT!'; state.shake = 0.5; }
       spawnZombie(nextKind, Math.floor(Math.random() * ROWS));
       state.finalTimer = state.finalEvery || 0.45;
       if (!state.finalQueue.length) { state.finalQueue = null; state.spawningDone = true; }

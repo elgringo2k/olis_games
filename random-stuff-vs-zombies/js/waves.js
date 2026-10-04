@@ -68,8 +68,8 @@ function startFinalWave() {
     for (let i = 0; i < n; i++) rush.splice(Math.floor(Math.random() * (rush.length + 1)), 0, 'knight');
     state.bossKnights = n;
   }
-  // the boss always comes out last (the queue is popped from the end)
-  if (level.finalBoss) rush.unshift(level.finalBoss);
+  // the boss (or bosses) always come out last (the queue is popped from the end)
+  for (const boss of [].concat(level.finalBoss || [])) rush.unshift(boss);
   state.finalQueue = rush;
   state.finalTimer = 3;
   syncUI();
