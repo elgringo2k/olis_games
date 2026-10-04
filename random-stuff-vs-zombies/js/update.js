@@ -652,10 +652,8 @@ function update(dt) {
       // blown up by a Temper-lotl: a charred statue that crumbles to ash
       state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: e.kind === 'mutant' ? 170 : 105 });
     } else if (e.kind === 'car') {
-      // the car blows up and the wreck crumbles away
-      state.puffs.push({ x: e.x, y: e.lane * CELL + 60, t: 0, boom: true, life: 0.7, scale: 0.8 });
-      state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: 90 });
-      state.shake = 0.3;
+      // the car breaks down: it sits there sputtering and smoking, then blows up (see the puff loop below)
+      state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), charred: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.kind === 'mutant') {
       // the Mutant's huge head pops off, then the body topples over with a thud
       state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
@@ -775,9 +773,16 @@ function update(dt) {
       Sound.play(p.big ? 'die' : p.crack ? 'whip' : p.splat ? 'squish' : p.sting ? 'sting' : p.zap ? 'zap' : p.pinch ? 'pinch'
         : p.chomp ? 'chomp' : p.dirt ? 'dig' : p.stomp ? 'thud' : p.canFall ? 'clank' : p.splinter ? 'woodBreak' : p.shards ? 'metal'
         : p.paper ? 'paper' : p.boom ? 'boom' : p.merge ? 'merge' : p.fortify ? 'upgrade' : p.fireHit ? 'fire' : p.crash ? 'crash'
-        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : 'rockHit');
+        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : 'rockHit');
     }
     p.t += dt;
+    if (p.carWreck && !p.blown && p.t >= p.life) {
+      // the broken-down car finally blows up and the wreck crumbles away
+      p.blown = true;
+      state.puffs.push({ x: p.x, y: p.y - 32, t: 0, boom: true, life: 0.7, scale: 0.8 });
+      state.puffs.push({ t: 0, life: 1.6, ash: true, snap: p.charred, x: p.x, y: p.y, h: 90 });
+      state.shake = 0.3;
+    }
   }
   // new rocks, globs, orbs and zombies
   for (const k of state.rocks) if (!k.heard) { k.heard = true; Sound.play(k.kind === 'shampoo' ? 'squish' : 'throw'); }

@@ -157,6 +157,28 @@ function draw() {
       ctx.fillStyle = '#6f8d5c'; ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       ctx.restore(); continue;
     }
+    if (p.carWreck) {
+      // a broken-down car: shudders harder and harder while smoke pours out of the bonnet
+      if (p.blown) continue;
+      const kk = p.t / p.life, shudder = 1 + kk * 3;
+      ctx.drawImage(p.snap, p.x - SNAP_FOOT_X + Math.sin(p.t * 47) * shudder, p.y - SNAP_FOOT_Y + Math.abs(Math.sin(p.t * 31)) * -shudder);
+      ctx.save();
+      for (let i = 0; i < 10; i++) {
+        const ph = (p.t * 0.9 + i / 10) % 1;
+        if (p.t < i * 0.08) continue; // the smoke builds up at first
+        const sx = p.x - 58 + Math.sin(i * 2.3 + p.t * 2) * 6 + ph * 18, sy = p.y - 42 - ph * 70;
+        const dark = 110 - kk * 70;
+        ctx.fillStyle = `rgba(${dark | 0},${dark | 0},${dark | 0},${(0.35 + kk * 0.35) * (1 - ph)})`;
+        ctx.beginPath(); ctx.arc(sx, sy, 7 + ph * 14 + kk * 4, 0, Math.PI * 2); ctx.fill();
+      }
+      // sparks spitting out once it's about to go
+      if (kk > 0.6 && Math.sin(p.t * 37) > 0.3) {
+        ctx.fillStyle = '#ffd84a';
+        for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(p.x - 66 + ((p.t * 900 + i * 37) % 22), p.y - 36 - ((p.t * 700 + i * 23) % 14), 2, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.restore();
+      continue;
+    }
     if (p.ash) {
       const kk = p.t / p.life;
       if (p.snap) {

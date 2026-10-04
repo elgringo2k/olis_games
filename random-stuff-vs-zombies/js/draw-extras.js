@@ -1,7 +1,7 @@
 // Zombie snapshots for death animations, pool water, the Car Zombie and the knight's helm
 // Draw a zombie onto its own small canvas (optionally as a charred silhouette) for death animations
 const NINJA = { walk: 5, tricks: 5, speed: 2 };
-const CAR = { halfLen: 75, crushTwoTile: 3 }; // 1.5 tiles long; takes 3 s to flatten a 2-tile fusion
+const CAR = { halfLen: 75, crushTwoTile: 3, breakdown: 2 }; // 1.5 tiles long; takes 3 s to flatten a 2-tile fusion; smokes for 2 s before it blows up
 const SNAP_W = 240, SNAP_H = 280, SNAP_FOOT_X = 120, SNAP_FOOT_Y = 250;
 function snapshotEnemy(e, charred, noHead = false) {
   const cv = document.createElement('canvas');
