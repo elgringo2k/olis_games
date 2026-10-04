@@ -399,7 +399,8 @@ function draw() {
     const others = kinds.filter(k => k !== 'mutant');
     let spots;
     if (level.pool) {
-      const wet = others.filter(k => k === 'tube' || k === 'shieldTube'), dry = others.filter(k => k !== 'tube' && k !== 'shieldTube');
+      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube';
+      const wet = others.filter(swims), dry = others.filter(k => !swims(k));
       const dryLanes = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l));
       spots = [
         ...wet.map((k, i) => ({ k, lane: WATER_LANES[i % WATER_LANES.length], col: COLS - 1 - Math.floor(i / WATER_LANES.length) })),
@@ -412,7 +413,7 @@ function draw() {
     for (const sp of spots) {
       const jitter = ((sp.lane * 37 + sp.col * 11) % 30) - 15;
       drawEnemy({ kind: sp.k, lane: sp.lane, x: sp.col * CELL + 55 + jitter, hp: 1, maxHp: 1, base: 1, walking: true,
-        wob: tNow * 2.2 + sp.lane * 1.3 + sp.col, shieldUp: sp.k === 'shield' || sp.k === 'shieldTube', canUp: sp.k === 'soup', knightUp: sp.k === 'knight', testUp: sp.k === 'teacher' });
+        wob: tNow * 2.2 + sp.lane * 1.3 + sp.col, shieldUp: sp.k === 'shield' || sp.k === 'shieldTube', canUp: sp.k === 'soup' || sp.k === 'soupTube', knightUp: sp.k === 'knight', testUp: sp.k === 'teacher' });
     }
   }
   const dz = state.dragZombie;

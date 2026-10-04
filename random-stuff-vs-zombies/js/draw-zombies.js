@@ -152,13 +152,13 @@ function drawMutantBody(e, baseY, step, chomp) {
 }
 
 function drawEnemy(e) {
-  if (e.kind === 'tube' || e.kind === 'shieldTube') return drawSwimmer(e);
+  if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube') return drawSwimmer(e);
   drawEnemyBody(e);
 }
 // a zombie bobbing along in a rubber ring: only the top half shows above the water
 function drawSwimmer(e) {
   const baseY = e.lane * CELL + 92, bob = Math.sin((e.wob || 0) * 1.3) * 2;
-  const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : 'basic', noShadow: true, walking: false });
+  const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : e.kind === 'soupTube' ? 'soup' : 'basic', noShadow: true, walking: false });
   ctx.save(); ctx.translate(0, 18 + bob);
   ctx.save(); ctx.beginPath(); ctx.rect(e.x - 90, baseY - 220, 180, 220 - 36); ctx.clip();
   drawEnemyBody(as);

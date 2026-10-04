@@ -52,6 +52,9 @@ const LEVELS = {
         finalAtLeast: { mini: 3 }, bossKnights: [3, 6] },
   p1: { name: 'Level 11', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog'],
         waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube'] },
+  // soup cans that end up in a water lane swim in a rubber ring here
+  p2: { name: 'Level 12', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog'],
+        waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube'], finalAtLeast: { soup: 3 } },
   endless: { name: 'Endless', units: null, waves: Infinity },
   sandbox: { name: 'Sandbox', units: null, waves: Infinity, sandbox: true }
 };
@@ -94,7 +97,10 @@ function levelZombies() {
 }
 // Shop seed packets, and the defender each one is planted on top of
 const SHOP_SEEDS = { enraged: 'angry', hsquid: 'squid', forti: 'mau' };
-const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1'];
+// Shop seed packets for defenders that stand on their own
+const SHOP_UNITS = ['battery'];
+const boughtInShop = u => !!(SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) && !!owned(u);
+const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1', 'p2'];
 const ENERGY_MAKERS = ['squid', 'vamp', 'hsquid'];
 function ownedUnits() {
   const own = new Set();
@@ -107,8 +113,8 @@ function ownedUnits() {
 const unitAllowed = u => {
   if (u === 'boat') return !!level.pool; // boats only make sense in the pool
   if (u === 'jic') return (jicUnlocked() || !!level.sandbox) && !level.rounds; // Sandbox always has it
-  if (SHOP_SEEDS[u] && owned(u) && Array.isArray(level.units)) return true; // bought in the Shop: can be brought anywhere (with a warning if it can't be used)
-  if (level.units === 'owned') return (ownedUnits().has(u) || (SHOP_SEEDS[u] && owned(u))) && !(level.noEnergy && ENERGY_MAKERS.includes(u)) && !(level.banned || []).includes(u);
+  if (boughtInShop(u) && Array.isArray(level.units)) return true; // bought in the Shop: can be brought anywhere (with a warning if it can't be used)
+  if (level.units === 'owned') return (ownedUnits().has(u) || boughtInShop(u)) && !(level.noEnergy && ENERGY_MAKERS.includes(u)) && !(level.banned || []).includes(u);
   return !level.units || level.units.includes(u);
 };
 const loadout = new Set();
