@@ -395,13 +395,16 @@
       </div>
       <div class="picker-grid" id="pickerGrid"></div>
     </div>
-    <div class="overlay" id="endOverlay">
-      <h2>The zombies got through</h2>
-      <p id="endText"></p>
+    <div class="overlay lose-screen" id="endOverlay">
+      <h2 class="lose-title">THE ZOMBIES<br>GOT IN!</h2>
+      <p class="lose-sub" id="loseWho"></p>
+      <canvas id="loseZombie" width="220" height="220" aria-hidden="true"></canvas>
+      <p class="tombstone" id="endText"></p>
       <div class="overlay-actions">
-        <button id="restartBtn">Play again</button>
+        <button id="restartBtn">Try again</button>
         <button id="changeBtn" class="secondary">Change defenders</button>
         <button class="secondary to-levels">Levels</button>
+        <button class="secondary" id="loseMenuBtn">Main menu</button>
       </div>
     </div>
     <div class="overlay reward-screen" id="rewardOverlay">

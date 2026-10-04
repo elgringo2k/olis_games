@@ -625,7 +625,7 @@ function update(dt) {
       state.puffs.push({ x: e.x, y: e.lane * CELL + 70, t: 0, splash: true, life: 0.6 });
     } else {
       e.x -= ENEMY.speed * e.speedMul * dt;
-      if (e.x < -10 && !state.over) endGame();
+      if (e.x < -10 && !state.over) endGame(e);
     }
   }
   for (const e of state.divers) if (!e.submerged) state.enemies.push(e);
@@ -710,7 +710,7 @@ function update(dt) {
       e.x -= ENEMY.speed * e.speedMul * (e.slowed ? 1 - SHAMPOO.slow : 1) * dt; e.walking = true;
       if (e.kind === 'swimmer') e.submerged = true; // nothing left to eat: back under the water
     }
-    if (e.x < -10 && !state.over) endGame();
+    if (e.x < -10 && !state.over) endGame(e);
   }
   if (state.spawningDone && !state.enemies.length && !state.divers.length && !state.over && !state.reward) {
     // the last zombie is down: wait for its death animation to finish, then 2 more seconds, then the reward packet drops
@@ -978,10 +978,34 @@ function winLevel() {
   if (g) try { g.clearRect(0, 0, bag.width, bag.height); drawCoinBag(g, bag.width / 2, bag.height / 2 + 8, 1.6); } catch (err) {}
   winOverlay.classList.add('show');
 }
-function endGame() {
+// losing: the zombie that got in, chomping away, and your score on a tombstone
+function endGame(e) {
   Sound.play('lose');
   state.over = true; state.running = false;
-  document.getElementById('endText').textContent =
-    `You held out to wave ${state.wave} and knocked out ${state.kills} zombie${state.kills === 1 ? '' : 's'}.`;
+  const kind = (e && e.kind) || 'basic', info = ALMANAC_ZOMBIES[kind];
+  const name = info ? info.name : 'zombie';
+  document.getElementById('loseWho').textContent = `${/^[AEIOU]/.test(name) ? 'An' : 'A'} ${name} broke through!`;
+  document.getElementById('endText').innerHTML =
+    `<b>R.I.P.</b><span>Wave ${state.wave} · ${state.kills} zombie${state.kills === 1 ? '' : 's'} knocked out</span>`;
   endOverlay.classList.add('show');
+  animateLoseZombie(kind);
+}
+function animateLoseZombie(kind) {
+  const cv = document.getElementById('loseZombie'), g = cv && cv.getContext('2d');
+  if (!g) return;
+  const big = isMutant({ kind }) || kind === 'car', t0 = performance.now();
+  const frame = now => {
+    if (!endOverlay.classList.contains('show')) return; // stops once you leave the screen
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height);
+    const saved = ctx;
+    try {
+      ctx = g;
+      g.translate(cv.width / 2, cv.height * (kind === 'car' ? 0.8 : 0.94));
+      const k = cv.width / (big ? 175 : 138); g.scale(k, k); g.translate(0, -92);
+      drawEnemy({ kind, lane: 0, x: 0, hp: 1, maxHp: 1, base: 1, walking: false, wob: (now - t0) / 1000 * 2.5, noShadow: false,
+        shieldUp: kind === 'shield' || kind === 'shieldTube', canUp: kind === 'soup' || kind === 'soupTube', knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini' });
+    } catch (err) {} finally { ctx = saved; }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
 }

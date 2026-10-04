@@ -122,6 +122,7 @@ setTimeout(refreshArrows, 0);
 // the main menu, or straight into the next level
 document.getElementById('rewardNextBtn').onclick = () => winLevel();
 document.getElementById('winMenuBtn').onclick = () => showScreen(menuOverlay);
+document.getElementById('loseMenuBtn').onclick = () => showScreen(menuOverlay);
 document.getElementById('winNextBtn').onclick = e => {
   const card = document.querySelector(`.level-card[data-level="${e.currentTarget.dataset.level}"]`);
   if (card) card.click(); else showLevels();
