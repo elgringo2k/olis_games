@@ -233,7 +233,8 @@ function drawEnemyBody(e) {
   }
   ctx.fillStyle = '#8fae7a';
   ctx.beginPath(); ctx.moveTo(-2, -50); ctx.lineTo(5, -44); ctx.lineTo(-1, -40); ctx.closePath(); ctx.fill();
-  const armor = knight ? Math.max(0, (e.hp - e.base) / (e.maxHp - e.base)) : 0;
+  // pictures (almanac, level preview) have no armour amount at all, so draw them with it whole
+  const armor = !knight ? 0 : e.maxHp > e.base ? Math.max(0, (e.hp - e.base) / (e.maxHp - e.base)) : 1;
   if (knight) {
     // breastplate
     ctx.fillStyle = '#9aa3ab';
