@@ -90,7 +90,8 @@ function spawn() {
 function spawnZombie(kind, lane, x = board.width + 30) {
   const base = ENEMY.hp + (state.wave - 1) * 20;
   if (level.pool) {
-    // zombies in a water lane swim in a rubber ring; the ones that can't swim go to a grass lane instead
+    // zombies in a water lane swim in a rubber ring (a Pool Noodler swims as he is, in a noodle float);
+    // the ones that can't swim go to a grass lane instead
     const SWIMMERS = { basic: 'tube', shield: 'shieldTube' };
     if (!level.zombies || level.zombies.includes('soupTube')) SWIMMERS.soup = 'soupTube'; // (Sandbox's pool has them too)
     const swimmer = Object.values(SWIMMERS).includes(kind);
@@ -98,12 +99,12 @@ function spawnZombie(kind, lane, x = board.width + 30) {
     if (kind === 'boatZ' && !WATER_LANES.includes(lane)) lane = WATER_LANES[Math.floor(Math.random() * WATER_LANES.length)];
     const wet = WATER_LANES.includes(lane);
     if (wet && SWIMMERS[kind]) kind = SWIMMERS[kind];
-    else if (wet && !swimmer && kind !== 'boatZ') { const dry = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l)); lane = dry[Math.floor(Math.random() * dry.length)]; }
+    else if (wet && !swimmer && kind !== 'boatZ' && kind !== 'noodler') { const dry = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l)); lane = dry[Math.floor(Math.random() * dry.length)]; }
     else if (!wet && swimmer) kind = Object.keys(SWIMMERS).find(k => SWIMMERS[k] === kind);
   }
   const mult = kind === 'shieldTube' ? 3 : kind === 'soupTube' ? 5.5 : kind === 'car' ? 7 : kind === 'mini' ? 1.75 : kind === 'teacher' ? 3.5 : kind === 'knight' ? 10 : kind === 'mutant' ? 15 : kind === 'noodler' ? 2.5 : kind === 'soup' ? 5.5 : kind === 'shield' ? 3 : kind === 'runner' ? 2 : 1;
   const hp = kind === 'boatZ' ? BOATZ.hp : base * mult;
-  state.enemies.push({ kind, lane, x, hp, maxHp: hp, base,
+  state.enemies.push({ kind, lane, x, hp, maxHp: hp, base, swimming: !!(level.pool && WATER_LANES.includes(lane)),
     shieldUp: kind === 'shield', canUp: kind === 'soup' || kind === 'soupTube', speedMul: kind === 'boatZ' ? BOATZ.speed : kind === 'car' ? 2 : kind === 'ninja' ? NINJA.speed : kind === 'runner' ? 2.5 : kind === 'knight' ? 1.5 : kind === 'mutant' ? 0.75 : 1, knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini', angry: false,
     testAt: kind === 'teacher' ? base * 2.5 : kind === 'mini' ? base * 1.25 : 0, wob: Math.random() * 6,
     tricks: false, trickTimer: kind === 'ninja' ? NINJA.walk : 0, spinA: 0 });

@@ -55,7 +55,7 @@ const LEVELS = {
   // soup cans that end up in a water lane swim in a rubber ring here
   p2: { name: 'Level 12', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog'],
         waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube'], finalAtLeast: { soup: 3 } },
-  // Pool Noodlers join from wave 5 (they stay on the grass lanes); Lewis Lobster joins your defenders
+  // Pool Noodlers join from wave 5 (in the water lanes they swim in a noodle float); Lewis Lobster joins your defenders
   p3: { name: 'Level 13', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster'],
         waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler'] },
   // like Level 13, but Pool Noodlers come from wave 4, Boat Zombies roar in from wave 3, and Sammy swims in the pool

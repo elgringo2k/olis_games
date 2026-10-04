@@ -152,7 +152,7 @@ function drawMutantBody(e, baseY, step, chomp) {
 }
 
 function drawEnemy(e) {
-  if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube') return drawSwimmer(e);
+  if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube' || (e.kind === 'noodler' && e.swimming)) return drawSwimmer(e);
   if (e.kind === 'boatZ') return drawBoatZombie(e);
   drawEnemyBody(e);
 }
@@ -210,19 +210,30 @@ function drawBoatZombie(e) {
 // a zombie bobbing along in a rubber ring: only the top half shows above the water
 function drawSwimmer(e) {
   const baseY = e.lane * CELL + 92, bob = Math.sin((e.wob || 0) * 1.3) * 2;
-  const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : e.kind === 'soupTube' ? 'soup' : 'basic', noShadow: true, walking: false });
+  const noodler = e.kind === 'noodler';
+  // a Pool Noodler keeps swinging his noodle while he swims; the others just float
+  const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : e.kind === 'soupTube' ? 'soup' : noodler ? 'noodler' : 'basic', noShadow: true, walking: noodler ? e.walking : false });
   ctx.save(); ctx.translate(0, 18 + bob);
   ctx.save(); ctx.beginPath(); ctx.rect(e.x - 90, baseY - 220, 180, 220 - 36); ctx.clip();
   drawEnemyBody(as);
   ctx.restore();
-  // the ring
   const ry = baseY - 38;
   ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(e.x, ry + 6, 30, 7, 0, 0, Math.PI * 2); ctx.fill();
-  for (let i = 0; i < 8; i++) {
-    ctx.fillStyle = i % 2 ? '#ffffff' : '#ff6b5a';
-    ctx.beginPath(); ctx.ellipse(e.x, ry, 22, 9, 0, (i / 8) * Math.PI * 2, ((i + 1) / 8) * Math.PI * 2); ctx.lineTo(e.x, ry); ctx.closePath(); ctx.fill();
+  if (noodler) {
+    // a second pool noodle, a blue one, bent round his waist as a float
+    ctx.strokeStyle = '#2f8fe0'; ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.ellipse(e.x, ry, 21, 7, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.ellipse(e.x, ry - 2, 21, 6, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    ctx.fillStyle = '#1d6fb8'; ctx.beginPath(); ctx.arc(e.x + 21, ry + 1, 4.5, 0, Math.PI * 2); ctx.arc(e.x + 15, ry + 6, 4.5, 0, Math.PI * 2); ctx.fill();
+  } else {
+    // the ring
+    for (let i = 0; i < 8; i++) {
+      ctx.fillStyle = i % 2 ? '#ffffff' : '#ff6b5a';
+      ctx.beginPath(); ctx.ellipse(e.x, ry, 22, 9, 0, (i / 8) * Math.PI * 2, ((i + 1) / 8) * Math.PI * 2); ctx.lineTo(e.x, ry); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(60,150,200,.9)'; ctx.beginPath(); ctx.ellipse(e.x, ry, 11, 4, 0, 0, Math.PI * 2); ctx.fill();
   }
-  ctx.fillStyle = 'rgba(60,150,200,.9)'; ctx.beginPath(); ctx.ellipse(e.x, ry, 11, 4, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 function drawEnemyBody(e) {

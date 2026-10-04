@@ -42,7 +42,7 @@ const ALMANAC_ZOMBIES = {
   shield:  { name: 'Shield Bearer', tough: 3, speed: 3, bite: 3, first: 'Wave 2', desc: 'Hides behind a wooden shield that soaks up hits before it splinters.' },
   soup:    { name: 'Soup Can Head', tough: 4, speed: 3, bite: 3, first: 'Wave 3', desc: 'Wears a soup can as a helmet. Tough until it pops off.' },
   runner:  { name: 'Runnererer', tough: 3, speed: 5, bite: 3, first: 'Wave 4', desc: 'Sprints down the lane much faster than everyone else.' },
-  noodler: { name: 'Pool Noodler', tough: 3, speed: 3, bite: 5, first: 'Wave 5', desc: 'Bites three times as hard as a normal zombie.' },
+  noodler: { name: 'Pool Noodler', tough: 3, speed: 3, bite: 5, first: 'Wave 5', desc: 'Bites three times as hard as a normal zombie. In the pool he swims, with a second, blue noodle round his waist as a float.' },
   teacher: { name: 'Teacher', tough: 3, speed: [3, 4], bite: [3, 5], first: 'Wave 5', desc: 'Holds up a test. Break it and she goes furious: twice as fast and six times the bite.' },
   knight:  { name: 'Charging Knight', tough: 5, speed: 4, bite: 3, first: 'Wave 6', desc: 'Armoured and charging fast. Loses only his helmet when the armour breaks.' },
   mutant:  { name: 'Mutant', tough: 'undying', speed: 2, bite: 5, first: 'Wave 8', desc: 'A huge mutated zombie that stomps defenders flat. Only the Ultima Snapper can swallow him.' },
