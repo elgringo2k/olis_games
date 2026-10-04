@@ -653,9 +653,9 @@ function update(dt) {
     maybeDropCoin(e);
     if (e.eaten) return; // swallowed by a Snapper: nothing left to show
     if (e.kind === 'car') {
-      // caught in an explosion, the car blows apart on the spot; otherwise it breaks down first:
+      // caught in an explosion or destroyed in one hit, the car blows apart on the spot; otherwise it breaks down first:
       // it sits there sputtering and smoking, then blows apart (see the puff loop below)
-      if (e.ashed) blowUpCar(e.x, e.lane * CELL + 92);
+      if (e.ashed || e.instakill) blowUpCar(e.x, e.lane * CELL + 92);
       else state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.ashed) {
       // blown up by a Temper-lotl: a charred statue that crumbles to ash

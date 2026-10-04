@@ -101,7 +101,10 @@ function addPuddle(lane, col) {
 }
 
 function damage(e, n) {
+  const full = e.hp >= e.maxHp;
   e.hp -= n;
+  // a car taken from full health to nothing in one hit (like a Tesla Coil bolt) blows up on the spot
+  if (e.kind === 'car' && full && e.hp <= 0) e.instakill = true;
   if (e.canUp && e.hp <= e.base) {
     e.canUp = false;
     state.puffs.push({ x: e.x - 4, y: e.lane * CELL + 2, t: 0, canFall: true, life: 0.9 });
