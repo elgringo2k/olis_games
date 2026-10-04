@@ -36,7 +36,7 @@ const ANGRY  = { cost: 175, hp: 300, fireEvery: 1.5, burst: 2, burstGap: 0.18 };
 const ENRAGED = { cost: 200, hp: 300, fireEvery: 1.5, burst: 4, burstGap: 0.14, recharge: 10, upgrades: 'angry', rockDmg: TURTLE.rockDmg * 1.5 };
 const DRAGON = { cost: 200, hp: 300, attackEvery: 1.5, dmg: 50, range: 3 * CELL };
 const DIGGER = { cost: 275, hp: 300, digTime: 15, dmg: 500, splash: 250, flight: 0.9 };
-const SNAPPER = { cost: 150, hp: 300, chew: 10, burp: 1.0, lunge: 0.22, mutantBite: 300, mutantEvery: 1.5 };
+const SNAPPER = { cost: 150, hp: 300, chew: 10, burp: 1.0, lunge: 0.22, mutantBite: 300, mutantEvery: 1.5, carBite: 200, carEvery: 2 };
 // stages: tiny -> after 13 s bigger -> after 26 s humongous; it only does damage when it gets eaten
 const CHOG = { cost: 50, hp: 300, recharge: 35, grow: [13, 26], blasts: [{ dmg: 400, r: 1 }, { dmg: 1000, r: 1 }, { dmg: 1800, r: 2 }] };
 // grown-up Vampire Squids make orbs at 2/3 the rate (one every 18 s instead of 12)

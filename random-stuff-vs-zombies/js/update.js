@@ -316,7 +316,8 @@ function update(dt) {
       // -> chews for 10 s -> opens up to burp -> closes again
       const tx = c * CELL + CELL / 2, headX = c * CELL + 40 + 30;
       const eatTo = (c + 2) * CELL + 15, seeTo = (c + 2.25) * CELL + 15;
-      const ok = e => e && e.hp > 0 && e.lane === r && e.kind !== 'mutant' && e.x >= tx - 20 && state.enemies.includes(e);
+      const tooBig = e => e.kind === 'mutant' || e.kind === 'car';
+      const ok = e => e && e.hp > 0 && e.lane === r && !tooBig(e) && e.x >= tx - 20 && state.enemies.includes(e);
       const nearest = (limit) => {
         let best = null;
         for (const e of state.enemies) if (ok(e) && e.x <= limit && (!best || e.x < best.x)) best = e;
@@ -343,17 +344,19 @@ function update(dt) {
           }
         }
       } else {
-        // too big to swallow, so a Mutant in reach gets bitten instead: 300 every 1.5 s
+        // too big to swallow, so a Mutant or a Car Zombie in reach gets bitten instead:
+        // 300 every 1.5 s for the Mutant, 200 every 2 s for the car
         let mutant = null;
-        for (const e of state.enemies) if (e.kind === 'mutant' && e.hp > 0 && e.lane === r && e.x >= tx - 20 && e.x <= eatTo + 30 && (!mutant || e.x < mutant.x)) mutant = e;
+        for (const e of state.enemies) if (tooBig(e) && e.hp > 0 && e.lane === r && e.x >= tx - 20 && e.x <= eatTo + 30 && (!mutant || e.x < mutant.x)) mutant = e;
         t.mutantCool = Math.max(0, (t.mutantCool || 0) - dt);
         t.biteAnim = Math.max(0, (t.biteAnim || 0) - dt * 4);
         t.mode = nearest(seeTo) || mutant ? 'open' : 'closed';
         const prey = t.openK > 0.75 ? nearest(eatTo) : null;
         if (prey) { t.mode = 'lunge'; t.prey = prey; t.lungeT = 0; }
         else if (mutant && t.openK > 0.75 && t.mutantCool <= 0) {
-          damage(mutant, SNAPPER.mutantBite);
-          t.mutantCool = SNAPPER.mutantEvery; t.biteAnim = 1;
+          const car = mutant.kind === 'car';
+          damage(mutant, car ? SNAPPER.carBite : SNAPPER.mutantBite);
+          t.mutantCool = car ? SNAPPER.carEvery : SNAPPER.mutantEvery; t.biteAnim = 1;
           state.puffs.push({ x: mutant.x - 30, y: r * CELL + 50, t: 0, chomp: true });
         }
         // the neck snaps out for a bite and springs back
