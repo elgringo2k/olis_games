@@ -16,7 +16,7 @@ const ALMANAC_DEFENDERS = {
   shampoo: { name: 'Shampoo', dmg: 1, tough: 3, speed: 'Slow', range: 'Whole lane', special: 'Leaves slippery puddles that slow zombies.' },
   laser:   { name: 'Laser Turtle', dmg: 4, tough: 3, speed: 'Slow', range: 'Whole lane', special: 'Pierces every zombie in the lane.' },
   lobster: { name: 'Lewis Lobster', dmg: 3, tough: 3, speed: 'Slow', range: '1 tile ahead', special: '' },
-  shark:   { name: 'Sammy', dmg: 5, tough: 3, speed: 'Normal', range: '2 tiles ahead', special: 'Bites cause bleeding.' },
+  shark:   { name: 'Sammy', dmg: 5, tough: 3, speed: 'Normal', range: '2 tiles ahead', special: 'Bites cause bleeding. Swims in the pool: water only, no boat.' },
   badger:  { name: 'Hyperbadge', dmg: 4, tough: 3, speed: 'Constant', range: 'Its own tile', special: 'Zombies walk over him and get shredded.' },
   jic:     { name: 'Jicjajic', dmg: 0, tough: 3, speed: '—', range: '—', special: 'Fuses defenders: Hyper Turtle, Squeaky Clean, Ultima Snapper, Tesla Coil.' },
   lotl:    { name: 'Temper-lotl', dmg: 5, tough: 3, speed: 'Once', range: '3×3', special: 'Explodes 1.5 s after planting.' },
@@ -49,6 +49,7 @@ const ALMANAC_ZOMBIES = {
   tube:    { name: 'Swimming Tube Zombie', tough: 2, speed: 3, bite: 3, first: 'Level 11', desc: 'Paddles down the pool lanes in a rubber ring.' },
   shieldTube: { name: 'Shield Tube Zombie', tough: 3, speed: 3, bite: 3, first: 'Level 11', desc: 'A Shield Bearer floating in a rubber ring.' },
   soupTube: { name: 'Soup Can Tube Zombie', tough: 4, speed: 3, bite: 3, first: 'Level 12', desc: 'A Soup Can Head floating in a rubber ring. Tough until the can pops off.' },
+  boatZ:   { name: 'Boat Zombie', tough: 4, speed: 4, bite: 'deathly', first: 'Level 14', desc: 'Roars down the pool lanes in a metal motorboat at 1.5x speed and rams defenders, crushing them at 2000 a second. Only ever in the water.' },
   car:     { name: 'Car Zombie', tough: 4, speed: 5, bite: 'deathly', first: 'Sandbox only', desc: 'A zombie behind the wheel of a beat-up car. Takes up a tile and a half, drives at double speed and runs defenders over. A Forti Mau\'s armour can take one hit.' },
   ninja:   { name: 'Nunjaka', tough: 2, speed: [5, 0], bite: 3, first: 'Sandbox only', desc: 'A zombie monk. Dashes at double speed, then stops for 5 s of nunchuck tricks that knock flying projectiles back at your defenders.' },
   mini:    { name: 'Mini Teacher', tough: 2, speed: [3, 4], bite: [3, 5], first: 'Sandbox only', desc: 'Just like a Teacher, but with less health.' }

@@ -153,7 +153,37 @@ function drawMutantBody(e, baseY, step, chomp) {
 
 function drawEnemy(e) {
   if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube') return drawSwimmer(e);
+  if (e.kind === 'boatZ') return drawBoatZombie(e);
   drawEnemyBody(e);
+}
+// a zombie standing in a beat-up metal motorboat: only his top half shows above the hull
+function drawBoatZombie(e) {
+  const baseY = e.lane * CELL + 92, bob = Math.sin((e.wob || 0) * 1.6) * 2, x = e.x;
+  const rider = Object.assign({}, e, { kind: 'basic', noShadow: true, walking: false });
+  ctx.save(); ctx.translate(0, 8 + bob);
+  ctx.save(); ctx.beginPath(); ctx.rect(x - 90, baseY - 220, 180, 220 - 36); ctx.clip();
+  drawEnemyBody(rider);
+  ctx.restore();
+  const top = baseY - 40, water = baseY - 22;
+  // wake churned up by the motor while it's moving
+  if (e.walking) {
+    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i++) { const ph = ((e.wob || 0) * 0.8 + i / 3) % 1; ctx.globalAlpha = 1 - ph; ctx.beginPath(); ctx.arc(x + 56 + ph * 26, water, 4 + ph * 10, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+  }
+  // outboard motor on the back
+  ctx.fillStyle = '#3b3f45'; roundRect(ctx, x + 38, top - 12, 16, 20, 4); ctx.fill();
+  ctx.fillStyle = '#e0a31a'; ctx.fillRect(x + 40, top - 9, 12, 4);
+  ctx.fillStyle = '#2a2d31'; ctx.fillRect(x + 44, top + 6, 4, 20);
+  // the hull, nose pointing left at your defenders
+  ctx.fillStyle = '#7d8a96';
+  ctx.beginPath(); ctx.moveTo(x - 52, top - 4); ctx.lineTo(x + 42, top); ctx.lineTo(x + 40, water); ctx.lineTo(x - 30, water); ctx.quadraticCurveTo(x - 46, water - 4, x - 52, top - 4); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#5d6a75'; ctx.fillRect(x - 46, top - 2, 88, 4);
+  ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.moveTo(x - 40, water - 6); ctx.lineTo(x + 40, water - 6); ctx.lineTo(x + 40, water - 2); ctx.lineTo(x - 34, water - 2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#4b5660'; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(x - 34 + i * 14, top + 8, 1.6, 0, Math.PI * 2); ctx.fill(); }
+  // waterline splash
+  ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.beginPath(); ctx.ellipse(x - 4, water + 1, 52, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
 }
 // a zombie bobbing along in a rubber ring: only the top half shows above the water
 function drawSwimmer(e) {

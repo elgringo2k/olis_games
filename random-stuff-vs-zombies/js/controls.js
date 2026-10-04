@@ -271,7 +271,9 @@ board.addEventListener('pointerdown', e => {
   }
   const isWater = level.pool && WATER_LANES.includes(r), here = state.grid[r][c];
   let intoBoat = false;
-  if (state.selected === 'boat') { if (!isWater || here) return; }
+  // in the pool, Sammy swims: he goes straight into an empty water tile (no boat) and never on land
+  if (state.selected === 'shark' && level.pool) { if (!isWater || here) return; }
+  else if (state.selected === 'boat') { if (!isWater || here) return; }
   else if (isWater) { if (!here || here.type !== 'boat') return; intoBoat = true; }
   else if (here) return;
   if (u.seed) {

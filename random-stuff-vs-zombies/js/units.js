@@ -62,4 +62,6 @@ const ORB_LIFE = 10;
 const ENEMY  = { hp: 200, speed: 20, bite: 100 };
 // Mutant stomps flatten a Mau Mau in 2 strikes and a Forti Mau in 5
 const MUTANT = { smashDmg: 300, mauStrikes: 2, fortiStrikes: 5, smashEvery: 1.5, windup: 0.6 };
+// Boat Zombie: water lanes only, 1000 health, 1.5x speed, crushes defenders at 2000 a second
+const BOATZ = { hp: 1000, speed: 1.5, crushDps: 2000 };
 const ENERGY_TICK = 10, ENERGY_GAIN = 25;

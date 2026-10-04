@@ -18,7 +18,7 @@ function buildDeck(wave) {
   const shields = wave < 2 ? 0 : Math.max(1, Math.round(size * shieldChance));
   const soups = wave < 3 ? 0 : Math.max(1, Math.round(size * soupChance));
   const runners = wave < 4 ? 0 : wave < 6 ? 1 : 2;
-  const noodlers = wave < 5 ? 0 : 1;
+  const noodlers = wave < ((level && level.noodlersFrom) || 5) ? 0 : 1;
   const knights = wave < 6 ? 0 : 1;
   const teachers = wave < 5 ? 0 : 1;
   const mutants = mutantsForWave(wave);
@@ -30,6 +30,8 @@ function buildDeck(wave) {
   for (let i = 0; i < teachers; i++) deck.push('teacher');
   for (let i = 0; i < shields; i++) deck.push('shield');
   for (let i = 0; i < soups; i++) deck.push('soup');
+  // level-specific zombies: one of each per batch from the wave they join
+  for (const [kind, from] of Object.entries((level && level.joins) || {})) if (wave >= from) deck.push(kind);
   if (level.zombies) for (let i = 0; i < deck.length; i++) if (!level.zombies.includes(deck[i]) || (level.noDeckKinds || []).includes(deck[i])) deck[i] = 'basic';
   for (const [kind, n] of Object.entries((level.waveAtLeast || {})[wave] || {})) {
     let have = deck.filter(k => k === kind).length;
@@ -92,15 +94,17 @@ function spawnZombie(kind, lane, x = board.width + 30) {
     const SWIMMERS = { basic: 'tube', shield: 'shieldTube' };
     if (level.zombies && level.zombies.includes('soupTube')) SWIMMERS.soup = 'soupTube';
     const swimmer = Object.values(SWIMMERS).includes(kind);
+    // Boat Zombies only ever come down a water lane
+    if (kind === 'boatZ' && !WATER_LANES.includes(lane)) lane = WATER_LANES[Math.floor(Math.random() * WATER_LANES.length)];
     const wet = WATER_LANES.includes(lane);
     if (wet && SWIMMERS[kind]) kind = SWIMMERS[kind];
-    else if (wet && !swimmer) { const dry = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l)); lane = dry[Math.floor(Math.random() * dry.length)]; }
+    else if (wet && !swimmer && kind !== 'boatZ') { const dry = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l)); lane = dry[Math.floor(Math.random() * dry.length)]; }
     else if (!wet && swimmer) kind = Object.keys(SWIMMERS).find(k => SWIMMERS[k] === kind);
   }
   const mult = kind === 'shieldTube' ? 3 : kind === 'soupTube' ? 5.5 : kind === 'car' ? 7 : kind === 'mini' ? 1.75 : kind === 'teacher' ? 3.5 : kind === 'knight' ? 10 : kind === 'mutant' ? 15 : kind === 'noodler' ? 2.5 : kind === 'soup' ? 5.5 : kind === 'shield' ? 3 : kind === 'runner' ? 2 : 1;
-  const hp = base * mult;
+  const hp = kind === 'boatZ' ? BOATZ.hp : base * mult;
   state.enemies.push({ kind, lane, x, hp, maxHp: hp, base,
-    shieldUp: kind === 'shield', canUp: kind === 'soup' || kind === 'soupTube', speedMul: kind === 'car' ? 2 : kind === 'ninja' ? NINJA.speed : kind === 'runner' ? 2.5 : kind === 'knight' ? 1.5 : kind === 'mutant' ? 0.75 : 1, knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini', angry: false,
+    shieldUp: kind === 'shield', canUp: kind === 'soup' || kind === 'soupTube', speedMul: kind === 'boatZ' ? BOATZ.speed : kind === 'car' ? 2 : kind === 'ninja' ? NINJA.speed : kind === 'runner' ? 2.5 : kind === 'knight' ? 1.5 : kind === 'mutant' ? 0.75 : 1, knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini', angry: false,
     testAt: kind === 'teacher' ? base * 2.5 : kind === 'mini' ? base * 1.25 : 0, wob: Math.random() * 6,
     tricks: false, trickTimer: kind === 'ninja' ? NINJA.walk : 0, spinA: 0 });
 }

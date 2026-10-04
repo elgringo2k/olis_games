@@ -86,7 +86,7 @@ function updateSky() {
   const tint = document.getElementById('skyTint'); if (!tint) return;
   const s5 = shown('5'), s6 = Math.max(shown('n1'), shown('n2'), shown('n3'), shown('n4'), shown('n5'));
   // fade into sunset as Level 5 slides in, then into night as Level 6 slides in
-  const s10 = shown('n5'), sPool = Math.max(shown('p1'), shown('p2'), shown('p3'));
+  const s10 = shown('n5'), sPool = Math.max(shown('p1'), shown('p2'), shown('p3'), shown('p4'));
   const p = sPool > 0 ? 3 + sPool : s10 > 0 ? 2 + s10 : s6 > 0 ? 1 + s6 : s5;
   const mix = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
   const DAY = [255, 200, 120, 0], SUNSET = [255, 105, 55, 0.38], NIGHT = [14, 20, 60, 0.62], SUNRISE = [255, 140, 150, 0.34];

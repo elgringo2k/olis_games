@@ -191,6 +191,23 @@ function draw() {
       ctx.restore();
       continue;
     }
+    if (p.sink) {
+      // a Boat Zombie going down: it slides under the waterline, tipping as it goes, with bubbles coming up
+      const kk = p.t / p.life, water = p.y - 16;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(p.x - SNAP_FOOT_X, p.y - SNAP_FOOT_Y, SNAP_W, water - (p.y - SNAP_FOOT_Y)); ctx.clip();
+      ctx.translate(p.x, p.y + kk * kk * 110); ctx.rotate(kk * 0.35);
+      ctx.drawImage(p.snap, -SNAP_FOOT_X, -SNAP_FOOT_Y);
+      ctx.restore();
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1.5;
+      for (let i = 0; i < 7; i++) {
+        const ph = (kk * 2 + i / 7) % 1;
+        ctx.globalAlpha = 1 - kk;
+        ctx.beginPath(); ctx.arc(p.x - 30 + i * 10 + Math.sin(i * 3 + kk * 8) * 4, water - ph * 40, 2 + (i % 3), 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+      continue;
+    }
     if (p.carWreck) {
       // a broken-down car: shudders harder and harder while smoke pours out of the bonnet
       if (p.blown) continue;
@@ -466,7 +483,7 @@ function draw() {
     const others = kinds.filter(k => k !== 'mutant');
     let spots;
     if (level.pool) {
-      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube';
+      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube' || k === 'boatZ';
       const wet = others.filter(swims), dry = others.filter(k => !swims(k));
       const dryLanes = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l));
       spots = [

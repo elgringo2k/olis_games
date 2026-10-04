@@ -639,7 +639,7 @@ function update(dt) {
         continue;
       }
     }
-    const front = e.kind === 'car' ? CAR.halfLen : 30;
+    const front = e.kind === 'car' ? CAR.halfLen : e.kind === 'boatZ' ? 44 : 30;
     const col = Math.floor((e.x - front) / CELL);
     const cell = col >= 0 && col < COLS ? state.grid[e.lane][col] : null;
     const blocker = cell && !(UNITS[cell.type] && UNITS[cell.type].underfoot) ? cell : null;
@@ -681,8 +681,8 @@ function update(dt) {
           state.shake = 0.25;
         }
       } else {
-        // Pool Noodlers bonk defenders for triple damage
-        t.hp -= ENEMY.bite * (e.angry ? 6 : e.kind === 'noodler' ? 3 : 1) * dt;
+        // Pool Noodlers bonk defenders for triple damage; a Boat Zombie rams and crushes them at 2000 a second
+        t.hp -= (e.kind === 'boatZ' ? BOATZ.crushDps : ENEMY.bite * (e.angry ? 6 : e.kind === 'noodler' ? 3 : 1)) * dt;
         Sound.play('bite');
       }
       if (t.hp <= 0) { if (t.type === 'chog') chogBlast(t, e.lane, col); removeUnit(e.lane, col); }
@@ -706,6 +706,9 @@ function update(dt) {
       // it sits there sputtering and smoking, then blows apart (see the puff loop below)
       if (e.instakill || e.ripped) blowUpCar(e.x, e.lane * CELL + 92);
       else state.puffs.push({ t: 0, life: CAR.breakdown, carWreck: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
+    } else if (e.kind === 'boatZ') {
+      // the boat and its zombie sink under the water with a stream of bubbles
+      state.puffs.push({ t: 0, life: 1.4, sink: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
     } else if (e.kind === 'mutant') {
       // the Mutant's huge head pops off, then the body topples over with a thud
       state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
@@ -826,7 +829,7 @@ function update(dt) {
       Sound.play(p.big ? 'die' : p.crack ? 'whip' : p.splat ? 'squish' : p.sting ? 'sting' : p.zap ? 'zap' : p.pinch ? 'pinch'
         : p.chomp ? 'chomp' : p.dirt ? 'dig' : p.stomp ? 'thud' : p.canFall ? 'clank' : p.splinter ? 'woodBreak' : p.shards ? 'metal'
         : p.paper ? 'paper' : p.boom ? 'boom' : p.merge ? 'merge' : p.fortify ? 'upgrade' : p.fireHit ? 'fire' : p.crash ? 'crash'
-        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : p.carParts ? 'metal' : p.magnetItem ? null : 'rockHit');
+        : p.burp ? 'burp' : p.ash ? 'ash' : p.topple ? (p.small ? 'die' : null) : p.dust ? null : p.armFall ? 'woodBreak' : p.carWreck ? 'clank' : p.carParts ? 'metal' : p.magnetItem ? null : p.sink ? 'squish' : 'rockHit');
     }
     p.t += dt;
     if (p.carWreck && !p.blown && p.t >= p.life) {

@@ -58,6 +58,9 @@ const LEVELS = {
   // Pool Noodlers join from wave 5 (they stay on the grass lanes); Lewis Lobster joins your defenders
   p3: { name: 'Level 13', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster'],
         waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler'] },
+  // like Level 13, but Pool Noodlers come from wave 4, Boat Zombies roar in from wave 3, and Sammy swims in the pool
+  p4: { name: 'Level 14', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'multi', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog', 'lobster', 'shark'],
+        waves: 6, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube', 'soupTube', 'noodler', 'boatZ'], noodlersFrom: 4, joins: { boatZ: 3 } },
   endless: { name: 'Endless', units: null, waves: Infinity },
   sandbox: { name: 'Sandbox', units: null, waves: Infinity, sandbox: true }
 };
@@ -103,7 +106,7 @@ const SHOP_SEEDS = { enraged: 'angry', hsquid: 'squid', forti: 'mau' };
 // Shop seed packets for defenders that stand on their own
 const SHOP_UNITS = ['battery'];
 const boughtInShop = u => !!(SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) && !!owned(u);
-const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1', 'p2', 'p3'];
+const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1', 'p2', 'p3', 'p4'];
 const ENERGY_MAKERS = ['squid', 'vamp', 'hsquid'];
 function ownedUnits() {
   const own = new Set();
@@ -148,7 +151,7 @@ const DESCRIPTIONS = {
   shampoo: 'Leaves a slippery pink tile that slows zombies by 50%.',
   laser: 'Fires a beam that hits every zombie in its lane.',
   lobster: 'Big pinch, one tile ahead. Best right behind a Mau Mau.',
-  shark: 'Bites up to 2 tiles ahead and makes zombies bleed.',
+  shark: 'Bites up to 2 tiles ahead and makes zombies bleed. In the pool he swims: plant him straight in the water (no boat), never on land.',
   badger: 'Hides half buried and claws zombies walking over him.',
   jic: 'You can use this to fuse defenders together.',
   lotl: 'Explodes 1.5 s after planting for 1800 damage in a 3×3 area.'
