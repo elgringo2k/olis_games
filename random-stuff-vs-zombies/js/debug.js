@@ -1,13 +1,5 @@
 // Debug bar, Sandbox wave builder, drag-to-spawn zombies and Reset world
 const debugBar = document.getElementById('debugBar');
-// Sandbox speed: 1x, 2x or 3x (the game loop runs that many steps per frame)
-let gameSpeed = 1;
-const speedBtns = [...debugBar.querySelectorAll('.speed-btn')];
-function setSpeed(n) {
-  gameSpeed = n;
-  speedBtns.forEach(b => b.setAttribute('aria-pressed', +b.dataset.speed === n ? 'true' : 'false'));
-}
-speedBtns.forEach(b => b.addEventListener('click', () => setSpeed(+b.dataset.speed)));
 function setDebug(on) {
   on = !!on;
   if (on === debug) return;
@@ -15,7 +7,6 @@ function setDebug(on) {
   if (on) { savedEnergy = state.energy; state.energy = 999999; state.recharge = {}; }
   else state.energy = savedEnergy;
   debugBar.classList.toggle('show', on);
-  if (!on) setSpeed(1); // leaving Sandbox goes back to normal speed
   if (!on) { const wb = document.getElementById('waveBuilder'); if (wb) wb.hidden = true; }
   syncUI();
 }
