@@ -44,8 +44,11 @@ function update(dt) {
   if (state.customQueue && state.customQueue.length) {
     state.customTimer -= dt;
     if (state.customTimer <= 0) {
-      spawnZombie(state.customQueue.shift(), Math.floor(Math.random() * ROWS));
-      state.customTimer = state.customGap || 0.7;
+      if (state.customGap === 0) {
+        // "All at once": the whole wave comes out together, staggered a little so they don't overlap
+        while (state.customQueue.length) spawnZombie(state.customQueue.shift(), Math.floor(Math.random() * ROWS), board.width + 30 + Math.random() * 90);
+      } else spawnZombie(state.customQueue.shift(), Math.floor(Math.random() * ROWS));
+      state.customTimer = state.customGap ?? 0.7;
     }
   }
   if (state.finalQueue) {

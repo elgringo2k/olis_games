@@ -48,8 +48,9 @@ wbSend.addEventListener('click', () => {
   for (let i = q.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [q[i], q[j]] = [q[j], q[i]]; }
   if (!q.length) return;
   state.customQueue = (state.customQueue || []).concat(q);
-  state.customGap = +document.getElementById('wbGap').value || 0.7;
-  if (state.customTimer == null || state.customTimer < 0) state.customTimer = 0.6;
+  const gap = parseFloat(document.getElementById('wbGap').value);
+  state.customGap = Number.isFinite(gap) ? gap : 0.7;
+  if (state.customTimer == null || state.customTimer <= 0) state.customTimer = 0.6;
   state.banner = 2.4; state.bannerText = 'INCOMING!';
 });
 
