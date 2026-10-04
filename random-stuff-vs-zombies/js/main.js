@@ -72,7 +72,9 @@ function loop(now) {
   // schedule the next frame first, so one bad frame can never freeze the game
   requestAnimationFrame(loop);
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  try { if (state.running) update(dt); } catch (err) { console.error('update error', err); }
+  // in Sandbox the speed buttons run 2 or 3 steps per frame
+  const steps = debug ? gameSpeed : 1;
+  try { for (let i = 0; i < steps && state.running; i++) update(dt); } catch (err) { console.error('update error', err); }
   try { draw(); } catch (err) { console.error('draw error', err); ctx.restore(); }
   cards.forEach(cd => {
     const u = cd.dataset.unit, cdEl = cd.querySelector('.cooldown');
