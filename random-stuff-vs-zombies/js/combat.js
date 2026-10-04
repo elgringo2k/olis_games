@@ -120,7 +120,7 @@ function damage(e, n) {
     state.puffs.push({ x: e.x - 30, y: e.lane * CELL + 45, t: 0, paper: true, life: 0.9 });
   }
   // at half of its body health (armour doesn't count) a zombie's arm falls off
-  if (!e.armless && e.kind !== 'mutant' && e.kind !== 'car') {
+  if (!e.armless && !isMutant(e) && e.kind !== 'car') {
     const body = e.kind === 'teacher' || e.kind === 'mini' ? e.testAt : e.base;
     if (e.hp <= body / 2 && e.hp > 0) {
       e.armless = true;

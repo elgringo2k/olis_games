@@ -66,4 +66,7 @@ const MUTANT = { smashDmg: 300, mauStrikes: 2, fortiStrikes: 5, smashEvery: 1.5,
 const BOATZ = { hp: 1000, speed: 1.5, crushDps: 2000, breakdown: 2 }; // breaks down for 2 s before it sinks
 // Swimmer Zombie: water only; swims under the water (where nothing can hit it) and surfaces to eat
 const SWIMMER = { hp: 0.75, speed: 1.3 };
+// Aqua Mutant: a Mutant that wades down the pool lanes (water only). 3000 health, normal (1x) speed
+const AQUA = { hp: 3000, speed: 1 };
+const isMutant = e => e.kind === 'mutant' || e.kind === 'aquaMutant';
 const ENERGY_TICK = 10, ENERGY_GAIN = 25;

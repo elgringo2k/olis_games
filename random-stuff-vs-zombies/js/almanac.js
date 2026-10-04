@@ -51,6 +51,7 @@ const ALMANAC_ZOMBIES = {
   soupTube: { name: 'Soup Can Tube Zombie', tough: 4, speed: 3, bite: 3, first: 'Level 12', desc: 'A Soup Can Head floating in a rubber ring. Tough until the can pops off.' },
   boatZ:   { name: 'Boat Zombie', tough: 4, speed: 4, bite: 'deathly', first: 'Level 14', desc: 'Roars down the pool lanes in a metal motorboat at 1.5x speed and rams defenders, crushing them at 2000 a second. Only ever in the water.' },
   swimmer: { name: 'Swimmer Zombie', tough: 1, speed: 4, bite: 3, first: 'Level 12', desc: 'Swims along under the water, where nothing can hit it: all you see are ripples. It only comes up to eat a defender, and that is when you can hit back. Weaker (0.75x health) but faster (1.3x) than a normal zombie.' },
+  aquaMutant: { name: 'Aqua Mutant', tough: 'undying', speed: 3, bite: 5, first: 'Sandbox only', desc: 'A sea-green Mutant that wades down the pool lanes. 3000 health, walks at normal speed, and stomps defenders flat like the Mutant. Only the Ultima Snapper can swallow it.' },
   car:     { name: 'Car Zombie', tough: 4, speed: 5, bite: 'deathly', first: 'Sandbox only', desc: 'A zombie behind the wheel of a beat-up car. Takes up a tile and a half, drives at double speed and runs defenders over. A Forti Mau\'s armour can take one hit.' },
   ninja:   { name: 'Nunjaka', tough: 2, speed: [5, 0], bite: 3, first: 'Sandbox only', desc: 'A zombie monk. Dashes at double speed, then stops for 5 s of nunchuck tricks that knock flying projectiles back at your defenders.' },
   mini:    { name: 'Mini Teacher', tough: 2, speed: [3, 4], bite: [3, 5], first: 'Sandbox only', desc: 'Just like a Teacher, but with less health.' }
@@ -67,7 +68,7 @@ function almanacPic(kind, isZombie, size) {
   if (isZombie) {
     const e = { kind, lane: 0, x: 0, hp: 1, maxHp: 1, base: 1, walking: false, wob: 0, hurtOverride: 0, noShadow: false,
       shieldUp: kind === 'shield' || kind === 'shieldTube', canUp: kind === 'soup' || kind === 'soupTube', knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini' };
-    const big = kind === 'mutant';
+    const big = kind === 'mutant' || kind === 'aquaMutant';
     const saved = ctx;
     try {
       ctx = g;

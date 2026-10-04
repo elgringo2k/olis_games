@@ -525,7 +525,7 @@ function draw() {
     const others = kinds.filter(k => k !== 'mutant');
     let spots;
     if (level.pool) {
-      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube' || k === 'boatZ' || k === 'swimmer';
+      const swims = k => k === 'tube' || k === 'shieldTube' || k === 'soupTube' || k === 'boatZ' || k === 'swimmer' || k === 'aquaMutant';
       const wet = others.filter(swims), dry = others.filter(k => !swims(k));
       const dryLanes = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l));
       spots = [

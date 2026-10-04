@@ -317,7 +317,7 @@ function update(dt) {
             // CHOMP: everything in reach, up to 5, goes down in one gulp
             let gulp = inRange(eatTo + 40).slice(0, ULTIMA.gulp);
             // a Mutant fills him right up: if one is in the gulp, he eats just that Mutant
-            const mutant = gulp.find(e => e.kind === 'mutant');
+            const mutant = gulp.find(isMutant);
             if (mutant) gulp = [mutant];
             for (const e of gulp) { e.eaten = true; e.hp = 0; state.puffs.push({ x: e.x - 10, y: r * CELL + 50, t: 0, chomp: true }); }
             state.shake = 0.2;
@@ -351,7 +351,7 @@ function update(dt) {
       // -> chews for 10 s -> opens up to burp -> closes again
       const tx = c * CELL + CELL / 2, headX = c * CELL + 40 + 30;
       const eatTo = (c + 2) * CELL + 15, seeTo = (c + 2.25) * CELL + 15;
-      const tooBig = e => e.kind === 'mutant' || e.kind === 'car' || e.kind === 'boatZ';
+      const tooBig = e => isMutant(e) || e.kind === 'car' || e.kind === 'boatZ';
       const ok = e => e && e.hp > 0 && e.lane === r && !tooBig(e) && e.x >= tx - 20 && state.enemies.includes(e);
       const nearest = (limit) => {
         let best = null;
@@ -687,7 +687,7 @@ function update(dt) {
     }
     if (t && e.x - front - (col * CELL + CELL / 2) < 25) {
       e.walking = false;
-      if (e.kind === 'mutant') {
+      if (isMutant(e)) {
         // Mutant stomps instead of biting
         if (e.smashCool == null) e.smashCool = MUTANT.windup;
         e.smashCool -= dt;
@@ -704,7 +704,7 @@ function update(dt) {
       }
       if (t.hp <= 0) { if (t.type === 'chog') chogBlast(t, e.lane, col); removeUnit(e.lane, col); }
     } else {
-      if (e.kind === 'mutant') e.smashCool = null;
+      if (isMutant(e)) e.smashCool = null;
       e.x -= ENEMY.speed * e.speedMul * (e.slowed ? 1 - SHAMPOO.slow : 1) * dt; e.walking = true;
       if (e.kind === 'swimmer') e.submerged = true; // nothing left to eat: back under the water
     }
@@ -718,7 +718,7 @@ function update(dt) {
     if (e.eaten) return; // swallowed by a Snapper: nothing left to show
     if (e.ashed) {
       // blown up by a Temper-lotl or Chog-chog: a charred statue that crumbles to ash
-      state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: e.kind === 'mutant' ? 170 : 105 });
+      state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: isMutant(e) ? 170 : 105 });
     } else if (e.kind === 'car') {
       // destroyed in one hit or ripped open by a Magneticobra, the car blows apart on the spot; otherwise it breaks down first:
       // it sits there sputtering and smoking, then blows apart (see the puff loop below)
@@ -727,6 +727,12 @@ function update(dt) {
     } else if (e.kind === 'boatZ') {
       // the boat breaks down like a car (stalled, shuddering, smoke from the motor), then sinks (see the puff loop)
       state.puffs.push({ t: 0, life: BOATZ.breakdown, carWreck: true, boat: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92 });
+    } else if (e.kind === 'aquaMutant') {
+      // the Aqua Mutant's huge head pops off and lands in the water with a big splash, and the body sinks
+      state.puffs.push({ t: 0, life: 1.6, sink: true, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92 });
+      state.puffs.push({ t: 0, life: 1.8, headPop: true, huge: true, water: true, hy: 126, floor: 100, snap: snapshotHead(e), x: e.x, y: e.lane * CELL + 92, ox: 0, oy: 0,
+        vx: 60 + Math.random() * 40, vy: -380 - Math.random() * 60, spin: 0, vs: 4 + Math.random() * 3, bounced: false });
+      state.shake = 0.25;
     } else if (e.kind === 'mutant') {
       // the Mutant's huge head pops off, then the body topples over with a thud
       state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });

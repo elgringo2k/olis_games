@@ -1,6 +1,8 @@
 // Drawing every zombie
 function drawMutantBody(e, baseY, step, chomp) {
-  const skin = '#8fae7a', skinDark = '#6f8d5c';
+  // the Aqua Mutant is the same brute with sea-green skin
+  const aqua = e.kind === 'aquaMutant';
+  const skin = aqua ? '#6fb8ad' : '#8fae7a', skinDark = aqua ? '#4e938a' : '#6f8d5c';
   // 0 = foot down, 1 = foot fully raised right before the stomp
   let lift = 0;
   if (!e.walking && e.smashCool != null) lift = Math.min(1, Math.max(0, 1 - e.smashCool / 0.9));
@@ -152,6 +154,7 @@ function drawMutantBody(e, baseY, step, chomp) {
 }
 
 function drawEnemy(e) {
+  if (e.kind === 'aquaMutant') return drawWadingMutant(e);
   if (isSwimming(e)) return drawSwimmer(e);
   if (e.kind === 'boatZ') return drawBoatZombie(e);
   drawEnemyBody(e);
@@ -225,6 +228,18 @@ function drawDiver(e) {
   for (let i = 0; i < 3; i++) { const ph = ((e.wob || 0) * 0.4 + i / 3) % 1; ctx.beginPath(); ctx.arc(x + 20 + i * 9, y - 2 - ph * 6, 1.6 + (i % 2), 0, Math.PI * 2); ctx.fill(); }
   ctx.restore();
 }
+// an Aqua Mutant wading down a pool lane: the water comes up over its knees, with ripples around it
+function drawWadingMutant(e) {
+  const baseY = e.lane * CELL + 92, water = baseY - 26;
+  ctx.save(); ctx.beginPath(); ctx.rect(e.x - 150, baseY - 320, 300, 320 - 26); ctx.clip();
+  drawEnemyBody(Object.assign({}, e, { noShadow: true }));
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(e.x, water + 2, 44, 8, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 2; i++) { const ph = ((e.wob || 0) * 0.25 + i / 2) % 1; ctx.globalAlpha = 1 - ph; ctx.beginPath(); ctx.ellipse(e.x, water + 2, 34 + ph * 22, 6 + ph * 5, 0, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.restore();
+}
 // a zombie bobbing along in a rubber ring: only the top half shows above the water
 // zombies drawn swimming: the tube zombies, a surfaced Swimmer Zombie, and a Pool Noodler in the water
 const isSwimming = e => e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube' || e.kind === 'swimmer' || (e.kind === 'noodler' && e.swimming);
@@ -274,7 +289,7 @@ function drawEnemyBody(e) {
   const fury = teacher && e.angry;
   const step = e.walking ? Math.sin(e.wob * (run ? 3.6 : 1.4)) * (run ? 1.6 : 1) : 0;
   const chomp = e.walking ? 0 : Math.sin(e.wob * 3);
-  if (e.kind === 'mutant') drawMutantBody(e, baseY, step, chomp);
+  if (isMutant(e)) drawMutantBody(e, baseY, step, chomp);
   else if (e.kind === 'car') drawCarZombie(e, baseY);
   else {
   ctx.save(); ctx.translate(e.x + (fury ? Math.sin(state.time * 50) * 1.2 : 0), baseY);
@@ -521,14 +536,14 @@ function drawEnemyBody(e) {
     for (let i = 0; i < 3; i++) {
       const ph = (state.time * 1.2 + i / 3) % 1;
       ctx.fillStyle = `rgba(150,220,60,${0.8 * (1 - ph)})`;
-      const py = e.kind === 'mutant' ? e.lane * CELL - 30 : e.lane * CELL + 24;
+      const py = isMutant(e) ? e.lane * CELL - 30 : e.lane * CELL + 24;
       ctx.beginPath(); ctx.arc(e.x - 6 + (i - 1) * 9, py - ph * 14, 3 + i, 0, Math.PI * 2); ctx.fill();
     }
   }
   // hp bar
   if (e.hp < e.maxHp) {
-    const by = e.kind === 'mutant' ? e.lane * CELL - 52 : e.lane * CELL + 2;
-    const bw = e.kind === 'mutant' ? 72 : 48;
+    const by = isMutant(e) ? e.lane * CELL - 52 : e.lane * CELL + 2;
+    const bw = isMutant(e) ? 72 : 48;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(e.x - bw / 2, by, bw, 6);
     ctx.fillStyle = e.poison > 0 ? '#8fd13a' : '#e0634a'; ctx.fillRect(e.x - bw / 2, by, bw * (Math.max(0, e.hp) / e.maxHp), 6);
   }

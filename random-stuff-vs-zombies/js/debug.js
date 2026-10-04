@@ -13,9 +13,9 @@ function setDebug(on) {
 }
 // Sandbox: build your own wave by choosing how many of each zombie to send
 const WB_KINDS = [['basic', 'Zombie'], ['shield', 'Shield Bearer'], ['soup', 'Soup Can Head'], ['runner', 'Runnererer'], ['noodler', 'Pool Noodler'],
-  ['knight', 'Charging Knight'], ['teacher', 'Teacher'], ['mini', 'Mini Teacher'], ['ninja', 'Nunjaka'], ['car', 'Car Zombie'], ['mutant', 'Mutant'], ['boatZ', 'Boat Zombie'], ['swimmer', 'Swimmer Zombie']];
+  ['knight', 'Charging Knight'], ['teacher', 'Teacher'], ['mini', 'Mini Teacher'], ['ninja', 'Nunjaka'], ['car', 'Car Zombie'], ['mutant', 'Mutant'], ['boatZ', 'Boat Zombie'], ['swimmer', 'Swimmer Zombie'], ['aquaMutant', 'Aqua Mutant']];
 // only on the pool map (in the water lanes, the other zombies turn into their swimming versions by themselves)
-const WB_POOL_ONLY = ['boatZ', 'swimmer'];
+const WB_POOL_ONLY = ['boatZ', 'swimmer', 'aquaMutant'];
 const wbCounts = {};
 const wbGrid = document.getElementById('wbGrid'), wbTotal = document.getElementById('wbTotal'), wbSend = document.getElementById('wbSend');
 const wbPanel = document.getElementById('waveBuilder'), wbOpen = document.getElementById('openWaveBuilder');
