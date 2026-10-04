@@ -126,6 +126,19 @@
     border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer;
   }
   .reset-world.confirm { background: #b3202e; }
+  .coins { display: flex; align-items: center; gap: 6px; font: 900 1.05rem "Nunito", sans-serif; color: #ffe27a; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.22); }
+  .coin-icon { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff6c4, #f2c230 55%, #b8860b); box-shadow: inset 0 0 0 2px #c99a1a; }
+  .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; width: 100%; max-width: 820px; }
+  .shop-item { background: #f4efd8; color: #2a2a1e; border: 3px solid #c9bf94; border-radius: 14px; padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+  .shop-item.night .shop-pic { background: linear-gradient(#3d5a6a, #2c3d6b); }
+  .shop-pic { width: 72px; height: 72px; align-self: center; background: linear-gradient(#86b35a, #79a650); border-radius: 12px; }
+  .shop-item h3 { margin: 0; font: 1.15rem "Lilita One", "Arial Black", sans-serif; color: #2f5a2a; }
+  .shop-item p { margin: 0; font-weight: 600; font-size: .85rem; color: #4a4630; }
+  .shop-item .owned { font-weight: 800; font-size: .8rem; color: #8a7a50; }
+  .overlay .shop-item button { font: 800 .95rem "Nunito", sans-serif; border: 0; border-radius: 10px; padding: 8px 12px; background: #f2c230; color: #3a2c00; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .overlay .shop-item button:disabled { opacity: .45; cursor: not-allowed; }
+  .shop-wallet { display: flex; align-items: center; gap: 8px; font: 900 1.3rem "Nunito", sans-serif; color: #ffe27a; text-shadow: 0 2px 0 rgba(30,50,25,.7); }
+  .overlay button.menu-btn.shop { background: linear-gradient(135deg, #fff1b8, #f2c230); color: #5a3d00; }
   .sound-toggle {
     font-size: 1.05rem; width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
     background: rgba(0,0,0,.22); border: 2px solid var(--ink-soft); padding: 0;
@@ -139,6 +152,24 @@
   .leave-level.confirm { background: #f2c230; color: #3a2c00; border-color: #f2c230; }
   .leave-level[hidden] { display: none; }
   .reset-world:focus-visible, .debug-toggle:focus-visible { outline: 3px solid var(--energy); outline-offset: 3px; }
+  .debug-bar .wave-btn { background: #ff4d5e; color: #fff; }
+  .wave-builder {
+    margin-top: 6px; padding: 10px 12px; border-radius: 8px; border: 2px solid #ff4d5e;
+    background: var(--panel); color: var(--ink); font-weight: 700;
+  }
+  .wave-builder[hidden] { display: none; }
+  .wb-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .wb-head span { color: var(--ink-soft); font-size: .9rem; }
+  .wb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+  .wb-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: rgba(0,0,0,.15); border-radius: 8px; padding: 4px 6px 4px 10px; font-size: .9rem; }
+  .wb-row .wb-ctrl { display: flex; align-items: center; gap: 4px; }
+  .wb-row button { width: 28px; height: 28px; border-radius: 6px; border: 0; background: #f4efd8; color: #2a2a1e; font: 800 1rem "Nunito", sans-serif; cursor: pointer; }
+  .wb-row input { width: 44px; text-align: center; font: 800 .95rem "Nunito", sans-serif; border-radius: 6px; border: 0; padding: 4px 2px; }
+  .wb-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .wb-actions label { font-size: .85rem; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; }
+  .wb-actions select, .wb-actions button { font: 800 .85rem "Nunito", sans-serif; border: 0; border-radius: 8px; padding: 7px 11px; background: #f4efd8; color: #2a2a1e; cursor: pointer; }
+  .wb-actions .wb-send { background: #ff4d5e; color: #fff; margin-left: auto; }
+  .wb-actions .wb-send:disabled { opacity: .45; cursor: not-allowed; }
   .debug-bar .sep { flex: 0 0 auto; width: 2px; height: 22px; background: rgba(255,77,94,.5); }
   .overlay button:disabled { opacity: .45; cursor: not-allowed; }
   /* level select: a grassy lawn with a row of level cards you scroll sideways */
@@ -162,6 +193,34 @@
     padding: 6px 14px; border-radius: 999px; background: rgba(30,50,25,.45); color: #fff;
   }
   .bonus-grid { justify-content: safe center; }
+  /* ---------- Almanac ---------- */
+  .overlay button.menu-btn.almanac { background: linear-gradient(135deg, #e7d8b8, #c9a66b); color: #3d2a12; }
+  .overlay.almanac-screen { justify-content: flex-start; padding-top: 14px; gap: 8px; }
+  .alm-tabs { display: flex; gap: 8px; }
+  .overlay button.alm-tab { font: 800 .9rem "Nunito", sans-serif; padding: 6px 16px; border-radius: 999px; background: rgba(30,50,25,.45); color: #fff; }
+  .overlay button.alm-tab[aria-selected="true"] { background: #f4efd8; color: #2f5a2a; }
+  .alm-body { display: flex; gap: 12px; width: 100%; max-width: 880px; flex: 1; min-height: 0; }
+  .alm-grid { flex: 1.2; min-width: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; align-content: start; padding: 4px; }
+  .overlay button.alm-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border-radius: 10px; background: #f4efd8; color: #2a2a1e; border: 2px solid #c9bf94; font: 800 .68rem "Nunito", sans-serif; line-height: 1.1; }
+  .overlay button.alm-item[aria-pressed="true"] { border-color: #f2c230; box-shadow: 0 0 0 2px #f2c230; }
+  .alm-item canvas { width: 56px; height: 56px; }
+  .alm-detail { flex: 1; min-width: 0; overflow-y: auto; background: #f4efd8; color: #2a2a1e; border-radius: 14px; padding: 12px 14px; text-align: left; border: 3px solid #c9bf94; }
+  .alm-detail h3 { margin: 0; font-family: "Lilita One", "Arial Black", sans-serif; font-size: 1.4rem; color: #2f5a2a; }
+  .alm-detail .alm-pic { display: flex; justify-content: center; background: linear-gradient(#86b35a, #79a650); border-radius: 10px; margin: 6px 0 8px; }
+  .alm-detail .alm-pic canvas { width: 120px; height: 120px; }
+  .alm-detail p { margin: 0 0 8px; font-weight: 600; font-size: .88rem; color: #4a4630; }
+  .alm-stat { display: grid; grid-template-columns: 7.5em 1fr; gap: 6px; align-items: center; font-size: .85rem; margin: 3px 0; }
+  .alm-stat b { color: #5a5640; font-weight: 800; }
+  .alm-undying { color: #c0182a; font-weight: 900; letter-spacing: .04em; animation: almShake .6s infinite; display: inline-block; }
+  .alm-max i.on { background: #8b0010; }
+  @keyframes almShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-1px) rotate(-1deg); } 75% { transform: translateX(1px) rotate(1deg); } }
+  @media (prefers-reduced-motion: reduce) { .alm-undying { animation: none; } }
+  .alm-then { font-style: normal; color: #8a7a50; font-weight: 700; margin: 0 4px; }
+  .alm-meter { display: inline-flex; gap: 3px; vertical-align: middle; margin-right: 6px; }
+  .alm-meter i { width: 12px; height: 10px; border-radius: 3px; background: #ddd3ae; display: inline-block; }
+  .alm-meter i.on { background: #e0533c; }
+  .alm-meter.green i.on { background: #4caf50; }
+  @media (max-width: 640px) { .alm-body { flex-direction: column; } .alm-grid { max-height: 40%; } }
   .overlay button.world-next {
     position: absolute; top: 12px; right: 12px; font: 800 .9rem "Nunito", sans-serif;
     padding: 6px 14px; border-radius: 999px; background: #1f2a4d; color: #e8ecff; box-shadow: 0 3px 0 rgba(10,14,30,.5);
@@ -175,6 +234,21 @@
       repeating-conic-gradient(#25345e 0 25%, #2c3d6b 0 50%) 0 0 / 120px 120px;
   }
   .night h2 { color: #e8ecff; text-shadow: 0 3px 0 rgba(5,8,25,.8); }
+  /* the level row's sky: day -> sunset (around Level 5) -> night (Levels 6+) as you scroll */
+  .sky-tint { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; transition: background-color .15s linear; }
+  .sky-tint .sky-stars { position: absolute; inset: 0; opacity: 0;
+    background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 30% 30%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 48% 10%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 66% 24%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 84% 14%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 92% 34%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 8% 82%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 58% 90%, #fff 50%, transparent 51%); }
+  .sky-tint .sky-moon { position: absolute; top: 8%; right: 12%; width: 40px; height: 40px; border-radius: 50%; opacity: 0;
+    background: #fff6d8; box-shadow: 0 0 26px rgba(255,246,216,.7); }
+  #levelOverlay > *:not(.sky-tint) { position: relative; z-index: 1; }
+  #levelOverlay > .menu-back { position: absolute; }
+  .overlay .level-card[hidden] { display: none; }
+  .overlay .level-card.pool-card { background: linear-gradient(135deg, #e3f6ff, #bfe7f7); border-color: #3a9cc9; }
+  .overlay .level-card.dawn-card { background: linear-gradient(135deg, #ffe0cc, #f6c0d0 55%, #c9d0f0) !important; border-color: #c9606e !important; }
+  .overlay .level-card.night-card { background: linear-gradient(135deg, #dfe4ff, #c9d0f0); border-color: #5b66a8; }
   .night .night-note { color: #c9d2f5; font-weight: 700; max-width: 36ch; }
   .night-sky { position: absolute; inset: 0; pointer-events: none;
     background-image: radial-gradient(1.5px 1.5px at 12% 20%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 30% 35%, #fff 50%, transparent 51%),
@@ -185,6 +259,9 @@
     background: #fff6d8; box-shadow: 0 0 30px rgba(255,246,216,.7); }
   .night-sky .moon::after { content: ""; position: absolute; top: -4px; left: 12px; width: 46px; height: 46px; border-radius: 50%; background: #25345e; }
   .overlay .level-card.final-level { border-color: #b3202e; background: linear-gradient(135deg, #f4efd8, #f6d9cf); }
+  .overlay .level-card.plan { background: linear-gradient(135deg, #fff6d6, #d9f0c4); border-color: #6f9a3a; }
+  .start-waves { font: 800 .9rem "Nunito", sans-serif; background: #4caf50; color: #fff; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+  .start-waves[hidden] { display: none; }
   .overlay .level-card.challenge { background: linear-gradient(135deg, #e9dcff, #d8f0c4); border-color: #8a3fb8; }
   .overlay.levels-screen { overflow-y: auto; justify-content: safe center; }
   @media (max-width: 640px) {
@@ -226,10 +303,18 @@
   .level-goal { font-weight: 800; color: #9a7a10; }
   .level-units { font-weight: 600; font-size: .85rem; color: #5a5640; }
   .pick[hidden] { display: none; }
+  .overlay .pick-warning { margin: 0; padding: 6px 10px; border-radius: 10px; background: #fff3c4; color: #6b4a00; font-weight: 800; font-size: .85rem; border: 2px solid #f2c230; }
+  .overlay .pick-warning[hidden] { display: none; }
+  .overlay .pick.warn::after { content: "⚠"; position: absolute; top: 4px; right: 6px; font-size: 1rem; }
+  .overlay .pick { position: relative; }
   .overlay .pick-count { font-family: "Lilita One", "Arial Black", sans-serif; font-size: 1.4rem; color: var(--energy); }
   .overlay-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .overlay button.secondary { background: transparent; color: #fff; box-shadow: inset 0 0 0 3px #fff; }
   .card.benched { display: none; }
+  .card.upgrade, .overlay .pick.upgrade { background: linear-gradient(135deg, #fff3c4, #f2c94c); border-color: #c9971a; }
+  .card.upgrade canvas, .pick.upgrade img { background: #ffe9a3; }
+  .card.fusion, .overlay .pick.fusion { background: linear-gradient(135deg, #dce9ff, #ecdcff 50%, #dcffe0); border-color: #8a3fb8; }
+  .card.fusion canvas, .pick.fusion img { background: rgba(255,255,255,.55); }
   .card.seed { background: linear-gradient(135deg, #dce9ff, #ecdcff 50%, #dcffe0); border-color: #f2c230; }
   .card.seed[hidden] { display: none; }
   .slot {
@@ -285,11 +370,22 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor"/></svg>
       <span id="energy">150</span>
     </div>
+    <div class="coins" title="Coins" aria-live="polite"><span class="coin-icon" aria-hidden="true"></span><span id="coinCount">0</span></div>
     <button class="card" data-unit="squid" aria-pressed="false">
       <canvas id="squidArt" width="104" height="104"></canvas>
       <span>Sun Squid<span class="cost">50</span></span>
     </button>
+    <button class="card" data-unit="hsquid" aria-pressed="false">
+      <canvas id="hsquidArt" width="104" height="104"></canvas>
+      <span>Hypersquid<span class="cost">125</span></span>
+    </button>
+    <button class="card" data-unit="mini" aria-pressed="false">
+      <span class="cooldown" aria-hidden="true"></span>
+      <canvas id="miniArt" width="104" height="104"></canvas>
+      <span>Mini Turtle<span class="cost">0</span></span>
+    </button>
     <button class="card" data-unit="vamp" aria-pressed="false">
+      <span class="cooldown" aria-hidden="true"></span>
       <canvas id="vampArt" width="104" height="104"></canvas>
       <span>Vampire Squid<span class="cost">25</span></span>
     </button>
@@ -370,12 +466,34 @@
       <span>Snapper<span class="cost">150</span></span>
     </button>
     <button class="card" data-unit="chog" aria-pressed="false">
+      <span class="cooldown" aria-hidden="true"></span>
       <canvas id="chogArt" width="104" height="104"></canvas>
-      <span>Chog-chog<span class="cost">100</span></span>
+      <span>Chog-chog<span class="cost">50</span></span>
+    </button>
+    <button class="card" data-unit="multi" aria-pressed="false">
+      <canvas id="multiArt" width="104" height="104"></canvas>
+      <span>Multurtle<span class="cost">250</span></span>
+    </button>
+    <button class="card" data-unit="battery" aria-pressed="false">
+      <canvas id="batteryArt" width="104" height="104"></canvas>
+      <span>Battery Tower<span class="cost">125</span></span>
+    </button>
+    <button class="card" data-unit="boat" aria-pressed="false">
+      <span class="cooldown" aria-hidden="true"></span>
+      <canvas id="boatArt" width="104" height="104"></canvas>
+      <span>Boat<span class="cost">25</span></span>
+    </button>
+    <button class="card" data-unit="loo" aria-pressed="false">
+      <canvas id="looArt" width="104" height="104"></canvas>
+      <span>Loo Roll<span class="cost">150</span></span>
     </button>
     <button class="card seed" id="hyperSeed" aria-pressed="false" hidden>
       <canvas id="hyperSeedArt" width="104" height="104"></canvas>
       <span>Hyper Turtle<span class="cost">Free · <b id="hyperSeedCount">1</b></span></span>
+    </button>
+    <button class="card seed" id="teslaSeed" aria-pressed="false" hidden>
+      <canvas id="teslaSeedArt" width="104" height="104"></canvas>
+      <span>Tesla Coil<span class="cost">Free · <b id="teslaSeedCount">1</b></span></span>
     </button>
     <button class="card seed" id="ultimaSeed" aria-pressed="false" hidden>
       <canvas id="ultimaSeedArt" width="104" height="104"></canvas>
@@ -390,6 +508,7 @@
       <span>Shovel</span>
     </button>
     <div class="stats">Wave <b id="wave">1</b><br>Defeated <b id="kills">0</b></div>
+    <button class="start-waves" id="startWaves" hidden>Start waves ▶</button>
     <button class="sound-toggle" id="musicToggle" aria-pressed="true" title="Music">🎵</button>
     <button class="sound-toggle" id="sfxToggle" aria-pressed="true" title="Sound effects">🔊</button>
     <button class="leave-level" id="leaveLevel" hidden>Leave level</button>
@@ -407,7 +526,25 @@
     <button data-spawn="knight">Charging Knight</button>
     <button data-spawn="teacher">Teacher</button>
     <button data-spawn="mini">Mini Teacher</button>
+    <button data-spawn="ninja">Nunjaka</button>
+    <button data-spawn="car">Car Zombie</button>
     <button data-spawn="mutant">Mutant</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button id="openWaveBuilder" class="wave-btn" aria-expanded="false">Custom wave…</button>
+  </div>
+  <div class="wave-builder" id="waveBuilder" hidden>
+    <div class="wb-head">
+      <strong>Custom wave</strong>
+      <span id="wbTotal">0 zombies</span>
+    </div>
+    <div class="wb-grid" id="wbGrid"></div>
+    <div class="wb-actions">
+      <label>Gap between zombies
+        <select id="wbGap"><option value="0.3">Fast (0.3 s)</option><option value="0.7" selected>Normal (0.7 s)</option><option value="1.5">Slow (1.5 s)</option></select>
+      </label>
+      <button id="wbClear">Clear</button>
+      <button id="wbSend" class="wb-send" disabled>Send wave</button>
+    </div>
   </div>
 
   <div class="board-wrap">
@@ -417,12 +554,14 @@
       <div class="menu-buttons">
         <button class="menu-btn" id="menuLevels">Levels</button>
         <button class="menu-btn bonus" id="menuBonus">Bonus Levels</button>
+        <button class="menu-btn almanac" id="menuAlmanac">Almanac</button>
+        <button class="menu-btn shop" id="menuShop">Shop</button>
       </div>
     </div>
     <div class="overlay levels-screen" id="levelOverlay">
       <button class="menu-back" data-back>◀ Menu</button>
-      <button class="world-next locked" id="toNight" title="Beat Level 5 to reach Night">🔒 Night ▶</button>
-      <h2>Grass</h2>
+      <div class="sky-tint" id="skyTint" aria-hidden="true"><div class="sky-stars"></div><span class="sky-moon"></span></div>
+      <h2 id="levelsTitle">Grass</h2>
       <div class="level-row">
         <button class="level-arrow" id="levelsBack" aria-label="Earlier levels">◀</button>
         <div class="level-grid" id="levelGrid">
@@ -453,7 +592,43 @@
           <span class="level-lock" aria-hidden="true">🔒</span>
           <span class="level-name">Level 5</span>
           <span class="level-goal">6 waves, then beat the Mutant</span>
-          <span class="level-units">+ Temper-lotl & Snapper · the last grass level</span>
+          <span class="level-units">+ Temper-lotl & Snapper · the last daytime level</span>
+        </button>
+        <button class="level-card night-card" data-level="n1" data-needs="5">
+          <span class="level-lock" aria-hidden="true">🔒</span>
+          <span class="level-name">Level 6</span>
+          <span class="level-goal">Survive 3 waves + a final wave</span>
+          <span class="level-units">Night falls: Sun Squids sleep · Vampire Squid joins you</span>
+        </button>
+        <button class="level-card night-card" data-level="n2" data-needs="n1">
+          <span class="level-lock" aria-hidden="true">🔒</span>
+          <span class="level-name">Level 7</span>
+          <span class="level-goal">Survive 3 waves + a final wave</span>
+          <span class="level-units">Soup Can Heads arrive · Shampoo joins you</span>
+        </button>
+        <button class="level-card night-card" data-level="n3" data-needs="n2">
+          <span class="level-lock" aria-hidden="true">🔒</span>
+          <span class="level-name">Level 8</span>
+          <span class="level-goal">Survive 5 waves + a final wave</span>
+          <span class="level-units">Runnererers arrive · Mini Turtle joins you</span>
+        </button>
+        <button class="level-card night-card" data-level="n4" data-needs="n3">
+          <span class="level-lock" aria-hidden="true">🔒</span>
+          <span class="level-name">Level 9</span>
+          <span class="level-goal">Survive 5 waves + a final wave</span>
+          <span class="level-units">Mini Teachers in the final wave · Chog-chog joins you</span>
+        </button>
+        <button class="level-card night-card dawn-card" data-level="n5" data-needs="n4">
+          <span class="level-lock" aria-hidden="true">🔒</span>
+          <span class="level-name">Level 10</span>
+          <span class="level-goal">Survive 7 waves + a BOSS wave</span>
+          <span class="level-units">Noodlers + a Knight boss wave · Laser Turtle joins you</span>
+        </button>
+        <button class="level-card night-card pool-card" data-level="p1" data-needs="n5">
+          <span class="level-lock" aria-hidden="true">🔒</span>
+          <span class="level-name">Level 11</span>
+          <span class="level-goal">Survive 5 waves + a final wave</span>
+          <span class="level-units">The Pool! Boats float defenders on water · swimming zombies</span>
         </button>
         </div>
         <button class="level-arrow" id="levelsMore" aria-label="More levels">▶</button>
@@ -478,6 +653,11 @@
           <span class="level-goal">No waves, infinite energy</span>
           <span class="level-units">Every defender at once · drag in your own zombies</span>
         </button>
+        <button class="level-card plan" data-level="plan">
+          <span class="level-name">Plan Your Defences</span>
+          <span class="level-goal">3125 energy to build, then 5 waves</span>
+          <span class="level-units">Every defender you own · no energy makers or extra energy · no recharges · daytime</span>
+        </button>
         <button class="level-card challenge" data-level="challenge">
           <span class="level-name">Jicjajic Challenge</span>
           <span class="level-goal">4 rounds, each ending in a horde</span>
@@ -490,7 +670,29 @@
       <button class="menu-back" id="nightBack">◀ Grass</button>
       <div class="night-sky" aria-hidden="true"><span class="moon"></span></div>
       <h2>Night</h2>
-      <p class="night-note">The lawn has gone dark… No levels here yet. More are coming soon!</p>
+      <div class="level-row">
+        <div class="level-grid bonus-grid">
+        </div>
+      </div>
+      <p class="night-note">At night, Sun Squids fall asleep and every day defender attacks 25% slower.</p>
+    </div>
+    <div class="overlay levels-screen almanac-screen" id="almanacOverlay">
+      <button class="menu-back" data-back>◀ Menu</button>
+      <h2>Almanac</h2>
+      <div class="alm-tabs" role="tablist">
+        <button class="alm-tab" role="tab" data-tab="defenders" aria-selected="true">Defenders</button>
+        <button class="alm-tab" role="tab" data-tab="zombies" aria-selected="false">Zombies</button>
+      </div>
+      <div class="alm-body">
+        <div class="alm-grid" id="almGrid"></div>
+        <div class="alm-detail" id="almDetail" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="overlay levels-screen" id="shopOverlay">
+      <button class="menu-back" data-back>◀ Menu</button>
+      <h2>Shop</h2>
+      <div class="shop-wallet"><span class="coin-icon" aria-hidden="true"></span><span id="shopCoins">0</span> coins</div>
+      <div class="shop-grid" id="shopGrid"></div>
     </div>
     <div class="zombie-preview-label" id="zombiePreviewLabel">Zombies coming</div>
     <div class="overlay picker" id="startOverlay">
@@ -501,6 +703,7 @@
           <span class="pick-count" id="pickCount" aria-live="polite">0 of 7 picked</span>
           <button id="startBtn" disabled>Start game</button>
         </div>
+        <p class="pick-warning" id="pickWarning" role="status" hidden></p>
       </div>
       <div class="picker-grid" id="pickerGrid"></div>
     </div>
@@ -523,7 +726,7 @@
     </div>
   </div>
   <div class="drag-chip" id="dragChip"></div>
-  <p class="hint">Tap the glowing orbs to collect energy before they fade. Pick a card, then tap a tile to place it. Sun Squids make energy orbs you tap to collect. Vampire Squids are cheaper and start small, making 10-energy orbs for their first 40 seconds before growing up and making the normal 25. Rock Turtles throw rocks down the whole lane. Snapper is a Venus flytrap that stays shut until a zombie gets within 1.25 tiles, opens up, swallows it whole once it's 1 tile away (anything except the Mutant), chews for 10 seconds, then burps. Chog-chog is a tiny hedgehog that only hurts zombies by being eaten: it explodes for 400 in a 3×3, or 1000 if it has grown for 13 seconds, or a humongous 1800 in a 5×5 if it has grown for 26 seconds. The Digger is an excavator that starts with a boulder in its bucket: tap it, then tap anywhere on the lawn to hurl the boulder for 500 damage, plus 250 to everything in the 3×3 around it. It digs up a new boulder 15 seconds later. Rusty the Dragon has two gears you switch by tapping him: in gear 1 he breathes fire up to 3 tiles ahead, and in gear 2 he falls asleep and any rock flying over him turns to lava and does double damage. Angry Turtles throw rocks two at a time, and an Enraged Turtle (planted on top of an Angry Turtle) throws four. Whip Turtles hit harder and faster, but only reach 3 tiles ahead. Mau Mau is a big brick that just sits there and soaks up bites. Forti Mau upgrades a Mau Mau you've already placed into a 10000-health fortress. Benny Bee flies out to sting the closest zombie in his lane and poisons it. Cleaning Spray mists every zombie in a 3-lane-wide, 2-tile-long patch in front of it. Shampoo leaves slippery pink puddles that slow zombies down. Laser Turtle fires a beam that hits every zombie in its lane. Lewis Lobster pinches hard but only reaches one tile ahead, so put him right behind a Mau Mau. Sammy the shark bites zombies up to 2 tiles ahead and makes them bleed. Hyperbadge hides half buried and claws at any zombie walking over him. Jicjajic does nothing by itself, line up a Rock Turtle, a Whip Turtle and a Laser Turtle in a row (across a lane or up and down) and plant it on the middle one and it merges all three into a Hyper Turtle seed packet. Tap the packet within 10 seconds to collect it, then plant the two-tile Hyper Turtle anywhere. Plant it on the middle of three Snappers in a row for an Ultima Snapper: a 2-tile flytrap with big teeth that gulps up to 5 zombies at once, even a Mutant. It can also fuse a Shampoo and a Cleaning Spray that sit next to each other: plant it on either one to get a Squeaky Clean seed packet. Squeaky Clean sprays the same 3-lane by 2-tile area as Cleaning Spray for 60 damage and leaves slippery shampoo on every zombie it hits. Temper-lotl loses his temper 1.5 seconds after you place him and explodes for 1800 damage in a 3×3 area. Use the shovel to dig up a defender you don't want. Watch for Shield Bearers from wave 2, Soup Can Heads from wave 3, Runnererers from wave 4, Pool Noodlers from wave 5, Charging Knights from wave 6, Teachers from wave 5 (break their test and they get furious), and a single Mutant in wave 8.</p>
+  <p class="hint">Tap the glowing orbs to collect energy before they fade. Pick a card, then tap a tile to place it. Sun Squids make energy orbs you tap to collect. Battery Towers fire when you tap them: pay 50 energy to blast the zombie closest to your house for 500 damage, once every 5 seconds. Hypersquids are planted on top of a Sun Squid and make big 50-energy orbs, but fall asleep at night too. Mini Turtles are tiny, free night turtles that throw rocks up to 3 tiles ahead. Vampire Squids are cheaper and start small, making 10-energy orbs for their first 90 seconds before growing up and making the normal 25. Rock Turtles throw rocks down the whole lane. Snapper is a Venus flytrap that stays shut until a zombie gets within 1.25 tiles, opens up, swallows it whole once it's 1 tile away (anything except the Mutant), chews for 10 seconds, then burps. Chog-chog is a tiny hedgehog that only hurts zombies by being eaten: it explodes for 400 in a 3×3, or 1000 if it has grown for 13 seconds, or a humongous 1800 in a 5×5 if it has grown for 26 seconds. The Digger is an excavator that starts with a boulder in its bucket: tap it, then tap anywhere on the lawn to hurl the boulder for 500 damage, plus 250 to everything in the 3×3 around it. It digs up a new boulder 15 seconds later. Rusty the Dragon has two gears you switch by tapping him: in gear 1 he breathes fire up to 3 tiles ahead, and in gear 2 he falls asleep and any rock flying over him turns to lava and does double damage. Multurtles throw a rock down their own lane and the lanes above and below. Angry Turtles throw rocks two at a time, and an Enraged Turtle (planted on top of an Angry Turtle) throws four. Whip Turtles hit harder and faster, but only reach 3 tiles ahead. Mau Mau is a big brick that just sits there and soaks up bites. Forti Mau upgrades a Mau Mau you've already placed into a 10000-health fortress. Benny Bee flies out to sting the closest zombie in his lane and poisons it. Cleaning Spray mists every zombie in a 3-lane-wide, 2-tile-long patch in front of it. Shampoo leaves slippery pink puddles that slow zombies down. Laser Turtle fires a beam that hits every zombie in its lane. Lewis Lobster pinches hard but only reaches one tile ahead, so put him right behind a Mau Mau. Sammy the shark bites zombies up to 2 tiles ahead and makes them bleed. Hyperbadge hides half buried and claws at any zombie walking over him. Jicjajic does nothing by itself, line up a Rock Turtle, a Whip Turtle and a Laser Turtle in a row (across a lane or up and down) and plant it on the middle one and it merges all three into a Hyper Turtle seed packet. Tap the packet within 10 seconds to collect it, then plant the two-tile Hyper Turtle anywhere. Plant it on the middle of three Battery Towers in a row for a Tesla Coil: tap it and pay 100 energy for a 1500-damage bolt that also splashes 750 across the 3×3 around its target, every 10 seconds. Plant it on the middle of three Snappers in a row for an Ultima Snapper: a 2-tile flytrap with big teeth that gulps up to 5 zombies at once, even a Mutant. It can also fuse a Shampoo and a Cleaning Spray that sit next to each other: plant it on either one to get a Squeaky Clean seed packet. Squeaky Clean sprays the same 3-lane by 2-tile area as Cleaning Spray for 60 damage and leaves slippery shampoo on every zombie it hits. Temper-lotl loses his temper 1.5 seconds after you place him and explodes for 1800 damage in a 3×3 area. Use the shovel to dig up a defender you don't want. Watch for Shield Bearers from wave 2, Soup Can Heads from wave 3, Runnererers from wave 4, Pool Noodlers from wave 5, Charging Knights from wave 6, Teachers from wave 5 (break their test and they get furious), and a single Mutant in wave 8.</p>
 </main>
 
 <script>
@@ -539,6 +742,7 @@
     if (!here) return false;
     if (kind === 'forti') return here.type === 'mau' && !here.forti;
     if (kind === 'enraged') return here.type === 'angry';
+    if (kind === 'hsquid') return here.type === 'squid';
     return false;
   }
   const BEE    = { cost: 200, hp: 300, attackEvery: 4, sting: 20, poisonDps: 30, poisonTime: 5, flySpeed: 900 };
@@ -550,24 +754,33 @@
   function lobsterReach(c) { return { x0: c * CELL + CELL / 2 - 20, x1: (c + 2) * CELL + 15 }; }
   const SHARK  = { cost: 250, hp: 300, attackEvery: 2, bite: 60, bleedDps: 35, bleedTime: 3, reach: 2 };
   const BADGER = { cost: 100, hp: 300, dps: 62.5, underfoot: true };
-  const LOTL   = { cost: 125, hp: 300, fuse: 1.5, dmg: 1800, underfoot: true, recharge: 20 };
+  const LOTL   = { cost: 125, hp: 300, fuse: 1.5, dmg: 1800, underfoot: true, recharge: 20, carDmg: 1000 };
   const JIC    = { cost: 50, hp: 300, onTurtle: true };
   const HYPER  = { hp: 900, attackEvery: 1.5, dmg: 150, whipDmg: 300, whipRange: 3 * CELL };
   const HYPER_SEED = { cost: 0, hp: HYPER.hp, twoTile: true, seed: true };
   // Ultima Snapper: 2 tiles, swallows up to 5 zombies in one gulp (even a Mutant)
+  const TESLA  = { cost: 0, hp: 900, seed: true, twoTile: true, shotCost: 100, dmg: 1500, splash: 750, reload: 10 };
   const ULTIMA_SCALE = 1.4, ULTIMA_Y = 92 - 30 * 1.4;
   const ULTIMA = { cost: 0, hp: 900, twoTile: true, seed: true, gulp: 5, chew: 10, burp: 1.0, lunge: 0.25 };
   const CLEAN  = { cost: 0, hp: 600, attackEvery: 1.5, dmg: 60, seed: true };
   const PACKET_LIFE = 10;
   const ANGRY  = { cost: 175, hp: 300, fireEvery: 1.5, burst: 2, burstGap: 0.18 };
   const ENRAGED = { cost: 200, hp: 300, fireEvery: 1.5, burst: 4, burstGap: 0.14, recharge: 10, upgrades: 'angry', rockDmg: TURTLE.rockDmg * 1.5 };
-  const DRAGON = { cost: 200, hp: 300, attackEvery: 1.5, dmg: 80, range: 3 * CELL };
+  const DRAGON = { cost: 200, hp: 300, attackEvery: 1.5, dmg: 50, range: 3 * CELL };
   const DIGGER = { cost: 275, hp: 300, digTime: 15, dmg: 500, splash: 250, flight: 0.9 };
-  const SNAPPER = { cost: 150, hp: 300, chew: 10, burp: 1.0, lunge: 0.22 };
+  const SNAPPER = { cost: 150, hp: 300, chew: 10, burp: 1.0, lunge: 0.22, mutantBite: 300, mutantEvery: 1.5 };
   // stages: tiny -> after 13 s bigger -> after 26 s humongous; it only does damage when it gets eaten
-  const CHOG = { cost: 100, hp: 300, grow: [13, 26], blasts: [{ dmg: 400, r: 1 }, { dmg: 1000, r: 1 }, { dmg: 1800, r: 2 }] };
-  const VAMP   = { cost: 25, hp: 300, makeEvery: 12, firstAfter: 5, youngValue: 10, adultValue: 25, growUp: 40 };
-  const UNITS  = { vamp: VAMP, ultima: ULTIMA, chog: CHOG, snapper: SNAPPER, digger: DIGGER, dragon: DRAGON, enraged: ENRAGED, angry: ANGRY, clean: CLEAN, hyper: HYPER_SEED, jic: JIC, lotl: LOTL, badger: BADGER, forti: FORTI, shark: SHARK, lobster: LOBSTER, laser: LASER, turtle: TURTLE, squid: SQUID, whip: WHIP, mau: MAU, bee: BEE, spray: SPRAY, shampoo: SHAMPOO };
+  const CHOG = { cost: 50, hp: 300, recharge: 35, grow: [13, 26], blasts: [{ dmg: 400, r: 1 }, { dmg: 1000, r: 1 }, { dmg: 1800, r: 2 }] };
+  // grown-up Vampire Squids make orbs at 2/3 the rate (one every 18 s instead of 12)
+  const VAMP   = { cost: 25, hp: 300, recharge: 5, adultEvery: 18, makeEvery: 12, firstAfter: 5, youngValue: 10, adultValue: 25, growUp: 90 };
+  const MINI   = { cost: 0, hp: 300, recharge: 10, range: 3 * CELL };
+  const MULTI  = { cost: 250, hp: 300 };
+  const HSQUID = { cost: 125, hp: 300, makeEvery: 12, firstAfter: 5, orbValue: 50, upgrades: 'squid' };
+  const BATTERY = { cost: 125, hp: 300, shotCost: 50, dmg: 500, reload: 5, boltSpeed: 520 };
+  // Loo Roll: bursts into 12 sheets as soon as it's planted; each sheet hits 2 zombies (250, then 125)
+  const BOAT   = { cost: 25, hp: 300, recharge: 3 };
+  const LOO    = { cost: 150, hp: 300, fuse: 0.35, sheets: 12, dmg: [250, 125], speed: 280, size: 1.6, maxPerZombie: 4 };
+  const UNITS  = { boat: BOAT, loo: LOO, tesla: TESLA, battery: BATTERY, hsquid: HSQUID, multi: MULTI, mini: MINI, vamp: VAMP, ultima: ULTIMA, chog: CHOG, snapper: SNAPPER, digger: DIGGER, dragon: DRAGON, enraged: ENRAGED, angry: ANGRY, clean: CLEAN, hyper: HYPER_SEED, jic: JIC, lotl: LOTL, badger: BADGER, forti: FORTI, shark: SHARK, lobster: LOBSTER, laser: LASER, turtle: TURTLE, squid: SQUID, whip: WHIP, mau: MAU, bee: BEE, spray: SPRAY, shampoo: SHAMPOO };
   // lanes and x-range a spray at (r, c) covers
   function sprayArea(r, c) {
     return { r0: Math.max(0, r - 1), r1: Math.min(ROWS - 1, r + 1), x0: (c + 1) * CELL - 10, x1: (c + 1 + SPRAY.length) * CELL };
@@ -582,7 +795,13 @@
   let ctx = board.getContext('2d');
   const boardCtx = ctx;
   const cards = [...document.querySelectorAll('.card:not(.seed)')];
-  const seedBtns = { hyper: document.getElementById('hyperSeed'), clean: document.getElementById('cleanSeed'), ultima: document.getElementById('ultimaSeed') };
+  // defenders planted on top of another defender (or used on one) get gold cards
+  const UPGRADE_KINDS = ['forti', 'enraged', 'hsquid'];
+  const isUpgrade = u => UPGRADE_KINDS.includes(u);
+  cards.forEach(cd => cd.classList.toggle('upgrade', isUpgrade(cd.dataset.unit)));
+  // the Jicjajic gets the same blue-purple-green look as the fusion seed packets
+  cards.forEach(cd => cd.classList.toggle('fusion', cd.dataset.unit === 'jic'));
+  const seedBtns = { hyper: document.getElementById('hyperSeed'), clean: document.getElementById('cleanSeed'), ultima: document.getElementById('ultimaSeed'), tesla: document.getElementById('teslaSeed') };
   const energyEl = document.getElementById('energy');
   const pickCountEl = document.getElementById('pickCount');
   const startBtnEl = document.getElementById('startBtn');
@@ -594,7 +813,7 @@
   let state;
   let debug = false, savedEnergy = 0;
   const BASE_SLOTS = 7;
-  const maxSlots = () => (level && level.slots) || BASE_SLOTS;
+  const maxSlots = () => ((level && level.slots) || BASE_SLOTS) + ((level && !level.sandbox) ? owned('slots') : 0);
   const EARLY_ZOMBIES = ['basic', 'shield', 'soup'];
   const LEVELS = {
     1: { name: 'Level 1', units: ['squid', 'turtle', 'whip', 'mau'], waves: 3, zombies: EARLY_ZOMBIES },
@@ -609,6 +828,22 @@
     ] },
     5: { name: 'Level 5', units: ['squid', 'turtle', 'whip', 'mau', 'bee', 'spray', 'angry', 'lotl', 'snapper'], waves: 6,
          zombies: ['basic', 'shield', 'soup', 'runner', 'noodler', 'mutant'], finalBoss: 'mutant' },
+    n1: { name: 'Level 6', night: true, units: ['squid', 'vamp', 'turtle', 'whip', 'mau', 'bee', 'spray', 'angry', 'lotl', 'snapper'],
+          waves: 3, zombies: ['basic', 'shield'] },
+    n2: { name: 'Level 7', night: true, units: ['squid', 'vamp', 'turtle', 'whip', 'mau', 'bee', 'spray', 'shampoo', 'angry', 'lotl', 'snapper'],
+          waves: 3, zombies: ['basic', 'shield', 'soup'] },
+    n3: { name: 'Level 8', night: true, units: ['squid', 'vamp', 'mini', 'turtle', 'whip', 'mau', 'bee', 'spray', 'shampoo', 'angry', 'lotl', 'snapper'],
+          waves: 5, zombies: ['basic', 'shield', 'soup', 'runner'] },
+    plan: { name: 'Plan Your Defences', units: 'owned', waves: 5, plan: true, startEnergy: 3125, banned: ['mini'], waveSize: 14, spawnGap: 1.6, noEnergy: true, noRecharge: true,
+            zombies: ['basic', 'shield', 'soup', 'runner', 'knight'],
+            waveAtLeast: { 5: { knight: 1 } }, finalAtLeast: { knight: 3, soup: 2, runner: 2 } },
+    n4: { name: 'Level 9', night: true, units: ['squid', 'vamp', 'mini', 'turtle', 'whip', 'mau', 'bee', 'spray', 'shampoo', 'angry', 'lotl', 'snapper', 'chog'],
+          waves: 5, zombies: ['basic', 'shield', 'soup', 'runner', 'mini'], finalAtLeast: { mini: 3 } },
+    n5: { name: 'Level 10', night: true, units: ['squid', 'vamp', 'mini', 'turtle', 'whip', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog'],
+          waves: 7, zombies: ['basic', 'shield', 'soup', 'runner', 'noodler', 'mini', 'knight'], noDeckKinds: ['knight'],
+          finalAtLeast: { mini: 3 }, bossKnights: [3, 6] },
+    p1: { name: 'Level 11', pool: true, units: ['boat', 'squid', 'vamp', 'mini', 'turtle', 'whip', 'mau', 'bee', 'spray', 'shampoo', 'laser', 'angry', 'lotl', 'snapper', 'chog'],
+          waves: 5, zombies: ['basic', 'shield', 'soup', 'tube', 'shieldTube'] },
     endless: { name: 'Endless', units: null, waves: Infinity },
     sandbox: { name: 'Sandbox', units: null, waves: Infinity, sandbox: true }
   };
@@ -616,11 +851,16 @@
   const CHALLENGE_UNITS = Object.keys(UNITS).filter(u => !UNITS[u].seed && u !== 'jic');
   for (const k in LEVELS) { if (LEVELS[k].units === 'challenge') { LEVELS[k].units = CHALLENGE_UNITS; LEVELS[k].waves = LEVELS[k].rounds.length; LEVELS[k].zombies = null; } }
   let level = LEVELS.endless;
+  // defenders that are at home in the dark (everything else is a "day" defender)
+  const NIGHT_UNITS = new Set(['vamp', 'mini']);
+  const NIGHT_SLOWDOWN = 0.75;
+  // daytime levels, where night defenders doze off (Sandbox lets everything work)
+  const dayLevel = () => !level.night && !level.sandbox;
   // which levels you've beaten, remembered in this browser
-  let progress = { beaten: {} };
-  try { const saved = JSON.parse(localStorage.getItem('lane-defense-progress') || 'null'); if (saved && saved.beaten) progress = saved; } catch (err) {}
+  let progress = { beaten: {}, coins: 0, shop: {} };
+  try { const saved = JSON.parse(localStorage.getItem('lane-defense-progress') || 'null'); if (saved && saved.beaten) progress = Object.assign({ coins: 0, shop: {} }, saved); } catch (err) {}
   function saveProgress() { try { localStorage.setItem('lane-defense-progress', JSON.stringify(progress)); } catch (err) {} }
-  function levelUnlocked(card) { const need = card.dataset.needs; return !need || !!progress.beaten[need] || !!progress.unlockAll; }
+  function levelUnlocked(card) { const need = card.dataset.needs; if (need === 'soon') return false; return !need || !!progress.beaten[need] || !!progress.unlockAll; }
   function refreshLevelCards() {
     if (typeof refreshNightButton === 'function') refreshNightButton();
     document.querySelectorAll('.level-card').forEach(card => {
@@ -630,7 +870,7 @@
       const goal = card.querySelector('.level-goal');
       if (!goal.dataset.text) goal.dataset.text = goal.textContent;
       const need = card.dataset.needs || '';
-      goal.textContent = open ? goal.dataset.text : need.startsWith('c') ? `Beat Horde ${need.slice(1)} to unlock` : `Beat Level ${need} to unlock`;
+      goal.textContent = open ? goal.dataset.text : need === 'soon' ? 'Coming soon' : need.startsWith('n') ? `Beat Level ${+need.slice(1) + 5} to unlock` : need.startsWith('c') ? `Beat Horde ${need.slice(1)} to unlock` : `Beat Level ${need} to unlock`;
     });
   }
   // only beating the Jicjajic Challenge unlocks it (the Unlock all button just opens levels)
@@ -644,14 +884,35 @@
     if (level.finalBoss && !kinds.includes(level.finalBoss)) kinds.push(level.finalBoss);
     return kinds;
   }
+  // Shop seed packets, and the defender each one is planted on top of
+  const SHOP_SEEDS = { enraged: 'angry', hsquid: 'squid', forti: 'mau' };
+  const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1'];
+  const ENERGY_MAKERS = ['squid', 'vamp', 'hsquid'];
+  function ownedUnits() {
+    const own = new Set();
+    for (const k of MAIN_LEVELS) {
+      const card = document.querySelector(`.level-card[data-level="${k}"]`);
+      if (card && levelUnlocked(card) && Array.isArray(LEVELS[k].units)) LEVELS[k].units.forEach(u => own.add(u));
+    }
+    return own;
+  }
   const unitAllowed = u => {
+    if (u === 'boat') return !!level.pool; // boats only make sense in the pool
     if (u === 'jic') return (jicUnlocked() || !!level.sandbox) && !level.rounds; // Sandbox always has it
+    if (SHOP_SEEDS[u] && owned(u) && Array.isArray(level.units)) return true; // bought in the Shop: can be brought anywhere (with a warning if it can't be used)
+    if (level.units === 'owned') return (ownedUnits().has(u) || (SHOP_SEEDS[u] && owned(u))) && !(level.noEnergy && ENERGY_MAKERS.includes(u)) && !(level.banned || []).includes(u);
     return !level.units || level.units.includes(u);
   };
   const loadout = new Set();
   let picking = true;
   const DESCRIPTIONS = {
-    vamp: 'Makes small 10-energy orbs for 40 s, then grows up and makes normal 25-energy orbs.',
+    multi: 'A brown-shelled turtle. Throws a rock down its lane and both lanes next to it.',
+    boat: 'Floats on the water. Plant a defender in it to use the pool lanes.',
+    loo: 'Bursts into 12 sheets flying in every direction. 250 to the first zombie each hits, 125 to the second.',
+    battery: 'Tap it and pay 50 energy to zap the zombie closest to your house for 500. Every 5 s.',
+    hsquid: 'Plant on a Sun Squid. Makes big 50-energy orbs. Falls asleep at night.',
+    mini: 'A tiny night turtle. Free. Throws rocks up to 3 tiles ahead. 10 s recharge.',
+    vamp: 'Makes small 10-energy orbs for 90 s, then grows up and makes normal 25-energy orbs.',
     squid: 'Makes an energy orb every 12 seconds. Tap orbs to collect them.',
     turtle: 'Throws a rock down the whole lane every 1.5 seconds.',
     chog: 'A tiny hedgehog that grows. Explodes when eaten: bigger the longer it waits.',
@@ -675,8 +936,8 @@
   };
   function reset() {
     state = {
-      energy: (level && level.startEnergy) || 150, grid: Array.from({length: ROWS}, () => Array(COLS).fill(null)),
-      enemies: [], rocks: [], puffs: [], orbs: [], puddles: [], packets: [], boulders: [], aiming: null, seeds: { hyper: 0, clean: 0, ultima: 0 }, recharge: {}, selected: null, hover: null,
+      energy: ((level && level.startEnergy) || (level && level.night ? 50 : 150)) + (level && !level.sandbox && !level.plan ? (level.night ? owned('energyNight') : Math.min(1, owned('energy'))) * 50 : 0), grid: Array.from({length: ROWS}, () => Array(COLS).fill(null)),
+      enemies: [], rocks: [], puffs: [], orbs: [], puddles: [], packets: [], boulders: [], bolts: [], sheets: [], coins: [], aiming: null, seeds: { hyper: 0, clean: 0, ultima: 0, tesla: 0 }, recharge: {}, selected: null, hover: null,
       time: 0, energyTimer: 0, spawnTimer: 20, spawnEvery: 16, kills: 0, wave: 1, running: false, over: false
     };
     syncUI();
@@ -684,7 +945,9 @@
 
   function syncUI() {
     energyEl.textContent = debug ? '∞' : state.energy;
-    waveEl.textContent = level.sandbox ? '—' : level.rounds ? `Round ${(state.round || 0) + 1} / ${level.rounds.length}${state.roundPhase === 'horde' ? ' · HORDE' : ''}` : state.finalStarted ? 'Final!' : isFinite(level.waves) ? `${state.wave} / ${level.waves}` : state.wave;
+    const swBtn = document.getElementById('startWaves');
+    if (swBtn) swBtn.hidden = !(level.plan && state.running && !state.planStarted && !picking);
+    waveEl.textContent = level.sandbox ? '—' : level.plan && !state.planStarted ? 'Planning' : level.rounds ? `Round ${(state.round || 0) + 1} / ${level.rounds.length}${state.roundPhase === 'horde' ? ' · HORDE' : ''}` : state.finalStarted ? 'Final!' : isFinite(level.waves) ? `${state.wave} / ${level.waves}` : state.wave;
     killsEl.textContent = state.kills;
     const ready = u => state.energy >= UNITS[u].cost && !(state.recharge[u] > 0);
     if (state.selected && !ready(state.selected)) state.selected = null;
@@ -710,9 +973,23 @@
     });
     if (barEl) barEl.classList.toggle('picking', picking);
     const leave = document.getElementById('leaveLevel');
-    const onMenu = ['menuOverlay', 'levelOverlay', 'bonusOverlay', 'nightOverlay'].some(id => { const o = document.getElementById(id); return o && o.classList.contains('show'); });
+    const onMenu = ['menuOverlay', 'levelOverlay', 'bonusOverlay', 'nightOverlay', 'almanacOverlay', 'shopOverlay'].some(id => { const o = document.getElementById(id); return o && o.classList.contains('show'); });
     if (leave) leave.hidden = onMenu;
     pickCountEl.textContent = `${loadout.size} of ${maxSlots()} picked`;
+    const warnEl = document.getElementById('pickWarning');
+    const NAMES = { angry: 'Angry Turtle', squid: 'Sun Squid', mau: 'Mau Mau', enraged: 'Enraged Turtle', hsquid: 'Hypersquid', forti: 'Forti Mau' };
+    const warnings = [];
+    const an = n => (/^[AEIOU]/.test(n) ? 'an ' : 'a ') + n;
+    pickButtons.forEach(pb => {
+      const u = pb.dataset.pick, base = SHOP_SEEDS[u];
+      const missing = base && !pb.hidden && !unitAllowed(base);
+      const notPicked = base && loadout.has(u) && !loadout.has(base);
+      pb.classList.toggle('warn', !!(missing || notPicked || (NIGHT_UNITS.has(u) && dayLevel())));
+      if (loadout.has(u) && NIGHT_UNITS.has(u) && dayLevel()) warnings.push(`${u === 'vamp' ? 'Vampire Squid' : 'Mini Turtle'} is a night defender: it falls asleep in the daytime and won't do anything here.`);
+      if (loadout.has(u) && missing) warnings.push(`${NAMES[u]} has to go on ${an(NAMES[base])}, and this level doesn't have one, so you won't be able to plant it.`);
+      else if (notPicked) warnings.push(`${NAMES[u]} has to go on ${an(NAMES[base])}. Bring ${an(NAMES[base])} too, or you won't be able to plant it.`);
+    });
+    if (warnEl) { warnEl.hidden = !warnings.length; warnEl.textContent = warnings.length ? '⚠ ' + warnings.join(' ') : ''; }
     startBtnEl.disabled = loadout.size === 0;
     shovelBtn.setAttribute('aria-pressed', state.shovel ? 'true' : 'false');
     for (const k in seedBtns) {
@@ -724,6 +1001,7 @@
     }
   }
 
+  [...cards, ...Object.values(seedBtns)].forEach(b => b.addEventListener('mousedown', e => e.preventDefault()));
   cards.forEach(cd => cd.addEventListener('click', () => {
     const u = cd.dataset.unit;
     if (picking) {
@@ -756,13 +1034,15 @@
   function layoutHotbar() {
     if (!barEl || !barEl.insertBefore) return;
     const byUnit = {}; cards.forEach(cd => { byUnit[cd.dataset.unit] = cd; });
-    for (const u of loadout) barEl.insertBefore(byUnit[u], shovelBtn);
-    for (const k in seedBtns) barEl.insertBefore(seedBtns[k], shovelBtn);
     const empty = picking ? maxSlots() - loadout.size : 0;
-    slotEls.forEach((sl, i) => {
-      if (i < empty) barEl.insertBefore(sl, shovelBtn);
-      else if (sl.parentNode) sl.parentNode.removeChild(sl);
-    });
+    const want = [...[...loadout].map(u => byUnit[u]), ...Object.values(seedBtns), ...slotEls.slice(0, Math.max(0, empty))];
+    // only touch the page when the order really changed: moving a button you just tapped
+    // makes the browser lose its place and jump the page back to the top
+    const current = [...barEl.children].filter(el => want.includes(el));
+    const same = current.length === want.length && current.every((el, i) => el === want[i]) &&
+      (want.length === 0 || want[want.length - 1].nextElementSibling === shovelBtn || !shovelBtn);
+    if (!same) for (const el of want) barEl.insertBefore(el, shovelBtn);
+    slotEls.forEach((sl, i) => { if (i >= empty && sl.parentNode) sl.parentNode.removeChild(sl); });
   }
   const pickerGrid = document.getElementById('pickerGrid');
   const pickButtons = [];
@@ -771,7 +1051,7 @@
       const u = cd.dataset.unit;
       const art = cd.querySelector('canvas');
       const b = document.createElement('button');
-      b.className = 'pick'; b.dataset.pick = u; b.setAttribute('aria-pressed', 'false');
+      b.className = 'pick' + (isUpgrade(u) ? ' upgrade' : u === 'jic' ? ' fusion' : ''); b.dataset.pick = u; b.setAttribute('aria-pressed', 'false');
       const img = document.createElement('img');
       img.alt = '';
       try { img.src = art.toDataURL(); } catch (e) {}
@@ -821,6 +1101,8 @@
       syncUI();
       return;
     }
+    const coin = state.coins.find(cn => !cn.collected && Math.hypot(cn.x - p.x, cn.y - p.y) < 34);
+    if (coin) { collectCoin(coin); return; }
     const orb = state.orbs.find(o => !o.collected && Math.hypot(o.x - p.x, o.y - p.y) < 36);
     if (orb) {
       orb.collected = true; orb.ct = 0; orb.sx = orb.x; orb.sy = orb.y;
@@ -830,6 +1112,12 @@
     if (state.shovel) {
       const { c, r } = cellFromEvent(e);
       if (r >= 0 && r < ROWS && c >= 0 && c < COLS && state.grid[r][c]) {
+        // Golden Shovel: half the defender's cost back
+        if (owned('shovel') && !level.sandbox) {
+          const cell = state.grid[r][c], main = cell.type === 'hyperPart' ? cell.main : cell;
+          const refund = Math.floor(((UNITS[main.type] && UNITS[main.type].cost) || 0) / 2);
+          if (refund) { state.energy += refund; syncUI(); }
+        }
         removeUnit(r, c);
         state.puffs.push({ x: c * CELL + 50, y: r * CELL + 80, t: 0, dirt: true, life: 0.5 });
         state.shovel = false; syncUI();
@@ -838,7 +1126,8 @@
     }
     if (!state.selected) {
       const { c, r } = cellFromEvent(e);
-      const t = r >= 0 && r < ROWS && c >= 0 && c < COLS ? state.grid[r][c] : null;
+      const cellAt = r >= 0 && r < ROWS && c >= 0 && c < COLS ? state.grid[r][c] : null;
+      const t = cellAt && cellAt.type === 'hyperPart' ? cellAt.main : cellAt;
       if (state.aiming) {
         const ai = state.aiming, dg = state.grid[ai.r][ai.c];
         state.aiming = null;
@@ -851,6 +1140,21 @@
         return;
       }
       if (t && t.type === 'digger' && t.boulder) { state.aiming = { r, c }; Sound.play('aim'); return; }
+      if (t && (t.type === 'battery' || t.type === 'tesla')) {
+        const st = t.type === 'tesla' ? TESLA : BATTERY, tesla = t.type === 'tesla';
+        // the zombie closest to your house (furthest left), in any lane
+        let target = null;
+        for (const e of state.enemies) if (e.hp > 0 && e.x < board.width && (!target || e.x < target.x)) target = e;
+        if (t.cool > 0 || state.energy < st.shotCost || !target) { t.nope = 0.4; Sound.play('click'); return; }
+        state.energy -= st.shotCost; syncUI();
+        t.cool = st.reload;
+        // a thick lightning bolt flies off the top and chases the target down
+        const bx = tesla ? t.c * CELL + 100 : c * CELL + 50, by = tesla ? t.r * CELL + 6 : r * CELL + 18;
+        state.bolts.push({ x: bx, y: by, target, t: 0, ang: 0, dmg: st.dmg, tesla });
+        if (tesla) Sound.play('zap');
+        state.puffs.push({ x: bx, y: by, t: 0, zap: true });
+        return;
+      }
       if (t && t.type === 'dragon') {
         t.gear = t.gear === 1 ? 2 : 1;
         Sound.play('gear');
@@ -873,8 +1177,11 @@
       // two-tile fusions take the tile you tap and the one in front of it
       const kind = state.selected;
       if (!(state.seeds[kind] > 0) || c + 1 >= COLS || state.grid[r][c] || state.grid[r][c + 1]) return;
+      if (level.pool && WATER_LANES.includes(r)) return; // too big for a boat
       const big = kind === 'hyper'
         ? { type: 'hyper', twoTile: true, r, c, hp: HYPER.hp, maxHp: HYPER.hp, bob: 0, cool: 0.6, throwAnim: 0, lash: null }
+        : kind === 'tesla'
+        ? { type: 'tesla', twoTile: true, r, c, hp: TESLA.hp, maxHp: TESLA.hp, bob: 0, cool: 0, nope: 0 }
         : { type: 'ultima', twoTile: true, r, c, hp: ULTIMA.hp, maxHp: ULTIMA.hp, bob: 0, mode: 'closed', openK: 0, chew: 0, burp: 0, stretch: 0, lungeT: 0, prey: null };
       state.grid[r][c] = big;
       state.grid[r][c + 1] = { type: 'hyperPart', main: big };
@@ -892,22 +1199,33 @@
       if (!debug) state.recharge[state.selected] = u.recharge;
       if (state.selected === 'forti') { here.forti = true; here.hp = u.hp; here.maxHp = u.hp; }
       else if (state.selected === 'enraged') { here.type = 'enraged'; here.hp = u.hp; here.maxHp = u.hp; here.queued = 0; }
+      else if (state.selected === 'hsquid') { here.type = 'hsquid'; here.hp = u.hp; here.maxHp = u.hp; here.asleep = false; }
       state.puffs.push({ x: c * CELL + 50, y: r * CELL + 30, t: 0, fortify: true, life: 0.6 });
       state.selected = null; syncUI();
       return;
     }
-    if (state.grid[r][c]) return;
+    const isWater = level.pool && WATER_LANES.includes(r), here = state.grid[r][c];
+    let intoBoat = false;
+    if (state.selected === 'boat') { if (!isWater || here) return; }
+    else if (isWater) { if (!here || here.type !== 'boat') return; intoBoat = true; }
+    else if (here) return;
     if (u.seed) {
       if (!(state.seeds[state.selected] > 0)) return;
       state.seeds[state.selected]--;
     }
     if (state.energy < u.cost || state.recharge[state.selected] > 0) return;
     state.energy -= u.cost;
-    if (u.recharge && !debug) state.recharge[state.selected] = u.recharge;
-    Sound.play('place');
+    if (u.recharge && !debug && !level.noRecharge) state.recharge[state.selected] = u.recharge;
+    Sound.play(isWater ? 'squish' : 'place');
     const bob = Math.random() * 6;
     state.grid[r][c] =
       state.selected === 'turtle' ? { type: 'turtle', hp: u.hp, maxHp: u.hp, cool: 0.4, throwAnim: 0, bob } :
+      state.selected === 'boat'   ? { type: 'boat', hp: u.hp, maxHp: u.hp, bob } :
+      state.selected === 'loo'    ? { type: 'loo', hp: u.hp, maxHp: u.hp, bob, fuse: u.fuse } :
+      state.selected === 'battery' ? { type: 'battery', hp: u.hp, maxHp: u.hp, bob, cool: 0, zap: null, nope: 0 } :
+      state.selected === 'hsquid' ? { type: 'hsquid', hp: u.hp, maxHp: u.hp, make: u.firstAfter, glow: 0, bob } :
+      state.selected === 'multi'  ? { type: 'multi', hp: u.hp, maxHp: u.hp, cool: 0.4, throwAnim: 0, bob } :
+      state.selected === 'mini'   ? { type: 'mini', hp: u.hp, maxHp: u.hp, cool: 0.4, throwAnim: 0, bob } :
       state.selected === 'vamp'   ? { type: 'vamp', hp: u.hp, maxHp: u.hp, bob, make: u.firstAfter, glow: 0, age: 0, grown: 0 } :
       state.selected === 'chog'   ? { type: 'chog', hp: u.hp, maxHp: u.hp, bob, age: 0, stage: 0, size: 0 } :
       state.selected === 'snapper' ? { type: 'snapper', hp: u.hp, maxHp: u.hp, bob, mode: 'closed', openK: 0, chew: 0, burp: 0, stretch: 0, lungeT: 0, prey: null } :
@@ -927,6 +1245,7 @@
       state.selected === 'bee'    ? { type: 'bee', hp: u.hp, maxHp: u.hp, bob, cool: 0.3, mode: 'home',
                                       hx: c * CELL + 50, hy: r * CELL + 44, x: c * CELL + 50, y: r * CELL + 44, target: null, face: 1 } :
                                     { type: 'squid', hp: u.hp, maxHp: u.hp, make: u.firstAfter, glow: 0, bob };
+    if (intoBoat && state.grid[r][c]) state.grid[r][c].onBoat = true;
     state.selected = null;
     syncUI();
   });
@@ -939,8 +1258,52 @@
     if (on) { savedEnergy = state.energy; state.energy = 999999; state.recharge = {}; }
     else state.energy = savedEnergy;
     debugBar.classList.toggle('show', on);
+    if (!on) { const wb = document.getElementById('waveBuilder'); if (wb) wb.hidden = true; }
     syncUI();
   }
+  // Sandbox: build your own wave by choosing how many of each zombie to send
+  const WB_KINDS = [['basic', 'Zombie'], ['shield', 'Shield Bearer'], ['soup', 'Soup Can Head'], ['runner', 'Runnererer'], ['noodler', 'Pool Noodler'],
+    ['knight', 'Charging Knight'], ['teacher', 'Teacher'], ['mini', 'Mini Teacher'], ['ninja', 'Nunjaka'], ['car', 'Car Zombie'], ['mutant', 'Mutant']];
+  const wbCounts = {};
+  const wbGrid = document.getElementById('wbGrid'), wbTotal = document.getElementById('wbTotal'), wbSend = document.getElementById('wbSend');
+  const wbPanel = document.getElementById('waveBuilder'), wbOpen = document.getElementById('openWaveBuilder');
+  function wbRefresh() {
+    const total = WB_KINDS.reduce((n, [k]) => n + (wbCounts[k] || 0), 0);
+    wbTotal.textContent = `${total} zombie${total === 1 ? '' : 's'}`;
+    wbSend.disabled = total === 0;
+  }
+  WB_KINDS.forEach(([k, name]) => {
+    wbCounts[k] = 0;
+    const row = document.createElement('div'); row.className = 'wb-row';
+    const label = document.createElement('span'); label.textContent = name;
+    const ctrl = document.createElement('span'); ctrl.className = 'wb-ctrl';
+    const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', `Fewer ${name}`);
+    const input = document.createElement('input'); input.type = 'number'; input.min = '0'; input.max = '99'; input.value = '0'; input.setAttribute('aria-label', `${name} count`);
+    const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label', `More ${name}`);
+    const set = v => { wbCounts[k] = Math.max(0, Math.min(99, v | 0)); input.value = wbCounts[k]; wbRefresh(); };
+    minus.addEventListener('click', () => set(wbCounts[k] - 1));
+    plus.addEventListener('click', () => set(wbCounts[k] + 1));
+    input.addEventListener('input', () => set(+input.value));
+    ctrl.append(minus, input, plus); row.append(label, ctrl); wbGrid.appendChild(row);
+    row._set = set;
+  });
+  wbOpen.addEventListener('click', () => {
+    wbPanel.hidden = !wbPanel.hidden;
+    wbOpen.setAttribute('aria-expanded', wbPanel.hidden ? 'false' : 'true');
+  });
+  document.getElementById('wbClear').addEventListener('click', () => { [...wbGrid.children].forEach(r => r._set(0)); });
+  wbSend.addEventListener('click', () => {
+    if (!state.running) return;
+    const q = [];
+    WB_KINDS.forEach(([k]) => { for (let i = 0; i < (wbCounts[k] || 0); i++) q.push(k); });
+    for (let i = q.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [q[i], q[j]] = [q[j], q[i]]; }
+    if (!q.length) return;
+    state.customQueue = (state.customQueue || []).concat(q);
+    state.customGap = +document.getElementById('wbGap').value || 0.7;
+    if (state.customTimer == null || state.customTimer < 0) state.customTimer = 0.6;
+    state.banner = 2.4; state.bannerText = 'INCOMING!';
+  });
+
   // Drag a zombie button onto the board to drop that zombie exactly there
   const dragChip = document.getElementById('dragChip');
   function boardPoint(clientX, clientY) {
@@ -990,7 +1353,7 @@
     clearTimeout(resetArmed); resetArmed = null;
     resetBtn.textContent = 'Reset world'; resetBtn.classList.remove('confirm');
     // full reset: fresh board, every level locked again, back to the level select
-    progress = { beaten: {} }; saveProgress(); refreshLevelCards();
+    progress = { beaten: {}, coins: 0, shop: {} }; saveProgress(); refreshLevelCards(); syncCoins();
     showScreen(menuOverlay);
   });
 
@@ -999,7 +1362,7 @@
   const menuOverlay = document.getElementById('menuOverlay');
   const bonusOverlay = document.getElementById('bonusOverlay');
   const nightOverlay = document.getElementById('nightOverlay');
-  const menuScreens = [menuOverlay, levelOverlay, bonusOverlay, nightOverlay];
+  const menuScreens = [menuOverlay, levelOverlay, bonusOverlay, nightOverlay, document.getElementById('almanacOverlay'), document.getElementById('shopOverlay')];
   function showScreen(which) {
     setDebug(false);
     reset();
@@ -1009,22 +1372,302 @@
     Sound.setMood('menu');
     syncUI();
     leaveBtn.hidden = true;
-    if (which === levelOverlay) setTimeout(refreshArrows, 0);
+    if (which === levelOverlay) setTimeout(() => { refreshArrows(); updateSky(); }, 0);
   }
   // after a level, go back to whichever screen that level lives on
   // beating Level 5 takes you on to Night
-  function showLevels() {
-    if (level === LEVELS[5] && progress.beaten[5]) return showScreen(nightOverlay);
-    showScreen(level.units === null || level.rounds ? bonusOverlay : levelOverlay);
+  document.getElementById('startWaves').addEventListener('click', () => {
+    if (!level.plan || state.planStarted) return;
+    state.planStarted = true;
+    state.spawnTimer = Math.min(state.spawnTimer, 4);
+    state.banner = 2.4; state.bannerText = 'HERE THEY COME!';
+    syncUI();
+  });
+  // ===================== COINS & SHOP =====================
+  const SHOP = [
+    { id: 'slots', name: 'Extra Slot', desc: 'One more defender slot when you pick your team.', costs: [500, 1500, 3000] },
+    { id: 'energy', name: 'Head Start: Day', desc: 'Start daytime levels and Endless with +50 energy.', costs: [300] },
+    { id: 'energyNight', name: 'Head Start: Night', desc: 'Start night levels with +50 energy.', costs: [750] },
+    { id: 'shovel', name: 'Golden Shovel', desc: 'Digging up a defender gives you back half its cost.', costs: [1000] },
+    { id: 'enraged', name: 'Enraged Turtle', desc: 'Seed packet: unlocks the Enraged Turtle in every level that has the Angry Turtle.', costs: [2500], seed: 'enraged' },
+    { id: 'hsquid', name: 'Hypersquid', desc: 'Seed packet: unlocks the Hypersquid in every level that has the Sun Squid.', costs: [3000], seed: 'hsquid' },
+    { id: 'forti', name: 'Forti Mau', desc: 'Seed packet: unlocks the Forti Mau in every level that has the Mau Mau.', costs: [3000], seed: 'forti' }
+  ];
+  function owned(id) { return (typeof progress !== 'undefined' && progress.shop && progress.shop[id]) || 0; }
+  function syncCoins() {
+    const n = progress.coins || 0;
+    const a = document.getElementById('coinCount'); if (a) a.textContent = n;
+    const b = document.getElementById('shopCoins'); if (b) b.textContent = n;
   }
+  function drawShopIcon(g, id) {
+    const W = g.canvas.width, H = g.canvas.height;
+    g.clearRect(0, 0, W, H);
+    g.save(); g.translate(W / 2, H / 2);
+    if (SHOP_SEEDS[id]) {
+      g.restore(); g.save();
+      // a seed packet with the Enraged Turtle on it
+      g.fillStyle = '#c9971a'; roundRect(g, 10, 6, W - 20, H - 12, 10); g.fill();
+      g.fillStyle = '#fff3c4'; roundRect(g, 14, 10, W - 28, H - 20, 8); g.fill();
+      const src = document.querySelector(`.card[data-unit="${id}"] canvas`);
+      if (src) try { g.drawImage(src, 16, 12, W - 32, W - 32); } catch (err) {}
+      g.fillStyle = id === 'hsquid' ? '#2f7de0' : id === 'forti' ? '#7a838b' : '#b8323a'; g.fillRect(14, H - 22, W - 28, 10);
+    } else if (id === 'slots') {
+      // a defender card with a big plus
+      g.fillStyle = '#c9bf94'; roundRect(g, -30, -36, 60, 72, 10); g.fill();
+      g.fillStyle = '#f4efd8'; roundRect(g, -26, -32, 52, 64, 8); g.fill();
+      g.strokeStyle = '#b5ab80'; g.lineWidth = 3; g.setLineDash([6, 5]); roundRect(g, -20, -26, 40, 40, 6); g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#4caf50'; g.fillRect(-4, -18, 8, 24); g.fillRect(-12, -10, 24, 8);
+      g.fillStyle = '#8a7a50'; g.fillRect(-14, 20, 28, 5);
+    } else if (id === 'energy' || id === 'energyNight') {
+      // a glowing energy orb with +50
+      const gr = g.createRadialGradient(0, -4, 4, 0, -4, 34);
+      gr.addColorStop(0, '#fffbe0'); gr.addColorStop(0.5, '#ffd84a'); gr.addColorStop(1, 'rgba(255,200,40,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(0, -4, 34, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#f2c230'; g.beginPath(); g.arc(0, -4, 20, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#7a5600';
+      g.beginPath(); g.moveTo(3, -18); g.lineTo(-8, -1); g.lineTo(-1, -1); g.lineTo(-3, 11); g.lineTo(8, -6); g.lineTo(1, -6); g.closePath(); g.fill();
+      g.fillStyle = id === 'energyNight' ? '#1f2a4d' : '#2f5a2a'; g.font = '900 15px Nunito, sans-serif'; g.textAlign = 'center'; g.fillText('+50', 0, 34);
+      if (id === 'energyNight') {
+        g.fillStyle = '#fff6d8'; g.beginPath(); g.arc(24, -28, 9, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#2c3d6b'; g.beginPath(); g.arc(28, -31, 8, 0, Math.PI * 2); g.fill();
+      }
+    } else if (id === 'shovel') {
+      // the shovel, painted gold
+      g.restore(); g.save();
+      drawShovel(g, W / 2 + 4, H / 2 + 12, 1.0);
+      g.globalCompositeOperation = 'source-atop';
+      const gr = g.createLinearGradient(0, 0, W, H);
+      gr.addColorStop(0, 'rgba(255,240,150,.85)'); gr.addColorStop(0.5, 'rgba(242,194,48,.85)'); gr.addColorStop(1, 'rgba(184,134,11,.85)');
+      g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      g.globalCompositeOperation = 'source-over';
+      g.fillStyle = '#fff'; for (const [sx, sy] of [[W * 0.72, H * 0.22], [W * 0.25, H * 0.7]]) { g.beginPath(); g.moveTo(sx, sy - 5); g.lineTo(sx + 1.5, sy - 1.5); g.lineTo(sx + 5, sy); g.lineTo(sx + 1.5, sy + 1.5); g.lineTo(sx, sy + 5); g.lineTo(sx - 1.5, sy + 1.5); g.lineTo(sx - 5, sy); g.lineTo(sx - 1.5, sy - 1.5); g.closePath(); g.fill(); }
+    }
+    g.restore();
+  }
+  function renderShop() {
+    const grid = document.getElementById('shopGrid'); grid.innerHTML = '';
+    for (const it of SHOP) {
+      const lvl = owned(it.id), maxed = lvl >= it.costs.length, cost = it.costs[lvl];
+      const card = document.createElement('div'); card.className = 'shop-item' + (it.id === 'energyNight' ? ' night' : '');
+      card.innerHTML = `<canvas class="shop-pic" width="96" height="96" aria-hidden="true"></canvas><h3>${it.name}</h3><p>${it.desc}</p><span class="owned">${it.costs.length > 1 ? `Owned: ${lvl} of ${it.costs.length}` : lvl ? 'Owned' : 'Not owned'}</span>`;
+      const btn = document.createElement('button');
+      btn.innerHTML = maxed ? 'Sold out' : `<span class="coin-icon" aria-hidden="true"></span>${cost}`;
+      btn.disabled = maxed || (progress.coins || 0) < cost;
+      btn.addEventListener('click', () => {
+        if (maxed || (progress.coins || 0) < cost) return;
+        progress.coins -= cost; progress.shop = progress.shop || {}; progress.shop[it.id] = lvl + 1;
+        saveProgress(); syncCoins(); renderShop(); Sound.play('upgrade');
+      });
+      card.appendChild(btn); grid.appendChild(card);
+      const pic = card.querySelector('.shop-pic'), pg = pic && pic.getContext('2d'); if (pg) try { drawShopIcon(pg, it.id); } catch (err) {}
+    }
+  }
+  // coins drop from 1 in 3 zombies: 7 in 10 are silver (10), 3 in 10 are gold (100)
+  function maybeDropCoin(e) {
+    if (level.sandbox) return;
+    // 1 in 150: a diamond worth 1000 instead
+    if (Math.random() < 1 / 150) {
+      state.coins.push({ x: e.x, y: e.lane * CELL + 50, vx: (Math.random() - 0.5) * 60, vy: -300, floor: e.lane * CELL + 78, life: 20, value: 1000, diamond: true, spin: 0 });
+      return;
+    }
+    if (Math.random() >= 1 / 3) return;
+    const gold = Math.random() < 0.3;
+    state.coins.push({ x: e.x, y: e.lane * CELL + 50, vx: (Math.random() - 0.5) * 80, vy: -240, floor: e.lane * CELL + 80, life: 15, value: gold ? 100 : 10, gold, spin: Math.random() * 6 });
+  }
+  function collectCoin(cn) {
+    if (cn.collected) return;
+    cn.collected = true; cn.ct = 0; cn.sx = cn.x; cn.sy = cn.y;
+    progress.coins = (progress.coins || 0) + cn.value; saveProgress(); syncCoins();
+    Sound.play(cn.diamond ? 'diamond' : 'coin');
+  }
+  function drawCoin(cn) {
+    let x = cn.x, y = cn.y, a = cn.life < 3 ? (Math.floor(cn.life * 6) % 2 ? 0.45 : 1) : 1;
+    if (cn.collected) { const k = Math.min(1, cn.ct / 0.45); x = cn.sx + (60 - cn.sx) * k * k; y = cn.sy + (-10 - cn.sy) * k * k; a = 1 - k * 0.4; }
+    if (cn.diamond) {
+      // a sparkling blue diamond that bobs and turns
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y - (cn.collected ? 0 : Math.abs(Math.sin(state.time * 3)) * 4));
+      if (!cn.collected) { ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(0, cn.floor - cn.y + 10, 14, 3, 0, 0, Math.PI * 2); ctx.fill(); }
+      const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, 34);
+      glow.addColorStop(0, 'rgba(160,230,255,.55)'); glow.addColorStop(1, 'rgba(160,230,255,0)');
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 0, 34, 0, Math.PI * 2); ctx.fill();
+      ctx.scale(Math.abs(Math.cos(cn.spin * 0.5)) * 0.6 + 0.4, 1);
+      ctx.fillStyle = '#2f9ed8'; ctx.beginPath(); ctx.moveTo(-16, -5); ctx.lineTo(-9, -14); ctx.lineTo(9, -14); ctx.lineTo(16, -5); ctx.lineTo(0, 16); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#7fd6ff'; ctx.beginPath(); ctx.moveTo(-9, -14); ctx.lineTo(9, -14); ctx.lineTo(5, -5); ctx.lineTo(-5, -5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#bff0ff'; ctx.beginPath(); ctx.moveTo(-5, -5); ctx.lineTo(5, -5); ctx.lineTo(0, 16); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#1f6f9e'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(-16, -5); ctx.lineTo(16, -5); ctx.moveTo(-9, -14); ctx.lineTo(-5, -5); ctx.lineTo(0, 16); ctx.lineTo(5, -5); ctx.lineTo(9, -14); ctx.stroke();
+      ctx.restore();
+      // twinkles
+      if (!cn.collected) {
+        ctx.save(); ctx.fillStyle = '#fff';
+        for (let i = 0; i < 3; i++) {
+          const ph = (state.time * 1.5 + i / 3) % 1, k = Math.sin(ph * Math.PI);
+          const sx = x + Math.cos(i * 2.1) * 22, sy = y - 6 + Math.sin(i * 2.1) * 16, rr = 4 * k;
+          ctx.globalAlpha = k * a;
+          ctx.beginPath(); ctx.moveTo(sx, sy - rr); ctx.lineTo(sx + rr * 0.3, sy - rr * 0.3); ctx.lineTo(sx + rr, sy); ctx.lineTo(sx + rr * 0.3, sy + rr * 0.3); ctx.lineTo(sx, sy + rr); ctx.lineTo(sx - rr * 0.3, sy + rr * 0.3); ctx.lineTo(sx - rr, sy); ctx.lineTo(sx - rr * 0.3, sy - rr * 0.3); ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+      }
+      return;
+    }
+    const w = Math.abs(Math.cos(cn.spin)) * 0.85 + 0.15, r = cn.gold ? 15 : 12;
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,.18)'; if (!cn.collected) { ctx.beginPath(); ctx.ellipse(0, cn.floor - cn.y + 8, r, 3, 0, 0, Math.PI * 2); ctx.fill(); }
+    ctx.scale(w, 1);
+    ctx.fillStyle = cn.gold ? '#b8860b' : '#8d969e'; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = cn.gold ? '#f2c230' : '#cdd3d8'; ctx.beginPath(); ctx.arc(0, 0, r - 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = cn.gold ? '#fff2a8' : '#f2f5f7'; ctx.beginPath(); ctx.arc(-r * 0.3, -r * 0.3, r * 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = cn.gold ? '#9a6f08' : '#6d757c'; ctx.font = `900 ${r}px Nunito, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (cn.gold) {
+      // a little star stamped on gold coins
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) { const ang = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.25 : r * 0.55; ctx.lineTo(Math.cos(ang) * rr, Math.sin(ang) * rr); }
+      ctx.closePath(); ctx.fill();
+    } else ctx.fillText('$', 0, 1);
+    ctx.restore();
+  }
+  const shopOverlay = document.getElementById('shopOverlay');
+  document.getElementById('menuShop').addEventListener('click', () => { showScreen(shopOverlay); renderShop(); syncCoins(); });
+
+  // ===================== ALMANAC =====================
+  // ratings: 0 none, 1 very low, 2 low, 3 normal, 4 high, 5 very high
+  const RATE = ['None', 'Very low', 'Low', 'Normal', 'High', 'Very high'];
+  const ALMANAC_DEFENDERS = {
+    squid:   { name: 'Sun Squid', energy: '25 per orb', dmg: 0, tough: 3, speed: 'Every 12 s', range: '—', special: 'Makes 25-energy orbs. Sleeps at night.' },
+    hsquid:  { name: 'Hypersquid', energy: '50 per orb', dmg: 0, tough: 3, speed: 'Every 12 s', range: '—', special: 'Planted on a Sun Squid. Makes 50-energy orbs. Sleeps at night.' },
+    vamp:    { name: 'Vampire Squid', energy: '10 per orb then 25 per orb', dmg: 0, tough: 3, speed: 'Every 12 s then every 18 s', range: '—', special: 'Night defender. 10-energy orbs for 90 s, then 25-energy orbs.' },
+    mini:    { name: 'Mini Turtle', dmg: 2, tough: 3, speed: 'Normal', range: '3 tiles ahead', special: 'Night defender. Free.' },
+    turtle:  { name: 'Rock Turtle', dmg: 2, tough: 3, speed: 'Normal', range: 'Whole lane', special: '' },
+    whip:    { name: 'Whip Turtle', dmg: 3, tough: 3, speed: 'Fast', range: '3 tiles ahead', special: '' },
+    mau:     { name: 'Mau Mau', dmg: 0, tough: 4, speed: '—', range: '—', special: 'A wall that soaks up bites.' },
+    forti:   { name: 'Forti Mau', dmg: 0, tough: 5, speed: '—', range: '—', special: 'Planted on a Mau Mau. An even bigger wall.' },
+    bee:     { name: 'Benny Bee', dmg: 4, tough: 3, speed: 'Slow', range: 'Whole lane', special: 'Poisons zombies for 5 s.' },
+    spray:   { name: 'Cleaning Spray', dmg: 2, tough: 3, speed: 'Normal', range: '3 lanes × 2 tiles', special: 'Hits everything in its mist.' },
+    shampoo: { name: 'Shampoo', dmg: 1, tough: 3, speed: 'Slow', range: 'Whole lane', special: 'Leaves slippery puddles that slow zombies.' },
+    laser:   { name: 'Laser Turtle', dmg: 4, tough: 3, speed: 'Slow', range: 'Whole lane', special: 'Pierces every zombie in the lane.' },
+    lobster: { name: 'Lewis Lobster', dmg: 3, tough: 3, speed: 'Slow', range: '1 tile ahead', special: '' },
+    shark:   { name: 'Sammy', dmg: 5, tough: 3, speed: 'Normal', range: '2 tiles ahead', special: 'Bites cause bleeding.' },
+    badger:  { name: 'Hyperbadge', dmg: 4, tough: 3, speed: 'Constant', range: 'Its own tile', special: 'Zombies walk over him and get shredded.' },
+    jic:     { name: 'Jicjajic', dmg: 0, tough: 3, speed: '—', range: '—', special: 'Fuses defenders: Hyper Turtle, Squeaky Clean, Ultima Snapper, Tesla Coil.' },
+    lotl:    { name: 'Temper-lotl', dmg: 5, tough: 3, speed: 'Once', range: '3×3', special: 'Explodes 1.5 s after planting.' },
+    angry:   { name: 'Angry Turtle', dmg: 3, tough: 3, speed: 'Normal', range: 'Whole lane', special: 'Throws 2 rocks at a time.' },
+    enraged: { name: 'Enraged Turtle', dmg: 5, tough: 3, speed: 'Normal', range: 'Whole lane', special: 'Planted on an Angry Turtle. 4 rocks at a time.' },
+    dragon:  { name: 'Rusty', dmg: 4, tough: 3, speed: 'Normal', range: '3 tiles ahead', special: 'Tap to switch gears. Asleep, he turns passing rocks into lava.' },
+    digger:  { name: 'Digger', dmg: 4, tough: 3, speed: 'Very slow', range: 'Anywhere you aim', special: 'Tap, aim, and throw a boulder with 3×3 splash.' },
+    snapper: { name: 'Snapper', dmg: 5, tough: 3, speed: 'Very slow', range: '1 tile ahead', special: 'Swallows zombies whole, then chews for 10 s.' },
+    chog:    { name: 'Chog-chog', dmg: [2, 3, 4], tough: 3, speed: 'Once', range: '3×3 then 5×5', special: 'Explodes when eaten. Bigger the longer he waits.' },
+    multi:   { name: 'Multurtle', dmg: 2, tough: 3, speed: 'Normal', range: '3 lanes', special: 'One rock in its lane and each lane next to it.' },
+    boat:    { name: 'Boat', dmg: 0, tough: 3, speed: '—', range: '—', special: 'Pool only: goes on water so you can plant a defender in it.' },
+    loo:     { name: 'Loo Roll', dmg: 4, tough: 0, speed: 'Once', range: '12 directions', special: 'Each sheet hits 2 zombies: 250, then 125.' },
+    battery: { name: 'Battery Tower', dmg: 4, tough: 3, speed: 'Every 5 s', range: 'Closest zombie to your house', special: 'Tap and pay 50 energy to fire.' },
+    hyper:   { name: 'Hyper Turtle', dmg: 'deathly', tough: 4, speed: 'Normal', range: 'Whole lane', special: 'Fusion. 2 tiles. 300 up close, laser pierces the lane.' },
+    clean:   { name: 'Squeaky Clean', dmg: 4, tough: 4, speed: 'Normal', range: '3 lanes × 2 tiles', special: 'Fusion. Leaves shampoo puddles.' },
+    ultima:  { name: 'Ultima Snapper', dmg: 5, tough: 4, speed: 'Very slow', range: '1 tile ahead', special: 'Fusion. 2 tiles. Gulps up to 5 zombies, even a Mutant.' },
+    tesla:   { name: 'Tesla Coil', dmg: 5, tough: 4, speed: 'Every 10 s', range: 'Closest zombie to your house', special: 'Fusion. 2 tiles. Tap and pay 100 energy: 1500 + 750 splash.' }
+  };
+  const ALMANAC_ZOMBIES = {
+    basic:   { name: 'Zombie', tough: 2, speed: 3, bite: 3, first: 'Wave 1', desc: 'A regular zombie. Shuffles toward your house and eats whatever is in the way.' },
+    shield:  { name: 'Shield Bearer', tough: 3, speed: 3, bite: 3, first: 'Wave 2', desc: 'Hides behind a wooden shield that soaks up hits before it splinters.' },
+    soup:    { name: 'Soup Can Head', tough: 4, speed: 3, bite: 3, first: 'Wave 3', desc: 'Wears a soup can as a helmet. Tough until it pops off.' },
+    runner:  { name: 'Runnererer', tough: 3, speed: 5, bite: 3, first: 'Wave 4', desc: 'Sprints down the lane much faster than everyone else.' },
+    noodler: { name: 'Pool Noodler', tough: 3, speed: 3, bite: 5, first: 'Wave 5', desc: 'Bites three times as hard as a normal zombie.' },
+    teacher: { name: 'Teacher', tough: 3, speed: [3, 4], bite: [3, 5], first: 'Wave 5', desc: 'Holds up a test. Break it and she goes furious: twice as fast and six times the bite.' },
+    knight:  { name: 'Charging Knight', tough: 5, speed: 4, bite: 3, first: 'Wave 6', desc: 'Armoured and charging fast. Loses only his helmet when the armour breaks.' },
+    mutant:  { name: 'Mutant', tough: 'undying', speed: 2, bite: 5, first: 'Wave 8', desc: 'A huge mutated zombie that stomps defenders flat. Only the Ultima Snapper can swallow him.' },
+    tube:    { name: 'Swimming Tube Zombie', tough: 2, speed: 3, bite: 3, first: 'Level 11', desc: 'Paddles down the pool lanes in a rubber ring.' },
+    shieldTube: { name: 'Shield Tube Zombie', tough: 3, speed: 3, bite: 3, first: 'Level 11', desc: 'A Shield Bearer floating in a rubber ring.' },
+    car:     { name: 'Car Zombie', tough: 4, speed: 5, bite: 'deathly', first: 'Sandbox only', desc: 'A zombie behind the wheel of a beat-up car. Takes up a tile and a half, drives at double speed and runs defenders over. A Forti Mau\'s armour can take one hit.' },
+    ninja:   { name: 'Nunjaka', tough: 2, speed: [5, 0], bite: 3, first: 'Sandbox only', desc: 'A zombie monk. Dashes at double speed, then stops for 5 s of nunchuck tricks that knock flying projectiles back at your defenders.' },
+    mini:    { name: 'Mini Teacher', tough: 2, speed: [3, 4], bite: [3, 5], first: 'Sandbox only', desc: 'Just like a Teacher, but with less health.' }
+  };
+  const meter = (n, green) => `<span class="alm-meter${green ? ' green' : ''}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+  // a couple of things are off the charts
+  const OFF_CHARTS = { undying: 'UNDYING????', deathly: 'DEATHLY' };
+  const rated = (n, green) => (Array.isArray(n) ? n : [n]).map(v => OFF_CHARTS[v]
+    ? `<span class="alm-meter alm-max">${'<i class="on"></i>'.repeat(5)}</span><span class="alm-undying">${OFF_CHARTS[v]}</span>`
+    : `${meter(v, green)}${RATE[v]}`).join(' <i class="alm-then">then</i> ');
+  function almanacPic(kind, isZombie, size) {
+    const cv = document.createElement('canvas'); cv.width = size; cv.height = size;
+    const g = cv.getContext('2d'); if (!g) return cv;
+    if (isZombie) {
+      const e = { kind, lane: 0, x: 0, hp: 1, maxHp: 1, base: 1, walking: false, wob: 0, hurtOverride: 0, noShadow: false,
+        shieldUp: kind === 'shield' || kind === 'shieldTube', canUp: kind === 'soup', knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini' };
+      const big = kind === 'mutant';
+      const saved = ctx;
+      try {
+        ctx = g;
+        g.translate(size / 2, size * (kind === 'car' ? 0.8 : 0.94)); const k = size / (big ? 175 : kind === 'car' ? 175 : 138); g.scale(k, k);
+        g.translate(0, -92);
+        drawEnemy(e);
+      } catch (err) {} finally { ctx = saved; }
+    } else {
+      const src = document.querySelector(`.card[data-unit="${kind}"] canvas`) || document.getElementById(`${kind}SeedArt`);
+      if (src) try { g.drawImage(src, 0, 0, size, size); } catch (err) {}
+    }
+    return cv;
+  }
+  let almTab = 'defenders', almSel = null;
+  function almanacDetail(kind) {
+    const el = document.getElementById('almDetail');
+    almSel = kind;
+    document.querySelectorAll('.alm-item').forEach(b => b.setAttribute('aria-pressed', b.dataset.kind === kind ? 'true' : 'false'));
+    el.innerHTML = '';
+    if (almTab === 'defenders') {
+      const d = ALMANAC_DEFENDERS[kind], u = UNITS[kind] || {};
+      const cost = u.seed ? 'Free (fusion seed)' : `${u.cost || 0} energy`;
+      const recharge = u.recharge ? `${u.recharge} s` : 'None';
+      el.innerHTML = `<h3>${d.name}</h3><div class="alm-pic"></div><p>${DESCRIPTIONS[kind] || d.special}</p>
+        ${d.energy ? `<div class="alm-stat"><b>Energy</b><span>${d.energy}</span></div>` : ''}
+        <div class="alm-stat"><b>Damage</b><span>${rated(d.dmg)}</span></div>
+        <div class="alm-stat"><b>Toughness</b><span>${rated(d.tough, true)}</span></div>
+        <div class="alm-stat"><b>Attack speed</b><span>${d.speed}</span></div>
+        <div class="alm-stat"><b>Range</b><span>${d.range}</span></div>
+        <div class="alm-stat"><b>Cost</b><span>${cost}</span></div>
+        <div class="alm-stat"><b>Recharge</b><span>${recharge}</span></div>
+        ${d.special ? `<div class="alm-stat"><b>Special</b><span>${d.special}</span></div>` : ''}`;
+    } else {
+      const z = ALMANAC_ZOMBIES[kind];
+      el.innerHTML = `<h3>${z.name}</h3><div class="alm-pic"></div><p>${z.desc}</p>
+        <div class="alm-stat"><b>Toughness</b><span>${rated(z.tough)}</span></div>
+        <div class="alm-stat"><b>Speed</b><span>${rated(z.speed)}</span></div>
+        <div class="alm-stat"><b>Bite</b><span>${rated(z.bite)}</span></div>
+        <div class="alm-stat"><b>First seen</b><span>${z.first}</span></div>`;
+    }
+    el.querySelector('.alm-pic').appendChild(almanacPic(kind, almTab === 'zombies', 240));
+  }
+  function almanacGrid() {
+    const grid = document.getElementById('almGrid'); grid.innerHTML = '';
+    const list = almTab === 'defenders' ? ALMANAC_DEFENDERS : ALMANAC_ZOMBIES;
+    let first = null;
+    for (const [kind, info] of Object.entries(list)) {
+      const b = document.createElement('button'); b.className = 'alm-item'; b.dataset.kind = kind; b.setAttribute('aria-pressed', 'false');
+      b.appendChild(almanacPic(kind, almTab === 'zombies', 112));
+      const n = document.createElement('span'); n.textContent = info.name; b.appendChild(n);
+      b.addEventListener('click', () => almanacDetail(kind));
+      grid.appendChild(b); if (!first) first = kind;
+    }
+    almanacDetail(first);
+  }
+  document.querySelectorAll('.alm-tab').forEach(t => t.addEventListener('click', () => {
+    almTab = t.dataset.tab;
+    document.querySelectorAll('.alm-tab').forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+    almanacGrid();
+  }));
+  const almanacOverlay = document.getElementById('almanacOverlay');
+  document.getElementById('menuAlmanac').addEventListener('click', () => { showScreen(almanacOverlay); almanacGrid(); });
+  function showLevels() {
+    if (level.night || (level === LEVELS[5] && progress.beaten[5])) { showScreen(levelOverlay); scrollToLevel(level === LEVELS[5] ? 'n1' : null); return; }
+    showScreen(level.units === null || level.rounds || level.plan ? bonusOverlay : levelOverlay);
+  }
+  // Levels 6 and 7 (night) stay hidden until Level 5 is beaten, so the row ends at sunset
   const nightOpen = () => !!(progress.beaten[5] || progress.unlockAll);
   function refreshNightButton() {
-    const b = document.getElementById('toNight'); if (!b) return;
-    b.classList.toggle('locked', !nightOpen());
-    b.textContent = nightOpen() ? '🌙 Night ▶' : '🔒 Night ▶';
+    document.querySelectorAll('#levelGrid .night-card').forEach(c => { c.hidden = !nightOpen(); });
+    // the Pool only shows up once Level 10 is beaten
+    const poolCard = document.querySelector('#levelGrid .pool-card');
+    if (poolCard) poolCard.hidden = !(progress.beaten.n5 || progress.unlockAll);
+    if (typeof updateSky === 'function') setTimeout(updateSky, 0);
   }
-  document.getElementById('toNight').addEventListener('click', () => { if (nightOpen()) showScreen(nightOverlay); });
-  document.getElementById('nightBack').addEventListener('click', () => showScreen(levelOverlay));
   document.getElementById('menuLevels').addEventListener('click', () => showScreen(levelOverlay));
   document.getElementById('menuBonus').addEventListener('click', () => showScreen(bonusOverlay));
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => showScreen(menuOverlay)));
@@ -1047,6 +1690,7 @@
     picking = true;
     // a small level brings everything it has
     const allowedNow = cards.map(cd => cd.dataset.unit).filter(unitAllowed);
+    if (level.units === 'owned') { allowedNow.forEach(u => loadout.add(u)); picking = false; state.running = true; syncUI(); return; }
     if (level.units && allowedNow.length <= maxSlots()) allowedNow.forEach(u => loadout.add(u));
     startOverlay.classList.add('show');
     syncUI();
@@ -1066,8 +1710,9 @@
     showLevels(); // the level isn't saved: leaving throws away this run
   });
   document.getElementById('unlockAll').addEventListener('click', () => { progress.unlockAll = true; saveProgress(); refreshLevelCards(); });
-  document.getElementById('resetProgress').addEventListener('click', () => { progress = { beaten: {} }; saveProgress(); refreshLevelCards(); });
+  document.getElementById('resetProgress').addEventListener('click', () => { progress = { beaten: {}, coins: progress.coins || 0, shop: progress.shop || {} }; saveProgress(); refreshLevelCards(); });
   refreshLevelCards();
+  setTimeout(syncCoins, 0);
   const levelGrid = document.getElementById('levelGrid');
   const levelsBack = document.getElementById('levelsBack'), levelsMore = document.getElementById('levelsMore');
   const levelStep = () => { const c = levelGrid.querySelector('.level-card'); return c ? c.getBoundingClientRect().width + 14 : 234; };
@@ -1082,7 +1727,43 @@
   // parallax: the lawn behind the level cards drifts at a third of the scroll speed
   levelGrid.addEventListener('scroll', () => {
     levelOverlay.style.setProperty('--lawn-x', `${-levelGrid.scrollLeft / 3}px`);
+    updateSky();
   });
+  // how much of a card is showing in the row (0..1)
+  function shown(k) {
+    const c = levelGrid.querySelector(`.level-card[data-level="${k}"]`); if (!c || c.hidden) return 0;
+    const g = levelGrid.getBoundingClientRect(), r = c.getBoundingClientRect();
+    if (!r.width) return 0;
+    return Math.max(0, Math.min(r.right, g.right) - Math.max(r.left, g.left)) / r.width;
+  }
+  // 0 = daytime, 1 = sunset (Level 5 in view), 2 = night (Level 6 in view)
+  function skyPhase() { return Math.min(2, shown('5') + shown('n1') + (shown('n1') >= 1 ? 0 : 0)); }
+  function updateSky() {
+    const tint = document.getElementById('skyTint'); if (!tint) return;
+    const s5 = shown('5'), s6 = Math.max(shown('n1'), shown('n2'), shown('n3'), shown('n4'), shown('n5'));
+    // fade into sunset as Level 5 slides in, then into night as Level 6 slides in
+    const s10 = shown('n5'), sPool = shown('p1');
+    const p = sPool > 0 ? 3 + sPool : s10 > 0 ? 2 + s10 : s6 > 0 ? 1 + s6 : s5;
+    const mix = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+    const DAY = [255, 200, 120, 0], SUNSET = [255, 105, 55, 0.38], NIGHT = [14, 20, 60, 0.62], SUNRISE = [255, 140, 150, 0.34];
+    const POOLDAY = [140, 210, 255, 0.12];
+    const c = p <= 1 ? mix(DAY, SUNSET, p) : p <= 2 ? mix(SUNSET, NIGHT, p - 1) : p <= 3 ? mix(NIGHT, SUNRISE, p - 2) : mix(SUNRISE, POOLDAY, p - 3);
+    tint.style.backgroundColor = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${c[3].toFixed(3)})`;
+    const nightK = p <= 2 ? Math.max(0, p - 1) : Math.max(0, 1 - (p - 2) * 1.2);
+    tint.querySelector('.sky-stars').style.opacity = nightK.toFixed(2);
+    tint.querySelector('.sky-moon').style.opacity = nightK.toFixed(2);
+    // the title follows whichever part of the world you're looking at
+    // the sky goes orange at sunset, but it's still the Grass world until night falls
+    document.getElementById('levelsTitle').textContent = sPool >= 0.5 ? 'Pool' : s6 >= 0.5 ? 'Night' : 'Grass';
+  }
+  function scrollToLevel(k) {
+    if (!k) return;
+    setTimeout(() => {
+      const c = levelGrid.querySelector(`.level-card[data-level="${k}"]`);
+      if (c && !c.hidden && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      updateSky();
+    }, 50);
+  }
   window.addEventListener('resize', refreshArrows);
   setTimeout(refreshArrows, 0);
   document.getElementById('winAgainBtn').onclick = () => {
@@ -1118,7 +1799,7 @@
     return wave === 8 ? 1 : 0;
   }
   function buildDeck(wave) {
-    const size = 8;
+    const size = (level && level.waveSize) || 8;
     const shieldChance = wave < 2 ? 0 : Math.min(0.45, 0.15 + (wave - 2) * 0.06);
     const soupChance = wave < 3 ? 0 : Math.min(0.3, 0.1 + (wave - 3) * 0.05);
     const shields = wave < 2 ? 0 : Math.max(1, Math.round(size * shieldChance));
@@ -1136,8 +1817,20 @@
     for (let i = 0; i < teachers; i++) deck.push('teacher');
     for (let i = 0; i < shields; i++) deck.push('shield');
     for (let i = 0; i < soups; i++) deck.push('soup');
-    if (level.zombies) for (let i = 0; i < deck.length; i++) if (!level.zombies.includes(deck[i])) deck[i] = 'basic';
+    if (level.zombies) for (let i = 0; i < deck.length; i++) if (!level.zombies.includes(deck[i]) || (level.noDeckKinds || []).includes(deck[i])) deck[i] = 'basic';
+    for (const [kind, n] of Object.entries((level.waveAtLeast || {})[wave] || {})) {
+      let have = deck.filter(k => k === kind).length;
+      for (let i = 0; i < deck.length && have < n; i++) if (deck[i] === 'basic') { deck[i] = kind; have++; }
+      while (have < n) { deck.push(kind); have++; }
+    }
     while (deck.length < size) deck.push('basic');
+    if (level.zombieShare) {
+      const keep = Math.max(1, Math.ceil(deck.length * level.zombieShare));
+      while (deck.length > keep) {
+        const b = deck.indexOf('basic');
+        deck.splice(b >= 0 ? b : deck.length - 1, 1);
+      }
+    }
     for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
     return deck;
   }
@@ -1146,7 +1839,8 @@
     if (state.finalStarted) return;
     state.finalStarted = true;
     state.banner = 3.2;
-    const rush = buildDeck(level.waves).concat(buildDeck(level.waves)).slice(0, 8 + level.waves * 2);
+    if (level.bossKnights) state.bannerText = 'BOSS WAVE!';
+    const rush = buildDeck(level.waves).concat(buildDeck(level.waves)).slice(0, Math.ceil((8 + level.waves * 2) * (level.zombieShare || 1)));
     // some levels guarantee a minimum of certain zombies in the final wave (swapping out basic zombies)
     for (const [kind, n] of Object.entries(level.finalAtLeast || {})) {
       let have = rush.filter(k => k === kind).length;
@@ -1154,6 +1848,11 @@
       while (have < n) { rush.push(kind); have++; }
     }
     for (let i = rush.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rush[i], rush[j]] = [rush[j], rush[i]]; }
+    if (level.bossKnights) {
+      const [lo, hi] = level.bossKnights, n = lo + Math.floor(Math.random() * (hi - lo + 1));
+      for (let i = 0; i < n; i++) rush.splice(Math.floor(Math.random() * (rush.length + 1)), 0, 'knight');
+      state.bossKnights = n;
+    }
     // the boss always comes out last (the queue is popped from the end)
     if (level.finalBoss) rush.unshift(level.finalBoss);
     state.finalQueue = rush;
@@ -1162,6 +1861,7 @@
   }
   function spawn() {
     if (state.spawningDone || state.finalStarted) return;
+    state.firstSpawned = true;
     if (!state.deck || !state.deck.length) {
       // each new batch of zombies is a new wave
       if (state.deck) {
@@ -1174,20 +1874,28 @@
   }
   function spawnZombie(kind, lane, x = board.width + 30) {
     const base = ENEMY.hp + (state.wave - 1) * 20;
-    const mult = kind === 'mini' ? 1.75 : kind === 'teacher' ? 3.5 : kind === 'knight' ? 10 : kind === 'mutant' ? 15 : kind === 'noodler' ? 2.5 : kind === 'soup' ? 5.5 : kind === 'shield' ? 3 : kind === 'runner' ? 2 : 1;
+    if (level.pool) {
+      const wet = WATER_LANES.includes(lane);
+      if (wet) { if (kind === 'basic') kind = 'tube'; else if (kind === 'shield') kind = 'shieldTube'; else if (kind !== 'tube' && kind !== 'shieldTube') { const dry = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l)); lane = dry[Math.floor(Math.random() * dry.length)]; } }
+      else if (kind === 'tube') kind = 'basic'; else if (kind === 'shieldTube') kind = 'shield';
+    }
+    const mult = kind === 'shieldTube' ? 3 : kind === 'car' ? 7 : kind === 'mini' ? 1.75 : kind === 'teacher' ? 3.5 : kind === 'knight' ? 10 : kind === 'mutant' ? 15 : kind === 'noodler' ? 2.5 : kind === 'soup' ? 5.5 : kind === 'shield' ? 3 : kind === 'runner' ? 2 : 1;
     const hp = base * mult;
     state.enemies.push({ kind, lane, x, hp, maxHp: hp, base,
-      shieldUp: kind === 'shield', canUp: kind === 'soup', speedMul: kind === 'runner' ? 2.5 : kind === 'knight' ? 1.5 : kind === 'mutant' ? 0.75 : 1, knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini', angry: false,
-      testAt: kind === 'teacher' ? base * 2.5 : kind === 'mini' ? base * 1.25 : 0, wob: Math.random() * 6 });
+      shieldUp: kind === 'shield', canUp: kind === 'soup', speedMul: kind === 'car' ? 2 : kind === 'ninja' ? NINJA.speed : kind === 'runner' ? 2.5 : kind === 'knight' ? 1.5 : kind === 'mutant' ? 0.75 : 1, knightUp: kind === 'knight', testUp: kind === 'teacher' || kind === 'mini', angry: false,
+      testAt: kind === 'teacher' ? base * 2.5 : kind === 'mini' ? base * 1.25 : 0, wob: Math.random() * 6,
+      tricks: false, trickTimer: kind === 'ninja' ? NINJA.walk : 0, spinA: 0 });
   }
   // Draw a zombie onto its own small canvas (optionally as a charred silhouette) for death animations
+  const NINJA = { walk: 5, tricks: 5, speed: 2 };
+  const CAR = { halfLen: 75 }; // 1.5 tiles long
   const SNAP_W = 240, SNAP_H = 280, SNAP_FOOT_X = 120, SNAP_FOOT_Y = 250;
-  function snapshotEnemy(e, charred) {
+  function snapshotEnemy(e, charred, noHead = false) {
     const cv = document.createElement('canvas');
     cv.width = SNAP_W; cv.height = SNAP_H;
     const g = cv.getContext('2d');
     if (!g) return null;
-    const clone = Object.assign({}, e, { hp: e.maxHp, poison: 0, bleed: 0, walking: false, smashCool: null, noShadow: !charred, hurtOverride: 1 });
+    const clone = Object.assign({}, e, { hp: e.maxHp, poison: 0, bleed: 0, walking: false, smashCool: null, noShadow: !charred, hurtOverride: 1, noHead });
     const baseY = e.lane * CELL + 92;
     const saved = ctx;
     try {
@@ -1203,6 +1911,169 @@
       g.globalCompositeOperation = 'source-over';
     }
     return cv;
+  }
+  // ---------- Pool: three water lanes down the middle of the lawn (lanes 2, 3 and 4) ----------
+  const WATER_LANES = [1, 2, 3];
+  function drawPoolWater(g, cell, time = 0) {
+    // a tiled pool like the one in PvZ, in the game's flat style:
+    // checkered blue tiles, a stone edge on both sides, and soft light ripples
+    const top = WATER_LANES[0] * cell, h = WATER_LANES.length * cell, w = COLS * cell;
+    for (const r of WATER_LANES) for (let c = 0; c < COLS; c++) {
+      g.fillStyle = (r + c) % 2 ? '#4fb3e3' : '#62c3ee';
+      g.fillRect(c * cell, r * cell, cell, cell);
+    }
+    // darker water at the top under the edge, lighter in the middle
+    const sh = g.createLinearGradient(0, top, 0, top + h);
+    sh.addColorStop(0, 'rgba(20,80,140,.28)'); sh.addColorStop(0.12, 'rgba(20,80,140,0)');
+    sh.addColorStop(0.88, 'rgba(20,80,140,0)'); sh.addColorStop(1, 'rgba(20,80,140,.18)');
+    g.fillStyle = sh; g.fillRect(0, top, w, h);
+    // light dancing on the water: wobbly squiggles that drift slowly
+    g.strokeStyle = 'rgba(255,255,255,.32)'; g.lineWidth = Math.max(1, cell * 0.025); g.lineCap = 'round'; g.lineJoin = 'round';
+    for (const r of WATER_LANES) for (let c = 0; c < COLS; c++) {
+      for (let k = 0; k < 2; k++) {
+        const ox = ((c * 37 + r * 19 + k * 53) % 70) / 100, oy = ((c * 23 + r * 41 + k * 29) % 60) / 100 + 0.15;
+        const x = c * cell + ox * cell + Math.sin(time * 0.8 + c + k) * cell * 0.05, y = r * cell + oy * cell;
+        g.beginPath();
+        g.moveTo(x, y);
+        g.quadraticCurveTo(x + cell * 0.07, y - cell * 0.06, x + cell * 0.14, y);
+        g.quadraticCurveTo(x + cell * 0.21, y + cell * 0.06, x + cell * 0.28, y);
+        g.stroke();
+      }
+    }
+    // stone edge with tile joins, top and bottom
+    const edge = Math.max(3, cell * 0.12);
+    for (const [y0, flip] of [[top - edge, false], [top + h, true]]) {
+      g.fillStyle = '#d8dfe2'; g.fillRect(0, y0, w, edge);
+      g.fillStyle = '#b9c4c9'; g.fillRect(0, flip ? y0 + edge - Math.max(1, edge * 0.25) : y0, w, Math.max(1, edge * 0.25));
+      g.fillStyle = '#eef3f5'; g.fillRect(0, flip ? y0 : y0 + edge - Math.max(1, edge * 0.3), w, Math.max(1, edge * 0.3));
+      g.fillStyle = '#aab6bc';
+      for (let x = 0; x < w; x += cell / 2) g.fillRect(x, y0, 1, edge);
+    }
+  }
+  // Car Zombie: a beat-up little car (facing left) with a zombie at the wheel
+  function drawCarZombie(e, baseY) {
+    const hpK = e.hurtOverride != null ? 1 - e.hurtOverride : Math.max(0, e.hp / e.maxHp);
+    const rumble = e.walking ? Math.sin(e.wob * 6) * 1.2 : Math.sin(e.wob * 9) * 0.6;
+    const spin = e.x / 14;
+    ctx.save(); ctx.translate(e.x, baseY);
+    if (!e.noShadow) { ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(0, 2, 78, 9, 0, 0, Math.PI * 2); ctx.fill(); }
+    ctx.translate(0, rumble);
+    // body
+    ctx.fillStyle = '#c0392b';
+    roundRect(ctx, -74, -40, 148, 30, 10); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-40, -40); ctx.quadraticCurveTo(-30, -70, 6, -70); ctx.lineTo(30, -70); ctx.quadraticCurveTo(50, -68, 54, -40); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#962d22'; ctx.fillRect(-74, -18, 148, 6);
+    // windows
+    ctx.fillStyle = '#bfe3f2';
+    ctx.beginPath(); ctx.moveTo(-34, -42); ctx.quadraticCurveTo(-26, -64, 0, -64); ctx.lineTo(4, -64); ctx.lineTo(4, -42); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(10, -64); ctx.lineTo(28, -64); ctx.quadraticCurveTo(44, -62, 48, -42); ctx.lineTo(10, -42); ctx.closePath(); ctx.fill();
+    // zombie driver peering over the wheel
+    ctx.save(); ctx.beginPath(); ctx.moveTo(-34, -42); ctx.quadraticCurveTo(-26, -64, 0, -64); ctx.lineTo(4, -64); ctx.lineTo(4, -42); ctx.closePath(); ctx.clip();
+    ctx.fillStyle = '#8fae7a'; ctx.beginPath(); ctx.ellipse(-12, -50, 11, 12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#4d6140'; ctx.beginPath(); ctx.moveTo(-22, -56); ctx.lineTo(-14, -63); ctx.lineTo(-4, -58); ctx.lineTo(-2, -52); ctx.lineTo(-22, -52); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-18, -50, 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(-19, -50, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-26, -44); ctx.lineTo(-20, -52); ctx.stroke();
+    // headlight, bumper, door handle
+    ctx.fillStyle = '#ffe680'; ctx.beginPath(); ctx.ellipse(-72, -30, 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#9aa1a8'; roundRect(ctx, -80, -18, 12, 8, 3); ctx.fill(); roundRect(ctx, 68, -18, 12, 8, 3); ctx.fill();
+    ctx.fillStyle = '#7a221a'; ctx.fillRect(-8, -36, 10, 3);
+    // damage in 3 stages: shiny, then dented, then battered and smoking
+    const carStage = hpK > 2 / 3 ? 1 : hpK > 1 / 3 ? 2 : 3;
+    const dent = (x, y, rx, ry, rot = 0) => {
+      ctx.fillStyle = 'rgba(70,15,10,.45)'; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,190,180,.45)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    };
+    if (carStage === 1) { ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.fillRect(-60, -37, 40, 3); ctx.fillRect(-28, -66, 30, 2); }
+    if (carStage >= 2) { dent(-50, -28, 7, 5, 0.2); dent(36, -24, 6, 4, -0.2); dent(-10, -26, 5, 3.5); dent(60, -30, 4, 3, 0.3); }
+    if (carStage === 3) {
+      dent(-30, -22, 8, 5, -0.2); dent(16, -30, 6, 4.5, 0.3); dent(-62, -24, 5, 6); dent(48, -20, 5, 3.5); dent(-20, -60, 6, 3, 0.2);
+      // crumpled front bumper and a bent-up bonnet corner
+      ctx.fillStyle = '#7d8389'; ctx.beginPath(); ctx.moveTo(-80, -18); ctx.lineTo(-72, -20); ctx.lineTo(-76, -14); ctx.lineTo(-68, -12); ctx.lineTo(-80, -10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#a8331f'; ctx.beginPath(); ctx.moveTo(-74, -40); ctx.lineTo(-66, -46); ctx.lineTo(-60, -40); ctx.closePath(); ctx.fill();
+      // cracked window
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(14, -60); ctx.lineTo(22, -52); ctx.lineTo(18, -46); ctx.moveTo(22, -52); ctx.lineTo(30, -50); ctx.stroke();
+      for (let i = 0; i < 3; i++) {
+        const ph = (state.time * 0.8 + i / 3) % 1;
+        ctx.fillStyle = `rgba(90,90,90,${0.45 * (1 - ph)})`;
+        ctx.beginPath(); ctx.arc(-58 + ph * 12, -44 - ph * 40, 6 + ph * 10, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    // wheels
+    for (const wx of [-46, 46]) {
+      ctx.save(); ctx.translate(wx, -8);
+      ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#b8bec4'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.rotate(-spin); ctx.fillStyle = '#6d747b'; ctx.fillRect(-1.2, -6, 2.4, 12); ctx.fillRect(-6, -1.2, 12, 2.4);
+      ctx.restore();
+    }
+    // exhaust puffs out the back while driving
+    if (e.walking) for (let i = 0; i < 2; i++) {
+      const ph = (state.time * 2 + i / 2) % 1;
+      ctx.fillStyle = `rgba(160,160,160,${0.4 * (1 - ph)})`;
+      ctx.beginPath(); ctx.arc(80 + ph * 22, -12 - ph * 6, 3 + ph * 6, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  // the Charging Knight's great helm (drawn on whatever ctx currently is)
+  function drawKnightHelm(armor, step) {
+    // great helm with a visor slit and a red plume, in 3 stages:
+    // 1 = shiny and whole, 2 = dented and cracked, 3 = battered with a chunk missing
+    const helmStage = armor > 2 / 3 ? 1 : armor > 1 / 3 ? 2 : 3;
+    // plume: full, then ragged, then a sad stub
+    ctx.fillStyle = helmStage === 3 ? '#8e2a30' : '#b8323a';
+    ctx.beginPath();
+    if (helmStage === 1) { ctx.moveTo(2, -18); ctx.quadraticCurveTo(18, -34, 30, -22 + step * 2); ctx.quadraticCurveTo(18, -24, 6, -14); }
+    else if (helmStage === 2) { ctx.moveTo(2, -18); ctx.quadraticCurveTo(14, -30, 24, -24 + step * 2); ctx.lineTo(20, -21); ctx.lineTo(22, -18); ctx.quadraticCurveTo(14, -20, 6, -14); }
+    else { ctx.moveTo(3, -18); ctx.quadraticCurveTo(10, -24, 14, -20 + step); ctx.lineTo(11, -17); ctx.lineTo(6, -14); }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = helmStage === 1 ? '#9aa3ab' : helmStage === 2 ? '#8d959c' : '#7c838a';
+    roundRect(ctx, -16, -19, 32, 34, 9); ctx.fill();
+    if (helmStage === 1) { ctx.fillStyle = '#c3cad0'; ctx.fillRect(-2, -19, 4, 34); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(-12, -15, 3, 10); }
+    else { ctx.fillStyle = '#a9b0b6'; ctx.fillRect(-2, -19, 4, helmStage === 2 ? 34 : 20); }
+    ctx.fillStyle = '#1b1f23'; ctx.fillRect(-14, -3, 22, 4);
+    ctx.fillStyle = '#ff5a4a';
+    ctx.beginPath(); ctx.arc(-8, -1, 1.6, 0, Math.PI * 2); ctx.arc(2, -1, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1b1f23';
+    for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(-8 + i * 6, 8, 1.2, 0, Math.PI * 2); ctx.fill(); }
+    // dents: a dark dimple with a light rim on its lower edge, like a hammered-in spot
+    const dent = (x, y, rx, ry, rot = 0) => {
+      ctx.fillStyle = 'rgba(30,34,38,.45)'; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    };
+    if (helmStage >= 2) { dent(8, -11, 4, 3); dent(-9, 9, 3.2, 2.4, 0.4); dent(10, 8, 2.6, 2); dent(-10, -12, 2.4, 2, -0.3); }
+    if (helmStage === 3) {
+      // battered all over, with the side caved in
+      dent(-2, -14, 5, 3.4, 0.2); dent(4, 11, 4, 3); dent(-12, 1, 2.6, 3.4); dent(12, -2, 3, 2.4, 0.5); dent(-4, 6, 2.2, 1.8);
+      ctx.fillStyle = '#5f666c';
+      ctx.beginPath(); ctx.moveTo(16, -12); ctx.quadraticCurveTo(10, -6, 16, 0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#2b3035'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-6, -19); ctx.lineTo(-5, -15); ctx.stroke(); // just one small crack
+    }
+  }
+  // the head on its own: the whole zombie with the headless one cut out of it
+  function snapshotHead(e) {
+    const full = snapshotEnemy(e, false), body = snapshotEnemy(e, false, true);
+    if (!full || !body) return null;
+    // keep only the pixels that differ between the two pictures. (Simply cutting the body out
+    // left faint see-through ghosts of shadows and shading behind, so compare pixel by pixel.)
+    const g = full.getContext('2d'), gb = body.getContext('2d');
+    try {
+      const A = g.getImageData(0, 0, SNAP_W, SNAP_H), B = gb.getImageData(0, 0, SNAP_W, SNAP_H);
+      const a = A.data, b = B.data;
+      for (let i = 0; i < a.length; i += 4) {
+        if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2] && a[i + 3] === b[i + 3]) a[i + 3] = 0;
+      }
+      g.putImageData(A, 0, 0);
+    } catch (err) {
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.globalCompositeOperation = 'destination-out'; g.drawImage(body, 0, 0); g.globalCompositeOperation = 'source-over';
+    }
+    return full;
   }
   // ===================== SOUND =====================
   // Everything is synthesized with the Web Audio API: no sound files needed.
@@ -1273,6 +2144,8 @@
       metal:     () => { [1300, 1850, 2470].forEach((f, i) => tone({ type: 'triangle', f, t: i * 0.03, dur: 0.4, vol: 0.09 })); noise({ dur: 0.15, vol: 0.2, filter: 'highpass', f: 3000 }); },
       paper:     () => { noise({ dur: 0.25, vol: 0.25, filter: 'highpass', f: 2500, f2: 5000, q: 2 }); },
       angry:     () => { tone({ type: 'sawtooth', f: 180, f2: 320, dur: 0.35, vol: 0.18, detune: 25 }); },
+      diamond:   () => { [1568, 2093, 2637, 3136].forEach((f, i) => tone({ type: 'triangle', f, t: i * 0.06, dur: 0.3, vol: 0.12 })); },
+      coin:      () => { tone({ type: 'square', f: 1320, dur: 0.07, vol: 0.12 }); tone({ type: 'square', f: 1760, t: 0.07, dur: 0.18, vol: 0.12 }); },
       flop:      () => { tone({ type: 'sine', f: 140, f2: 60, dur: 0.18, vol: 0.25 }); noise({ dur: 0.12, vol: 0.12, f: 500 }); },
       die:       () => { tone({ type: 'sawtooth', f: 260, f2: 90, dur: 0.35, vol: 0.12, detune: -20 }); noise({ dur: 0.2, vol: 0.1, f: 800 }); },
       ash:       () => { noise({ dur: 0.8, vol: 0.15, filter: 'highpass', f: 1500, f2: 400 }); },
@@ -1356,6 +2229,7 @@
   // remove whatever is at (r, c); a Hyper Turtle clears both of its tiles
   function removeUnit(r, c) {
     const cell = state.grid[r][c]; if (!cell) return;
+    if (cell.onBoat) { state.grid[r][c] = { type: 'boat', hp: BOAT.hp, maxHp: BOAT.hp, bob: cell.bob || 0 }; return; }
     const main = cell.type === 'hyperPart' ? cell.main : cell;
     if (main.twoTile) {
       state.grid[main.r][main.c] = null;
@@ -1378,6 +2252,13 @@
         if (!a || !b) continue;
         const kinds = new Set([mid.type, a.type, b.type]);
         if (kinds.size === 3 && TURTLE_TYPES.every(k => kinds.has(k))) return { kind: 'hyper', cells: [[r1, c1], [r, c], [r2, c2]] };
+      }
+    }
+    if (mid.type === 'battery') {
+      for (const [[r1, c1], [r2, c2]] of [[[r, c - 1], [r, c + 1]], [[r - 1, c], [r + 1, c]]]) {
+        if (r1 < 0 || r2 >= ROWS || c1 < 0 || c2 >= COLS) continue;
+        const a = state.grid[r1][c1], b = state.grid[r2][c2];
+        if (a && b && a.type === 'battery' && b.type === 'battery') return { kind: 'tesla', cells: [[r1, c1], [r, c], [r2, c2]] };
       }
     }
     if (mid.type === 'snapper') {
@@ -1438,7 +2319,7 @@
       state.puffs.push({ x: e.x - 30, y: e.lane * CELL + 45, t: 0, paper: true, life: 0.9 });
     }
     // at half of its body health (armour doesn't count) a zombie's arm falls off
-    if (!e.armless && e.kind !== 'mutant') {
+    if (!e.armless && e.kind !== 'mutant' && e.kind !== 'car') {
       const body = e.kind === 'teacher' || e.kind === 'mini' ? e.testAt : e.base;
       if (e.hp <= body / 2 && e.hp > 0) {
         e.armless = true;
@@ -1447,7 +2328,12 @@
     }
     if (e.knightUp && e.hp <= e.base) {
       e.knightUp = false;
-      state.puffs.push({ x: e.x, y: e.lane * CELL + 10, t: 0, shards: true, life: 0.7 });
+      const cv = document.createElement('canvas'); cv.width = 80; cv.height = 80;
+      const g = cv.getContext('2d');
+      if (g) { const saved = ctx; try { ctx = g; g.translate(40, 40); g.rotate(0.12); drawKnightHelm(0, 0); } catch (err) {} finally { ctx = saved; } }
+      state.puffs.push({ t: 0, life: 1.4, helmPop: true, snap: g ? cv : null, x: e.x - 2, y: e.lane * CELL + 14, ox: 0, oy: 0,
+        vx: 90 + Math.random() * 50, vy: -360 - Math.random() * 60, spin: 0.12, vs: 9 + Math.random() * 5, bounced: false });
+      Sound.play('metal');
     }
     if (e.shieldUp && e.hp <= e.base) {
       e.shieldUp = false;
@@ -1465,9 +2351,11 @@
       }
     }
     state.energyTimer += dt;
-    if (state.energyTimer >= ENERGY_TICK) { state.energyTimer -= ENERGY_TICK; state.energy += ENERGY_GAIN; syncUI(); }
+    if (state.energyTimer >= ENERGY_TICK) { state.energyTimer -= ENERGY_TICK; if (!level.noEnergy) { state.energy += ENERGY_GAIN; syncUI(); } }
 
-    if (!level.sandbox && !level.rounds) state.spawnTimer -= dt;
+    // the first zombie always arrives on time; slower spawn rates (like at night) kick in after that
+    const planning = level.plan && !state.planStarted;
+    if (!level.sandbox && !level.rounds && !planning) state.spawnTimer -= dt * (state.firstSpawned ? (level.spawnRate || 1) : 1);
     if (level.rounds && !state.spawningDone) {
       // each round: a few zombies trickle in, then that round's horde rushes in
       if (state.roundPhase == null) { state.round = 0; state.roundPhase = 'trickle'; state.rq = null; }
@@ -1495,6 +2383,13 @@
       }
     }
     if (state.banner > 0) state.banner -= dt;
+    if (state.customQueue && state.customQueue.length) {
+      state.customTimer -= dt;
+      if (state.customTimer <= 0) {
+        spawnZombie(state.customQueue.shift(), Math.floor(Math.random() * ROWS));
+        state.customTimer = state.customGap || 0.7;
+      }
+    }
     if (state.finalQueue) {
       state.finalTimer -= dt;
       if (state.finalTimer <= 0) {
@@ -1508,14 +2403,34 @@
     }
     if (state.spawnTimer <= 0) {
       spawn();
-      state.spawnEvery = Math.max(2.8, state.spawnEvery * 0.95);
+      state.spawnEvery = level.spawnGap ? level.spawnGap : Math.max(2.8, state.spawnEvery * 0.95);
       state.spawnTimer = state.spawnEvery;
     }
 
 
     // Units
+    const realDt = dt;
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
       const t = state.grid[r][c]; if (!t) continue;
+      // at night, day defenders do everything at 75% speed
+      const dt = level.night && !NIGHT_UNITS.has(t.type) ? realDt * NIGHT_SLOWDOWN : realDt;
+      if ((t.type === 'squid' || t.type === 'hsquid') && level.night) { t.asleep = true; t.glow = 0; continue; } // fast asleep: no orbs
+      if (NIGHT_UNITS.has(t.type) && dayLevel()) { t.asleep = true; t.glow = 0; t.throwAnim = 0; continue; } // night defenders sleep in the sun
+      if (t.type === 'battery' || t.type === 'tesla') {
+        t.cool = Math.max(0, t.cool - dt);
+        t.nope = Math.max(0, t.nope - dt);
+        if (t.zap) { t.zap.t += dt; if (t.zap.t > 0.3) t.zap = null; }
+        continue;
+      }
+      if (t.type === 'hsquid') {
+        t.make -= dt;
+        t.glow = Math.max(0, 1 - t.make / 2.5);
+        if (t.make <= 0) {
+          t.make = HSQUID.makeEvery;
+          state.orbs.push({ x: c * CELL + 50, y: r * CELL + 40, vx: (Math.random() - 0.5) * 70, vy: -180, floor: r * CELL + 70, life: ORB_LIFE, value: HSQUID.orbValue, spin: 0, big: true });
+        }
+        continue;
+      }
       if (t.type === 'squid') {
         t.make -= dt;
         t.glow = Math.max(0, 1 - t.make / 2.5);
@@ -1523,6 +2438,29 @@
           t.make = SQUID.makeEvery;
           const cx = c * CELL + 50, cy = r * CELL + 40;
           state.orbs.push({ x: cx, y: cy, vx: (Math.random() - 0.5) * 70, vy: -180, floor: r * CELL + 70, life: ORB_LIFE, value: SQUID.orbValue, spin: 0 });
+        }
+        continue;
+      }
+      if (t.type === 'multi') {
+        t.throwAnim = Math.max(0, t.throwAnim - dt * 4);
+        t.cool -= dt;
+        const tx = c * CELL + CELL / 2;
+        const lanes = [r - 1, r, r + 1].filter(l => l >= 0 && l < ROWS);
+        const target = state.enemies.some(e => lanes.includes(e.lane) && e.hp > 0 && e.x > tx - 20 && e.x < board.width + 10);
+        if (target && t.cool <= 0) {
+          t.cool = TURTLE.fireEvery; t.throwAnim = 1;
+          for (const l of lanes) state.rocks.push({ lane: l, x: tx + 28, y: r * CELL + 42, ty: l * CELL + 42, spin: 0 });
+        }
+        continue;
+      }
+      if (t.type === 'mini') {
+        t.throwAnim = Math.max(0, t.throwAnim - dt * 4);
+        t.cool -= dt;
+        const tx = c * CELL + CELL / 2;
+        const target = state.enemies.some(e => e.lane === r && e.hp > 0 && e.x > tx - 20 && e.x <= tx + MINI.range);
+        if (target && t.cool <= 0) {
+          t.cool = TURTLE.fireEvery; t.throwAnim = 1;
+          state.rocks.push({ lane: r, x: tx + 14, y: r * CELL + 60, spin: 0, maxX: tx + MINI.range + 20, mini: true });
         }
         continue;
       }
@@ -1534,7 +2472,7 @@
         t.make -= dt;
         t.glow = Math.max(0, 1 - t.make / 2.5);
         if (t.make <= 0) {
-          t.make = VAMP.makeEvery;
+          t.make = adult ? VAMP.adultEvery : VAMP.makeEvery;
           const value = adult ? VAMP.adultValue : VAMP.youngValue;
           state.orbs.push({ x: c * CELL + 50, y: r * CELL + 40, vx: (Math.random() - 0.5) * 70, vy: -180, floor: r * CELL + 70, life: ORB_LIFE, value, spin: 0, small: value < 25 });
         }
@@ -1554,10 +2492,16 @@
           t.cool = HYPER.attackEvery; t.throwAnim = 1;
           const close = target.x - front <= HYPER.whipRange;
           if (close) {
-            // up close: one huge whip crack
+            // up close: one huge whip crack on the closest zombie...
             damage(target, HYPER.whipDmg);
             state.puffs.push({ x: target.x - 6, y: r * CELL + 40, t: 0, crack: true });
             state.puffs.push({ x: target.x - 6, y: r * CELL + 46, t: 0 });
+            // ...and the laser still pierces on through everyone else in the lane
+            for (const e of state.enemies) {
+              if (e === target || e.lane !== r || e.hp <= 0 || e.x < front - 20 || e.x > board.width + 10) continue;
+              damage(e, HYPER.dmg);
+              state.puffs.push({ x: e.x, y: r * CELL + 40, t: 0, zap: true });
+            }
           } else {
             // far away: the laser part pierces through every zombie down the lane
             for (const e of state.enemies) {
@@ -1570,6 +2514,20 @@
         }
         continue;
       }
+      if (t.type === 'loo') {
+        t.fuse -= dt;
+        if (t.fuse <= 0) {
+          // POOF: 12 sheets fly out in 12 directions
+          const cx = c * CELL + 50, cy = r * CELL + 50, burst = (state.looBursts = (state.looBursts || 0) + 1);
+          for (let i = 0; i < LOO.sheets; i++) {
+            const a = i / LOO.sheets * Math.PI * 2;
+            state.sheets.push({ x: cx, y: cy, vx: Math.cos(a) * LOO.speed, vy: Math.sin(a) * LOO.speed, spin: a, hits: 0, hit: [], burst });
+          }
+          removeUnit(r, c);
+          state.puffs.push({ x: cx, y: cy, t: 0, paper: true, life: 0.6 });
+        }
+        continue;
+      }
       if (t.type === 'lotl') {
         t.fuse -= dt;
         if (t.fuse <= 0) {
@@ -1577,11 +2535,11 @@
           const x0 = (c - 1) * CELL, x1 = (c + 2) * CELL;
           for (const e of state.enemies) {
             if (e.hp > 0 && Math.abs(e.lane - r) <= 1 && e.x >= x0 && e.x <= x1) {
-              damage(e, LOTL.dmg);
+              damage(e, e.kind === 'car' ? LOTL.carDmg : LOTL.dmg); // the car's body shields its driver a bit
               if (e.hp <= 0) e.ashed = true;
             }
           }
-          state.grid[r][c] = null;
+          removeUnit(r, c);
           state.puffs.push({ x: c * CELL + 50, y: r * CELL + 50, t: 0, boom: true, life: 0.7 });
           state.shake = 0.45;
         }
@@ -1727,10 +2685,23 @@
             }
           }
         } else {
-          t.mode = nearest(seeTo) ? 'open' : 'closed';
-          t.stretch += (0 - t.stretch) * Math.min(1, dt * 10);
+          // too big to swallow, so a Mutant in reach gets bitten instead: 300 every 1.5 s
+          let mutant = null;
+          for (const e of state.enemies) if (e.kind === 'mutant' && e.hp > 0 && e.lane === r && e.x >= tx - 20 && e.x <= eatTo + 30 && (!mutant || e.x < mutant.x)) mutant = e;
+          t.mutantCool = Math.max(0, (t.mutantCool || 0) - dt);
+          t.biteAnim = Math.max(0, (t.biteAnim || 0) - dt * 4);
+          t.mode = nearest(seeTo) || mutant ? 'open' : 'closed';
           const prey = t.openK > 0.75 ? nearest(eatTo) : null;
           if (prey) { t.mode = 'lunge'; t.prey = prey; t.lungeT = 0; }
+          else if (mutant && t.openK > 0.75 && t.mutantCool <= 0) {
+            damage(mutant, SNAPPER.mutantBite);
+            t.mutantCool = SNAPPER.mutantEvery; t.biteAnim = 1;
+            state.puffs.push({ x: mutant.x - 30, y: r * CELL + 50, t: 0, chomp: true });
+          }
+          // the neck snaps out for a bite and springs back
+          const reachOut = mutant ? Math.max(0, mutant.x - 40 - headX) : 0;
+          const target = t.biteAnim > 0 ? reachOut * Math.sin(t.biteAnim * Math.PI) : 0;
+          t.stretch += (target - t.stretch) * Math.min(1, dt * (t.biteAnim > 0 ? 30 : 10));
         }
         const wantOpen = t.mode === 'open' || t.mode === 'burp' || t.mode === 'lunge';
         t.openK = wantOpen ? Math.min(1, t.openK + dt * 5) : Math.max(0, t.openK - dt * 8);
@@ -1889,7 +2860,22 @@
     // Rocks
     for (const k of state.rocks) {
       const isShampoo = k.kind === 'shampoo';
-      k.x += (isShampoo ? SHAMPOO.speed : TURTLE.rockSpeed) * dt; k.spin += dt * 12;
+      k.x += (isShampoo ? SHAMPOO.speed : TURTLE.rockSpeed) * dt * (k.back ? -1 : 1); k.spin += dt * 12;
+      if (k.back) {
+        // knocked back by a Nunjaka: hits the first defender it reaches
+        const col = Math.floor(k.x / CELL);
+        const hitT = col >= 0 && col < COLS ? state.grid[k.lane][col] : null;
+        const victim = hitT && hitT.type === 'hyperPart' ? hitT.main : hitT;
+        if (victim && k.x < col * CELL + CELL * 0.7) {
+          victim.hp -= isShampoo ? SHAMPOO.dmg : (k.dmg || TURTLE.rockDmg);
+          state.puffs.push(isShampoo ? { x: k.x, y: k.y + 10, t: 0, splat: true } : { x: k.x, y: k.y + 6, t: 0 });
+          k.dead = true;
+          if (victim.hp <= 0) removeUnit(k.lane, col);
+        }
+        if (k.x < -40) k.dead = true;
+        continue;
+      }
+      if (k.ty != null) k.y += (k.ty - k.y) * Math.min(1, dt * 9);
       if (!isShampoo && !k.lava) {
         const col = Math.floor(k.x / CELL);
         const under = col >= 0 && col < COLS ? state.grid[k.lane][col] : null;
@@ -1898,7 +2884,13 @@
           state.puffs.push({ x: k.x, y: k.y, t: 0, fireHit: true, life: 0.35 });
         }
       }
-      const hit = state.enemies.find(e => e.lane === k.lane && Math.abs(e.x - k.x) < 28 && e.hp > 0);
+      const hit = state.enemies.find(e => e.lane === k.lane && Math.abs(e.x - k.x) < (e.kind === 'car' ? CAR.halfLen : 28) && e.hp > 0);
+      if (hit && hit.kind === 'ninja' && hit.tricks) {
+        // CLACK: deflected straight back the way it came
+        k.back = true; k.x = hit.x - 30;
+        state.puffs.push({ x: hit.x - 24, y: k.y, t: 0, crack: true });
+        continue;
+      }
       if (hit) {
         k.dead = true;
         if (isShampoo) {
@@ -1914,7 +2906,7 @@
           state.puffs.push(k.lava ? { x: k.x, y: k.y + 6, t: 0, fireHit: true, life: 0.45 } : { x: k.x, y: k.y + 6, t: 0 });
         }
       }
-      if (k.x > board.width + 40) k.dead = true;
+      if (k.x > board.width + 40 || (k.maxX && k.x > k.maxX)) k.dead = true;
     }
     state.rocks = state.rocks.filter(k => !k.dead);
 
@@ -1931,11 +2923,32 @@
       e.wob += dt * 5 * (e.slowed ? 1 - SHAMPOO.slow : 1);
       if (e.poison > 0) { const pt = Math.min(dt, e.poison); e.poison -= dt; damage(e, BEE.poisonDps * pt); }
       if (e.bleed > 0) { const bt = Math.min(dt, e.bleed); e.bleed -= dt; damage(e, SHARK.bleedDps * bt); }
-      const col = Math.floor((e.x - 30) / CELL);
+      if (e.kind === 'ninja') {
+        e.trickTimer -= dt;
+        if (e.trickTimer <= 0) { e.tricks = !e.tricks; e.trickTimer = e.tricks ? NINJA.tricks : NINJA.walk; }
+        if (e.tricks) { e.spinA += dt * 22; e.walking = false; continue; } // busy showing off: no walking, no biting
+      }
+      const front = e.kind === 'car' ? CAR.halfLen : 30;
+      const col = Math.floor((e.x - front) / CELL);
       const cell = col >= 0 && col < COLS ? state.grid[e.lane][col] : null;
       const blocker = cell && !(UNITS[cell.type] && UNITS[cell.type].underfoot) ? cell : null;
       const t = blocker && blocker.type === 'hyperPart' ? blocker.main : blocker;
-      if (t && e.x - (col * CELL + CELL / 2) < 55) {
+      if (e.kind === 'car' && (e.bump || 0) > 0) { e.bump -= dt; e.walking = false; continue; } // rocking back after a hit
+      if (t && e.kind === 'car' && e.x - front - (col * CELL + CELL / 2) < 25) {
+        // the car runs defenders over. A Forti Mau's armour takes the first hit (and stops the car for a moment)
+        if (t.type === 'mau' && t.forti) {
+          t.forti = false; t.hp = MAU.hp; t.maxHp = MAU.hp;
+          state.puffs.push({ x: col * CELL + 50, y: e.lane * CELL + 45, t: 0, splinter: true, life: 0.6 });
+          state.shake = 0.25; e.bump = 0.6;
+        } else {
+          if (t.type === 'chog') chogBlast(t, e.lane, col);
+          removeUnit(e.lane, col);
+          state.puffs.push({ x: col * CELL + 50, y: e.lane * CELL + 80, t: 0, stomp: true, life: 0.5 });
+          state.shake = 0.3;
+        }
+        continue;
+      }
+      if (t && e.x - front - (col * CELL + CELL / 2) < 25) {
         e.walking = false;
         if (e.kind === 'mutant') {
           // Mutant stomps instead of biting
@@ -1963,17 +2976,88 @@
     const before = state.enemies.length;
     state.enemies.forEach(e => {
       if (e.hp > 0) return;
+      maybeDropCoin(e);
       if (e.eaten) return; // swallowed by a Snapper: nothing left to show
       if (e.ashed) {
         // blown up by a Temper-lotl: a charred statue that crumbles to ash
         state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: e.kind === 'mutant' ? 170 : 105 });
+      } else if (e.kind === 'car') {
+        // the car blows up and the wreck crumbles away
+        state.puffs.push({ x: e.x, y: e.lane * CELL + 60, t: 0, boom: true, life: 0.7, scale: 0.8 });
+        state.puffs.push({ t: 0, life: 1.6, ash: true, snap: snapshotEnemy(e, true), x: e.x, y: e.lane * CELL + 92, h: 90 });
+        state.shake = 0.3;
       } else if (e.kind === 'mutant') {
-        // the Mutant topples over with a thud
-        state.puffs.push({ t: 0, life: 2.2, topple: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92, thudded: false });
-      } else state.puffs.push({ t: 0, life: 1.5, topple: true, small: true, snap: snapshotEnemy(e, false), x: e.x, y: e.lane * CELL + 92, thudded: false });
+        // the Mutant's huge head pops off, then the body topples over with a thud
+        state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
+        state.puffs.push({ t: 0, life: 1.8, headPop: true, huge: true, hy: 126, floor: 98, snap: snapshotHead(e), x: e.x, y: e.lane * CELL + 92, ox: 0, oy: 0,
+          vx: 60 + Math.random() * 40, vy: -380 - Math.random() * 60, spin: 0, vs: 4 + Math.random() * 3, bounced: false });
+      } else {
+        // POP: the head flies off first, then the body falls over
+        state.puffs.push({ t: 0, life: 1.6, topple: true, small: true, delay: 0.18, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
+        state.puffs.push({ t: 0, life: 1.4, headPop: true, snap: snapshotHead(e), x: e.x, y: e.lane * CELL + 92, ox: 0, oy: 0,
+          vx: 70 + Math.random() * 60, vy: -330 - Math.random() * 80, spin: 0, vs: 6 + Math.random() * 6, ground: 0, bounced: false });
+      }
     });
     state.enemies = state.enemies.filter(e => e.hp > 0);
     if (state.enemies.length !== before) { state.kills += before - state.enemies.length; syncUI(); }
+
+    // Loo roll sheets in flight
+    for (const sh of state.sheets) {
+      sh.x += sh.vx * dt; sh.y += sh.vy * dt; sh.spin += dt * 5;
+      if (sh.x < -40 || sh.x > board.width + 40 || sh.y < -40 || sh.y > board.height + 40) { sh.dead = true; continue; }
+      for (const e of state.enemies) {
+        if (e.hp <= 0 || sh.hit.includes(e)) continue;
+        const ey = e.lane * CELL + 50;
+        if (Math.abs(sh.x - e.x) < (e.kind === 'car' ? CAR.halfLen + 6 : 34) && Math.abs(sh.y - ey) < 46) {
+          // a single Loo Roll can only land 4 sheets on any one zombie; extra sheets sail past
+          e.looHits = e.looHits || {};
+          if ((e.looHits[sh.burst] || 0) >= LOO.maxPerZombie) { sh.hit.push(e); continue; }
+          e.looHits[sh.burst] = (e.looHits[sh.burst] || 0) + 1;
+          damage(e, LOO.dmg[sh.hits]);
+          sh.hit.push(e); sh.hits++;
+          if (sh.hits >= LOO.dmg.length) {
+            // second zombie: the sheet pops into bits of paper
+            sh.dead = true;
+            state.puffs.push({ x: sh.x, y: sh.y, t: 0, paper: true, life: 0.6 });
+          } else {
+            state.puffs.push({ x: sh.x, y: sh.y, t: 0, splinter: false });
+          }
+          break;
+        }
+      }
+    }
+    state.sheets = state.sheets.filter(sh => !sh.dead);
+
+    // Battery bolts in flight
+    for (const b of state.bolts) {
+      b.t += dt;
+      // if the target is gone, find the next zombie closest to the house
+      if (!b.target || b.target.hp <= 0 || !state.enemies.includes(b.target)) {
+        b.target = null;
+        for (const e of state.enemies) if (e.hp > 0 && (!b.target || e.x < b.target.x)) b.target = e;
+        if (!b.target) { b.dead = true; continue; }
+      }
+      const tx = b.target.x, ty = b.target.lane * CELL + 45;
+      const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy), step = BATTERY.boltSpeed * dt;
+      b.ang = Math.atan2(dy, dx);
+      if (d <= step + 10) {
+        damage(b.target, b.dmg || BATTERY.dmg);
+        if (b.tesla) {
+          // the Tesla bolt bursts, hitting everything in the 3x3 around its target
+          const tc = Math.floor(b.target.x / CELL), tl = b.target.lane;
+          for (const e of state.enemies) {
+            if (e === b.target || e.hp <= 0) continue;
+            if (Math.abs(e.lane - tl) <= 1 && Math.abs(Math.floor(e.x / CELL) - tc) <= 1) damage(e, TESLA.splash);
+          }
+        }
+        state.puffs.push({ x: tx, y: ty, t: 0, zap: true });
+        state.puffs.push({ x: tx, y: ty, t: 0, fireHit: true, life: 0.45 });
+        state.shake = b.tesla ? 0.4 : 0.18;
+        if (b.tesla) state.puffs.push({ x: tx, y: ty, t: 0, boom: true, life: 0.5, scale: 0.6 });
+        b.dead = true;
+      } else { b.x += dx / d * step; b.y += dy / d * step; }
+    }
+    state.bolts = state.bolts.filter(b => !b.dead);
 
     // Boulders in flight
     for (const b of state.boulders) {
@@ -2006,6 +3090,14 @@
       o.life -= dt; if (o.life <= 0) o.dead = true;
     }
     state.orbs = state.orbs.filter(o => !o.dead);
+    for (const cn of state.coins) {
+      cn.spin += dt * 4;
+      if (cn.collected) { cn.ct += dt; if (cn.ct > 0.45) cn.dead = true; continue; }
+      if (cn.y < cn.floor || cn.vy < 0) { cn.vy += 700 * dt; cn.x += cn.vx * dt; cn.y += cn.vy * dt; }
+      if (cn.y >= cn.floor && cn.vy > 0) { cn.y = cn.floor; cn.vy = 0; cn.vx = 0; }
+      cn.life -= dt; if (cn.life <= 0) cn.dead = true;
+    }
+    state.coins = state.coins.filter(cn => !cn.dead);
 
     for (const p of state.puffs) {
       if (!p.heard) {
@@ -2039,7 +3131,7 @@
       ? `You survived all ${level.rounds.length} hordes and knocked out ${state.kills} zombies! The Jicjajic is now unlocked in Endless and Sandbox.`
       : `You held off all ${level.waves} waves and the final wave, knocking out ${state.kills} zombies.`;
     const nextBtn = document.querySelector('#winOverlay .to-levels');
-    if (nextBtn) nextBtn.textContent = key === '5' ? 'On to Night 🌙' : 'Levels';
+    if (nextBtn) nextBtn.textContent = key === '5' ? 'On to Level 6 🌙' : 'Levels';
     winOverlay.classList.add('show');
   }
   function endGame() {
@@ -2053,7 +3145,7 @@
   // ---------- Drawing ----------
   function drawGround() {
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
-      ctx.fillStyle = (r + c) % 2 ? '#79a650' : '#86b35a';
+      ctx.fillStyle = level.night ? ((r + c) % 2 ? '#3d5a6a' : '#456577') : ((r + c) % 2 ? '#79a650' : '#86b35a');
       ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
     }
     // little pebbles scattered for texture (deterministic)
@@ -2062,6 +3154,7 @@
       const x = (i * 137.5) % 900, y = (i * 71.3) % 500;
       ctx.beginPath(); ctx.ellipse(x, y, 3, 2, 0, 0, Math.PI * 2); ctx.fill();
     }
+    if (level.pool) drawPoolWater(ctx, CELL, state.time); // water goes over the grass texture
     // hover preview
     const h = state.hover;
     if (state.shovel && h && h.r >= 0 && h.r < ROWS && h.c >= 0 && h.c < COLS) {
@@ -2081,13 +3174,14 @@
         ctx.fillStyle = 'rgba(224,99,74,.35)'; ctx.fillRect(h.c * CELL, h.r * CELL, CELL, CELL);
       }
     } else
-    if ((state.selected === 'hyper' || state.selected === 'ultima') && h && h.r >= 0 && h.r < ROWS && h.c >= 0 && h.c < COLS) {
+    if ((state.selected === 'hyper' || state.selected === 'ultima' || state.selected === 'tesla') && h && h.r >= 0 && h.r < ROWS && h.c >= 0 && h.c < COLS) {
       const ok = h.c + 1 < COLS && !state.grid[h.r][h.c] && !state.grid[h.r][h.c + 1];
       ctx.fillStyle = ok ? 'rgba(255,255,255,.28)' : 'rgba(224,99,74,.35)';
       ctx.fillRect(h.c * CELL, h.r * CELL, Math.min(2, COLS - h.c) * CELL, CELL);
       if (ok) {
         ctx.globalAlpha = .55;
-        if (state.selected === 'ultima') drawSnapper(ctx, h.c * CELL + 92, h.r * CELL + ULTIMA_Y, ULTIMA_SCALE, 0, { mode: 'closed', openK: 0, chew: 0 }, true);
+        if (state.selected === 'tesla') drawTesla(ctx, h.c * CELL + 100, h.r * CELL + 90, 1);
+        else if (state.selected === 'ultima') drawSnapper(ctx, h.c * CELL + 92, h.r * CELL + ULTIMA_Y, ULTIMA_SCALE, 0, { mode: 'closed', openK: 0, chew: 0 }, true);
         else drawTurtle(ctx, h.c * CELL + 100, h.r * CELL + 60, 1.7, 0, 0, 'hyper');
         ctx.globalAlpha = 1;
       }
@@ -2102,6 +3196,7 @@
         if (free) {
           ctx.globalAlpha = .6;
           if (state.selected === 'forti') drawFortiArmor(ctx, h.c * CELL + 50, h.r * CELL + 58, 1, 1);
+          else if (state.selected === 'hsquid') drawSquid(ctx, h.c * CELL + 50, h.r * CELL + 60, 1, 0, 0, false, true);
           else drawTurtle(ctx, h.c * CELL + 46, h.r * CELL + 62, 1, 0, 0, 'enraged');
           ctx.globalAlpha = 1;
         }
@@ -2121,7 +3216,7 @@
           ctx.fillRect((h.c + 1) * CELL, h.r * CELL, Math.min(3, COLS - h.c - 1) * CELL, CELL);
           drawDragon(ctx, h.c * CELL + 50, h.r * CELL + 60, 1, 0, 1, 0);
         }
-        else if (state.selected === 'hyper' || state.selected === 'ultima') { /* drawn below so it can span two tiles */ }
+        else if (state.selected === 'hyper' || state.selected === 'ultima' || state.selected === 'tesla') { /* drawn below so it can span two tiles */ }
         else if (state.selected === 'jic') { /* drawn below */ }
         else if (state.selected === 'lotl') {
           ctx.fillStyle = 'rgba(255,120,60,.25)';
@@ -2160,6 +3255,21 @@
           ctx.fillRect((h.c + 1) * CELL, h.r * CELL, Math.min(3, COLS - h.c - 1) * CELL, CELL);
           drawTurtle(ctx, h.c * CELL + 50, h.r * CELL + 62, 1, 0, 0, 'whip');
         }
+        else if (state.selected === 'hsquid') drawSquid(ctx, h.c * CELL + 50, h.r * CELL + 60, 1, 0, 0, false, true);
+        else if (state.selected === 'boat') drawBoat(ctx, h.c * CELL + 50, h.r * CELL + 82, 1);
+        else if (state.selected === 'loo') drawLoo(ctx, h.c * CELL + 50, h.r * CELL + 60, 1);
+        else if (state.selected === 'battery') drawBattery(ctx, h.c * CELL + 50, h.r * CELL + 58, 1);
+        else if (state.selected === 'multi') {
+          ctx.fillStyle = 'rgba(47,168,156,.18)';
+          const r0 = Math.max(0, h.r - 1), r1 = Math.min(ROWS - 1, h.r + 1);
+          ctx.fillRect((h.c + 1) * CELL, r0 * CELL, (COLS - h.c - 1) * CELL, (r1 - r0 + 1) * CELL);
+          drawTurtle(ctx, h.c * CELL + 44, h.r * CELL + 64, 1, 0, 0, 'multi');
+        }
+        else if (state.selected === 'mini') {
+          ctx.fillStyle = 'rgba(59,127,209,.22)';
+          ctx.fillRect((h.c + 1) * CELL, h.r * CELL, Math.min(3, COLS - h.c - 1) * CELL, CELL);
+          drawTurtle(ctx, h.c * CELL + 44, h.r * CELL + 76, 0.5, 0, 0, 'mini');
+        }
         else if (state.selected === 'vamp') drawVampSquid(ctx, h.c * CELL + 50, h.r * CELL + 60, 1, 0, 0, 0);
         else drawSquid(ctx, h.c * CELL + 50, h.r * CELL + 60, 1, 0, 0);
         ctx.globalAlpha = 1;
@@ -2171,6 +3281,8 @@
     rock: { dark: '#2f6db8', main: '#3b7fd1', line: '#255a9a' },
     whip: { dark: '#6f2f99', main: '#8a3fb8', line: '#56247a' },
     angry: { dark: '#0f2466', main: '#183a96', line: '#0a1a4d' },
+    mini: { dark: '#5ea4d4', main: '#8ccbf0', line: '#4a8ab6' },
+    multi: { dark: '#6b4423', main: '#8f5d33', line: '#4f3118' },
     enraged: { dark: '#170c4a', main: '#2a1878', line: '#0e0733' },
     hyper: { dark: '#2f3a8a', main: '#3b7fd1', line: '#1d2a5c' },
     laser: { dark: '#2fae3c', main: '#4ce35a', line: '#1f7d2a' }
@@ -2225,7 +3337,7 @@
     const a = -0.4 - throwAnim * 1.6;
     g.save(); g.translate(18, -4); g.rotate(a);
     g.fillStyle = '#7fc0a0'; g.beginPath(); g.ellipse(0, -12, 6, 13, 0, 0, Math.PI * 2); g.fill();
-    if ((kind === 'rock' || kind === 'angry' || kind === 'enraged') && throwAnim < 0.3) drawRock(g, 0, -26, 0, 0.8);
+    if ((kind === 'rock' || kind === 'mini' || kind === 'multi' || kind === 'angry' || kind === 'enraged') && throwAnim < 0.3) drawRock(g, 0, -26, 0, 0.8);
     if (kind === 'laser') {
       // no throwing arm: cover it with a tucked flipper
       g.fillStyle = '#7fc0a0'; g.beginPath(); g.ellipse(0, -12, 6, 10, 0, 0, Math.PI * 2); g.fill();
@@ -2281,7 +3393,16 @@
     g.restore();
   }
 
-  function drawVampSquid(g, x, y, s, glow, bob, grown = 1) {
+  function drawSleepy(x, y) {
+    ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.textAlign = 'center';
+    for (let i = 0; i < 2; i++) {
+      const ph = (state.time * 0.3 + i * 0.5) % 1;
+      ctx.globalAlpha = 1 - ph; ctx.font = `bold ${9 + ph * 7}px Nunito, sans-serif`;
+      ctx.fillText('z', x + ph * 12, y - ph * 22);
+    }
+    ctx.restore();
+  }
+  function drawVampSquid(g, x, y, s, glow, bob, grown = 1, asleep = false) {
     const sc = s * (0.72 + grown * 0.28);
     g.save(); g.translate(x, y + 4 * (1 - grown) + Math.sin(bob) * 3); g.scale(sc, sc);
     g.fillStyle = 'rgba(0,0,0,.16)'; g.beginPath(); g.ellipse(0, 30 - Math.sin(bob) * 3, 26, 7, 0, 0, Math.PI * 2); g.fill();
@@ -2305,12 +3426,18 @@
     g.beginPath(); g.moveTo(-10, -32); g.lineTo(-26, -40); g.lineTo(-16, -22); g.closePath(); g.fill();
     g.beginPath(); g.moveTo(10, -32); g.lineTo(26, -40); g.lineTo(16, -22); g.closePath(); g.fill();
     g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(-7, -24, 4, 9, 0.2, 0, Math.PI * 2); g.fill();
-    // glowing red eyes and tiny fangs
+    // glowing red eyes (shut tight while it naps in the sun) and tiny fangs
+    if (asleep) {
+      g.strokeStyle = '#2a0812'; g.lineWidth = 2; g.lineCap = 'round';
+      g.beginPath(); g.arc(-8, -5, 5, 0.2, Math.PI - 0.2); g.stroke();
+      g.beginPath(); g.arc(8, -5, 5, 0.2, Math.PI - 0.2); g.stroke();
+    } else {
     g.fillStyle = '#ffd1d1';
     g.beginPath(); g.ellipse(-8, -4, 6.5, 7, 0, 0, Math.PI * 2); g.ellipse(8, -4, 6.5, 7, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#d6102c';
     g.beginPath(); g.arc(-7, -3, 3.4, 0, Math.PI * 2); g.arc(9, -3, 3.4, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#fff'; g.beginPath(); g.arc(-6, -5, 1.2, 0, Math.PI * 2); g.arc(10, -5, 1.2, 0, Math.PI * 2); g.fill();
+    }
     g.strokeStyle = '#2a0812'; g.lineWidth = 1.8; g.lineCap = 'round';
     g.beginPath(); g.moveTo(-5, 6); g.quadraticCurveTo(1, 9, 7, 6); g.stroke();
     g.fillStyle = '#fff';
@@ -2318,7 +3445,8 @@
     g.beginPath(); g.moveTo(3, 7); g.lineTo(4.5, 10); g.lineTo(6, 6.5); g.closePath(); g.fill();
     g.restore();
   }
-  function drawSquid(g, x, y, s, glow, bob) {
+  function drawSquid(g, x, y, s, glow, bob, asleep = false, blue = false) {
+    const C = blue ? { arm: '#1d5cb0', body: '#2f7de0', light: '#8cc0ff' } : { arm: '#e0358a', body: '#ff4fa3', light: '#ff9fcf' };
     g.save(); g.translate(x, y + Math.sin(bob) * 3); g.scale(s, s);
     g.fillStyle = 'rgba(0,0,0,.16)';
     g.beginPath(); g.ellipse(0, 30 - Math.sin(bob) * 3, 26, 7, 0, 0, Math.PI * 2); g.fill();
@@ -2328,7 +3456,7 @@
       g.fillStyle = gr; g.beginPath(); g.arc(0, -6, 52, 0, Math.PI * 2); g.fill();
     }
     // tentacles
-    g.strokeStyle = '#e0358a'; g.lineWidth = 6; g.lineCap = 'round';
+    g.strokeStyle = C.arm; g.lineWidth = 6; g.lineCap = 'round';
     for (let i = 0; i < 6; i++) {
       const tx = -15 + i * 6, sway = Math.sin(bob * 1.6 + i) * 5;
       g.beginPath(); g.moveTo(tx, 8);
@@ -2336,7 +3464,7 @@
       g.stroke();
     }
     // mantle
-    g.fillStyle = '#ff4fa3';
+    g.fillStyle = C.body;
     g.beginPath();
     g.moveTo(0, -46);
     g.bezierCurveTo(16, -36, 22, -10, 20, 10);
@@ -2346,10 +3474,25 @@
     // fins
     g.beginPath(); g.moveTo(-6, -40); g.lineTo(-22, -40); g.lineTo(-12, -28); g.closePath(); g.fill();
     g.beginPath(); g.moveTo(6, -40); g.lineTo(22, -40); g.lineTo(12, -28); g.closePath(); g.fill();
-    g.fillStyle = '#ff9fcf';
+    g.fillStyle = C.light;
     g.beginPath(); g.ellipse(-7, -26, 4, 9, 0.2, 0, Math.PI * 2); g.fill();
     [[8, -18], [-10, -6], [12, 0]].forEach(([sx, sy]) => { g.beginPath(); g.arc(sx, sy, 2.4, 0, Math.PI * 2); g.fill(); });
     // eyes
+    if (asleep) {
+      g.strokeStyle = '#2a1030'; g.lineWidth = 2.2; g.lineCap = 'round';
+      g.beginPath(); g.arc(-8, -3, 5, 0.2, Math.PI - 0.2); g.stroke();
+      g.beginPath(); g.arc(8, -3, 5, 0.2, Math.PI - 0.2); g.stroke();
+      g.restore();
+      // little z's floating up
+      g.save(); g.fillStyle = 'rgba(255,255,255,.85)'; g.textAlign = 'center';
+      for (let i = 0; i < 2; i++) {
+        const ph = (bob * 0.3 + i * 0.5) % 1;
+        g.globalAlpha = 1 - ph; g.font = `bold ${(9 + ph * 7) * s}px Nunito, sans-serif`;
+        g.fillText('z', x + (18 + ph * 12) * s, y - (40 + ph * 24) * s);
+      }
+      g.restore();
+      return;
+    }
     g.fillStyle = '#fff';
     g.beginPath(); g.ellipse(-8, -2, 7, 8, 0, 0, Math.PI * 2); g.ellipse(8, -2, 7, 8, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#2a1030';
@@ -2368,6 +3511,7 @@
       alpha = 0.35 + 0.65 * Math.abs(Math.sin(o.life * 6));
     }
     if (o.small) scale *= 0.68;
+    if (o.big) scale *= 1.3;
     ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.scale(scale, scale);
     const gr = ctx.createRadialGradient(0, 0, 4, 0, 0, 34);
     gr.addColorStop(0, 'rgba(255,226,120,.85)'); gr.addColorStop(1, 'rgba(255,226,120,0)');
@@ -2738,6 +3882,9 @@
     if (kind === 'clean') {
       g.fillStyle = '#7fd3e8'; g.fillRect(-22, 14, 22, 10);
       g.fillStyle = '#ff8fc6'; g.fillRect(0, 14, 22, 10);
+    } else if (kind === 'tesla') {
+      g.fillStyle = '#2f63c9'; g.fillRect(-22, 14, 22, 10);
+      g.fillStyle = '#d9944f'; g.fillRect(0, 14, 22, 10);
     } else if (kind === 'ultima') {
       g.fillStyle = '#a5d04a'; g.fillRect(-22, 14, 22, 10);
       g.fillStyle = '#b65ac6'; g.fillRect(0, 14, 22, 10);
@@ -2749,6 +3896,7 @@
     g.restore();
     // a tiny picture on the front
     if (kind === 'clean') drawSpray(g, x, y - 6 * s + Math.sin(bob) * 3, 0.42 * s, 0, 0, true);
+    else if (kind === 'tesla') drawTesla(g, x, y + 16 * s + Math.sin(bob) * 3, 0.32 * s, null, 0);
     else if (kind === 'ultima') drawSnapper(g, x - 6 * s, y + Math.sin(bob) * 3, 0.45 * s, 0, { mode: 'closed', openK: 0, chew: 0 }, true);
     else drawTurtle(g, x - 2 * s, y - 4 * s + Math.sin(bob) * 3, 0.32 * s, 0, 0, 'hyper');
   }
@@ -2770,7 +3918,7 @@
     ctx.beginPath(); ctx.moveTo(hx, hy); ctx.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey); ctx.stroke();
     // big rock tied to the tip
     drawRock(ctx, ex, ey, t.lash.t * 18, 2.1);
-    if (!t.lash.close && reach >= 1) {
+    if (reach >= 1) {
       const fade = 1 - Math.max(0, (k - 0.4) / 0.6);
       ctx.globalAlpha = fade;
       ctx.fillStyle = 'rgba(255,77,94,.35)'; ctx.fillRect(ex, ey - 8, board.width - ex + 20, 16);
@@ -2876,6 +4024,146 @@
       for (let i = 0; i < 4; i++) { const ph = (time * 3 + i / 4) % 1; g.beginPath(); g.arc(-20 + i * 14, 14 - ph * 20, 3 + ph * 3, 0, Math.PI * 2); g.fill(); }
     }
     g.restore();
+  }
+  function drawBoat(g, x, y, s, bob = 0) {
+    const rock = Math.sin(bob * 1.5) * 0.05;
+    g.save(); g.translate(x, y + Math.sin(bob * 1.5) * 1.5); g.rotate(rock); g.scale(s, s);
+    g.fillStyle = 'rgba(255,255,255,.3)'; g.beginPath(); g.ellipse(0, 6, 46, 7, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#8a5a2e';
+    g.beginPath(); g.moveTo(-44, -10); g.lineTo(44, -10); g.quadraticCurveTo(38, 8, 26, 8); g.lineTo(-26, 8); g.quadraticCurveTo(-38, 8, -44, -10); g.closePath(); g.fill();
+    g.fillStyle = '#a8743f'; g.fillRect(-44, -12, 88, 5);
+    g.strokeStyle = 'rgba(60,35,15,.5)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(-36, -2); g.lineTo(36, -2); g.moveTo(-30, 4); g.lineTo(30, 4); g.stroke();
+    g.restore();
+  }
+  function drawLoo(g, x, y, s, t = null, time = 0) {
+    // a fat loo roll standing up, with a little face; it puffs up just before it bursts
+    const swell = t ? 1 + (1 - t.fuse / LOO.fuse) * 0.25 : 1;
+    const wob = t ? Math.sin(time * 40) * (1 - t.fuse / LOO.fuse) * 3 : 0;
+    g.save(); g.translate(x + wob, y); g.scale(s * swell, s * swell);
+    g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(0, 26, 24, 6, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f7f4ee'; roundRect(g, -20, -20, 40, 46, 6); g.fill();
+    g.fillStyle = '#e4ddcf'; g.fillRect(-20, 6, 40, 3);
+    g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(0, -20, 20, 7, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#c9a77a'; g.beginPath(); g.ellipse(0, -20, 8, 3, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#8d6e48'; g.beginPath(); g.ellipse(0, -20, 5, 1.8, 0, 0, Math.PI * 2); g.fill();
+    // loose sheet hanging down the front
+    g.fillStyle = '#ffffff'; g.strokeStyle = '#ddd6c6'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(8, -14); g.lineTo(18, -14); g.lineTo(19, 20); g.lineTo(9, 22); g.closePath(); g.fill(); g.stroke();
+    g.setLineDash([2, 2]); g.beginPath(); g.moveTo(9, 4); g.lineTo(19, 3); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#2a2a2a'; g.beginPath(); g.arc(-8, -4, 2.4, 0, Math.PI * 2); g.arc(2, -4, 2.4, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#2a2a2a'; g.lineWidth = 1.6; g.lineCap = 'round';
+    g.beginPath(); g.arc(-3, 2, 4, 0.2, Math.PI - 0.2); g.stroke();
+    g.fillStyle = 'rgba(255,140,160,.45)'; g.beginPath(); g.ellipse(-13, 3, 3, 2, 0, 0, Math.PI * 2); g.ellipse(7, 3, 3, 2, 0, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  function drawBattery(g, x, y, s, t = null, time = 0) {
+    // a plain battery while it recharges; once charged, lightning crackles off its metal parts
+    const charged = !t || t.cool <= 0;
+    const shake = t && t.nope > 0 ? Math.sin(time * 60) * 2 : 0;
+    g.save(); g.translate(x + shake, y); g.scale(s, s);
+    g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(0, 32, 24, 6, 0, 0, Math.PI * 2); g.fill();
+    if (charged) {
+      const gr = g.createRadialGradient(0, -6, 4, 0, -6, 46);
+      gr.addColorStop(0, `rgba(140,255,140,${0.25 + 0.12 * Math.sin(time * 6)})`); gr.addColorStop(1, 'rgba(140,255,140,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(0, -6, 46, 0, Math.PI * 2); g.fill();
+    }
+    // body: black with a copper top, metal cap and metal base
+    g.fillStyle = '#26292f'; roundRect(g, -17, -30, 34, 58, 5); g.fill();
+    g.fillStyle = '#c9963a'; roundRect(g, -17, -30, 34, 18, 5); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(-13, -26, 4, 50);
+    g.fillStyle = '#aeb5bc'; roundRect(g, -17, 24, 34, 7, 3); g.fill();
+    g.fillStyle = '#aeb5bc'; roundRect(g, -7, -39, 14, 10, 2); g.fill();
+    g.fillStyle = '#d7dde2'; g.fillRect(-5, -38, 4, 8);
+    g.fillStyle = '#2a1e05'; g.font = 'bold 12px Nunito, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('+', 0, -21);
+    // little face
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(-6, -2, 2.4, 0, Math.PI * 2); g.arc(6, -2, 2.4, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.lineCap = 'round';
+    g.beginPath(); charged ? g.arc(0, 2, 4.5, 0.2, Math.PI - 0.2) : (g.moveTo(-3, 5), g.lineTo(3, 5)); g.stroke();
+    if (charged) {
+      // lightning jumping off the metal terminal and the metal base
+      const seed = Math.floor(time * 14);
+      const rnd = n => { const v = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
+      const sources = [[0, -39, -Math.PI / 2], [-6, -38, -Math.PI * 0.75], [6, -38, -Math.PI * 0.25], [-16, 28, Math.PI * 0.85], [16, 28, Math.PI * 0.15]];
+      g.lineJoin = 'round';
+      sources.forEach(([sx, sy, ang], i) => {
+        if (rnd(i) < 0.35) return; // they flicker on and off
+        const len = 14 + rnd(i + 10) * 12, pts = [[sx, sy]];
+        for (let j = 1; j <= 4; j++) {
+          const f = j / 4, a2 = ang + (rnd(i * 7 + j) - 0.5) * 1.2;
+          pts.push([sx + Math.cos(ang) * len * f + Math.cos(a2 + Math.PI / 2) * 4 * (rnd(j + i) - 0.5) * 2, sy + Math.sin(ang) * len * f + Math.sin(a2 + Math.PI / 2) * 4 * (rnd(j * 3 + i) - 0.5) * 2]);
+        }
+        for (const [w, col] of [[5, 'rgba(140,255,140,.35)'], [2, '#b6ffb6'], [0.9, '#ffffff']]) {
+          g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach(([px, py], k) => k ? g.lineTo(px, py) : g.moveTo(px, py)); g.stroke();
+        }
+      });
+    }
+    g.restore();
+  }
+  function drawTesla(g, x, y, s, t = null, time = 0) {
+    // a giant Tesla coil in the same simple, flat style as the other defenders
+    // (x, y) is the centre of its two tiles at ground level
+    const charged = !t || t.cool <= 0;
+    const shake = t && t.nope > 0 ? Math.sin(time * 60) * 2 : 0;
+    const bob = Math.sin(time * 2) * 1;
+    g.save(); g.translate(x + shake, y); g.scale(s, s);
+    g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(0, 0, 60, 8, 0, 0, Math.PI * 2); g.fill();
+    const topY = -76 + bob;
+    if (charged) {
+      g.fillStyle = `rgba(150,200,255,${0.22 + 0.1 * Math.sin(time * 6)})`;
+      g.beginPath(); g.ellipse(0, topY, 84, 34, 0, 0, Math.PI * 2); g.fill();
+    }
+    // chunky wooden base
+    g.fillStyle = '#a8743f'; roundRect(g, -50, -16, 100, 14, 6); g.fill();
+    g.fillStyle = '#c99256'; roundRect(g, -50, -20, 100, 10, 5); g.fill();
+    // red coil column with a few stripes
+    g.fillStyle = '#c62f35'; roundRect(g, -16, topY + 4, 32, -16 - topY, 6); g.fill();
+    g.fillStyle = '#e8575d'; g.fillRect(-10, topY + 8, 5, -28 - topY);
+    g.fillStyle = 'rgba(0,0,0,.15)';
+    for (let yy = topY + 16; yy < -24; yy += 10) g.fillRect(-16, yy, 32, 3);
+    // little face on the coil
+    g.fillStyle = '#fff';
+    g.beginPath(); g.arc(-6, -44 + bob * 0.5, 3, 0, Math.PI * 2); g.arc(6, -44 + bob * 0.5, 3, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#2a0a0a';
+    g.beginPath(); g.arc(-5.5, -43.5 + bob * 0.5, 1.5, 0, Math.PI * 2); g.arc(6.5, -43.5 + bob * 0.5, 1.5, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#fff'; g.lineWidth = 1.8; g.lineCap = 'round';
+    g.beginPath(); charged ? g.arc(0, -39 + bob * 0.5, 4, 0.2, Math.PI - 0.2) : (g.moveTo(-3, -36 + bob * 0.5), g.lineTo(3, -36 + bob * 0.5)); g.stroke();
+    // big flat silver torus
+    g.fillStyle = '#8a939b'; g.beginPath(); g.ellipse(0, topY + 3, 58, 14, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#c9d0d6'; g.beginPath(); g.ellipse(0, topY, 58, 12, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#9aa2aa'; g.beginPath(); g.ellipse(0, topY - 1, 20, 4.5, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.6)'; g.beginPath(); g.ellipse(-28, topY - 5, 16, 2.6, -0.05, 0, Math.PI * 2); g.fill();
+    if (charged) {
+      // arcs crackling off the torus
+      const seed = Math.floor(time * 16);
+      const rnd = n => { const v = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
+      g.lineJoin = 'round';
+      for (let i = 0; i < 6; i++) {
+        if (rnd(i) < 0.35) continue;
+        const side = rnd(i + 40) < 0.5 ? -1 : 1;
+        const sx = side * (34 + rnd(i + 50) * 22), sy = topY + (rnd(i + 60) - 0.5) * 8;
+        const ang = side < 0 ? Math.PI + (rnd(i + 20) - 0.6) * 1.4 : (rnd(i + 20) - 0.4) * -1.4;
+        const len = 16 + rnd(i + 10) * 20, pts = [[sx, sy]];
+        for (let j = 1; j <= 4; j++) { const f = j / 4; pts.push([sx + Math.cos(ang) * len * f + (rnd(i * 5 + j) - 0.5) * 9, sy + Math.sin(ang) * len * f + (rnd(i * 3 + j) - 0.5) * 9]); }
+        for (const [w, col] of [[5, 'rgba(150,200,255,.35)'], [2, '#bcdcff'], [0.9, '#ffffff']]) {
+          g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach(([px, py], k) => k ? g.lineTo(px, py) : g.moveTo(px, py)); g.stroke();
+        }
+      }
+    }
+    g.restore();
+  }
+  function drawBatteryZap(r, c, t) {
+    if (!t.zap) return;
+    const k = t.zap.t / 0.3, x0 = c * CELL + 50, y0 = r * CELL + 18, x1 = t.zap.x, y1 = t.zap.y;
+    ctx.save(); ctx.globalAlpha = 1 - k; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const pts = [[x0, y0]];
+    for (let i = 1; i < 8; i++) { const f = i / 8; pts.push([x0 + (x1 - x0) * f + Math.sin(i * 7.3 + t.zap.t * 40) * 10, y0 + (y1 - y0) * f + Math.cos(i * 5.1 + t.zap.t * 40) * 12]); }
+    pts.push([x1, y1]);
+    for (const [w, col] of [[10, 'rgba(120,255,120,.35)'], [4, '#9dff9d'], [1.6, '#ffffff']]) {
+      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)); ctx.stroke();
+    }
+    ctx.restore();
   }
   function drawShovel(g, x, y, s) {
     g.save(); g.translate(x, y); g.scale(s, s); g.rotate(-0.6);
@@ -3385,6 +4673,7 @@
     // shoulders / traps
     ctx.fillStyle = skin;
     ctx.beginPath(); ctx.ellipse(-20, -64, 11, 9, 0, 0, Math.PI * 2); ctx.ellipse(20, -64, 11, 9, 0, 0, Math.PI * 2); ctx.fill();
+    if (!e.noHead) {
     // big zombie head on a thick neck (it used to be a pineapple)
     ctx.save(); ctx.translate(0, -84 - pound * 1.5);
     ctx.fillStyle = skinDark; ctx.fillRect(-9, 8, 18, 10);
@@ -3444,6 +4733,7 @@
       ctx.beginPath(); ctx.ellipse(-4, 14 + open + ph * 16, 1.6, 2.4 + ph * 2, 0, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
+    }
     // front arm: huge bicep and fist, pounds when eating
     ctx.save(); ctx.translate(-16, -60); ctx.rotate(e.walking ? 0.25 + step * 0.2 : -0.6 - pound * 0.9);
     ctx.fillStyle = skin;
@@ -3466,15 +4756,38 @@
   }
 
   function drawEnemy(e) {
+    if (e.kind === 'tube' || e.kind === 'shieldTube') return drawSwimmer(e);
+    drawEnemyBody(e);
+  }
+  // a zombie bobbing along in a rubber ring: only the top half shows above the water
+  function drawSwimmer(e) {
+    const baseY = e.lane * CELL + 92, bob = Math.sin((e.wob || 0) * 1.3) * 2;
+    const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : 'basic', noShadow: true, walking: false });
+    ctx.save(); ctx.translate(0, 18 + bob);
+    ctx.save(); ctx.beginPath(); ctx.rect(e.x - 90, baseY - 220, 180, 220 - 36); ctx.clip();
+    drawEnemyBody(as);
+    ctx.restore();
+    // the ring
+    const ry = baseY - 38;
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(e.x, ry + 6, 30, 7, 0, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 8; i++) {
+      ctx.fillStyle = i % 2 ? '#ffffff' : '#ff6b5a';
+      ctx.beginPath(); ctx.ellipse(e.x, ry, 22, 9, 0, (i / 8) * Math.PI * 2, ((i + 1) / 8) * Math.PI * 2); ctx.lineTo(e.x, ry); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(60,150,200,.9)'; ctx.beginPath(); ctx.ellipse(e.x, ry, 11, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  function drawEnemyBody(e) {
     const baseY = e.lane * CELL + 92;
     const run = e.kind === 'runner';
     const knight = e.kind === 'knight', helm = knight && e.knightUp;
     // the Mini Teacher looks just like a Teacher (it only has less health)
-    const teacher = e.kind === 'teacher' || e.kind === 'mini', mini = false;
+    const teacher = e.kind === 'teacher' || e.kind === 'mini', mini = false, ninja = e.kind === 'ninja';
     const fury = teacher && e.angry;
     const step = e.walking ? Math.sin(e.wob * (run ? 3.6 : 1.4)) * (run ? 1.6 : 1) : 0;
     const chomp = e.walking ? 0 : Math.sin(e.wob * 3);
     if (e.kind === 'mutant') drawMutantBody(e, baseY, step, chomp);
+    else if (e.kind === 'car') drawCarZombie(e, baseY);
     else {
     ctx.save(); ctx.translate(e.x + (fury ? Math.sin(state.time * 50) * 1.2 : 0), baseY);
     ctx.fillStyle = 'rgba(0,0,0,.2)';
@@ -3484,7 +4797,7 @@
     ctx.strokeStyle = '#3f4352'; ctx.lineWidth = 9; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(-4, -30); ctx.lineTo(-6 + step * 8, -3);
     ctx.moveTo(6, -30); ctx.lineTo(8 - step * 8, -3); ctx.stroke();
-    ctx.fillStyle = run ? '#f4f4f0' : '#2b2b30';
+    ctx.fillStyle = run ? '#f4f4f0' : ninja ? '#8a5a2e' : '#2b2b30';
     ctx.beginPath(); ctx.ellipse(-9 + step * 8, -2, 7, 4, 0, 0, Math.PI * 2);
     ctx.ellipse(5 - step * 8, -2, 7, 4, 0, 0, Math.PI * 2); ctx.fill();
     // back arm
@@ -3493,9 +4806,20 @@
     else { ctx.beginPath(); ctx.moveTo(4, -58); ctx.lineTo(-26, -54 + chomp * 4); ctx.stroke(); }
     const swim = e.kind === 'noodler';
     // torso: torn shirt (swimmers get bare skin and striped trunks)
-    ctx.fillStyle = swim ? '#8fae7a' : run ? '#d9a33a' : teacher ? '#8a5a9e' : '#5b7085';
+    ctx.fillStyle = swim ? '#8fae7a' : run ? '#d9a33a' : teacher ? '#8a5a9e' : ninja ? '#e8892a' : '#5b7085';
     ctx.beginPath(); ctx.moveTo(-14, -66); ctx.lineTo(14, -66); ctx.lineTo(13, -32);
     ctx.lineTo(7, -27); ctx.lineTo(2, -32); ctx.lineTo(-4, -26); ctx.lineTo(-9, -31); ctx.lineTo(-14, -28); ctx.closePath(); ctx.fill();
+    if (ninja) {
+      // monk's robe: a long saffron skirt and a darker sash over one shoulder
+      ctx.fillStyle = '#e8892a';
+      ctx.beginPath(); ctx.moveTo(-14, -34); ctx.lineTo(14, -34); ctx.lineTo(17, -12 + step * 2); ctx.lineTo(-17, -12 - step * 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#b8561a';
+      ctx.beginPath(); ctx.moveTo(8, -66); ctx.lineTo(14, -66); ctx.lineTo(-8, -32); ctx.lineTo(-14, -34); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#7a3a12'; ctx.fillRect(-14, -36, 28, 4);
+      // prayer beads
+      ctx.fillStyle = '#5a2e14';
+      for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(-9 + i * 3.6, -62 + Math.abs(i - 2.5) * 1.6, 1.6, 0, Math.PI * 2); ctx.fill(); }
+    }
     if (teacher) {
       // cardigan over a collared shirt
       ctx.fillStyle = '#f4f1e6';
@@ -3526,12 +4850,14 @@
       if (armor < 0.66) { ctx.beginPath(); ctx.ellipse(-8, -50, 4, 3, 0.3, 0, Math.PI * 2); ctx.fill(); }
       if (armor < 0.33) { ctx.beginPath(); ctx.ellipse(8, -40, 5, 3, -0.3, 0, Math.PI * 2); ctx.fill(); }
     }
+    if (!e.noHead) {
     // head
     ctx.save(); ctx.translate(-2, -78); ctx.rotate(0.12);
     ctx.fillStyle = '#8fae7a';
     ctx.beginPath(); ctx.ellipse(0, 0, 14, 16, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#4d6140';
-    ctx.beginPath(); ctx.moveTo(-12, -9); ctx.lineTo(-4, -16); ctx.lineTo(4, -12); ctx.lineTo(10, -15); ctx.lineTo(13, -6); ctx.lineTo(-13, -4); ctx.closePath(); ctx.fill();
+    if (!ninja) { ctx.beginPath(); ctx.moveTo(-12, -9); ctx.lineTo(-4, -16); ctx.lineTo(4, -12); ctx.lineTo(10, -15); ctx.lineTo(13, -6); ctx.lineTo(-13, -4); ctx.closePath(); ctx.fill(); }
+    else { ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.ellipse(-4, -9, 5, 3, -0.3, 0, Math.PI * 2); ctx.fill(); }
     if (teacher) {
       // hair bun with a pencil through it, and glasses
       ctx.fillStyle = '#6b4a32';
@@ -3573,22 +4899,9 @@
     ctx.fillStyle = '#2f2a24';
     ctx.beginPath(); ctx.ellipse(-3, 9, 6, (fury ? 4.5 : 2.5) + Math.max(0, chomp) * 3, 0, 0, Math.PI * 2); ctx.fill();
     if (e.canUp) drawCan(ctx, 0, -10, (e.hp - e.base) / (e.maxHp - e.base));
-    if (helm) {
-      // great helm with a visor slit and a red plume
-      ctx.fillStyle = '#b8323a';
-      ctx.beginPath(); ctx.moveTo(2, -18); ctx.quadraticCurveTo(18, -34, 30, -22 + step * 2); ctx.quadraticCurveTo(18, -24, 6, -14); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#9aa3ab';
-      roundRect(ctx, -16, -19, 32, 34, 9); ctx.fill();
-      ctx.fillStyle = '#c3cad0'; ctx.fillRect(-2, -19, 4, 34);
-      ctx.fillStyle = '#1b1f23'; ctx.fillRect(-14, -3, 22, 4);
-      ctx.fillStyle = '#ff5a4a';
-      ctx.beginPath(); ctx.arc(-8, -1, 1.6, 0, Math.PI * 2); ctx.arc(2, -1, 1.6, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#1b1f23';
-      for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(-8 + i * 6, 8, 1.2, 0, Math.PI * 2); ctx.fill(); }
-      ctx.fillStyle = 'rgba(40,44,48,.55)';
-      if (armor < 0.5) { ctx.beginPath(); ctx.ellipse(8, -11, 4, 3, 0, 0, Math.PI * 2); ctx.fill(); }
-    }
+    if (helm) drawKnightHelm(armor, step);
     ctx.restore();
+    }
     if (e.shieldUp) {
       // front arm holds the shield up
       ctx.strokeStyle = '#8fae7a'; ctx.lineWidth = 7;
@@ -3610,7 +4923,26 @@
     } else {
       // front arm, reaching forward (runners pump their arms)
       ctx.strokeStyle = '#8fae7a'; ctx.lineWidth = 7;
-      if (e.armless) {
+      if (ninja && !e.armless) {
+        // nunchucks: held ready while walking, a whirling blur during tricks
+        ctx.beginPath(); ctx.moveTo(-8, -60); ctx.lineTo(-20, -58); ctx.stroke();
+        ctx.save(); ctx.translate(-22, -58);
+        const a = e.tricks ? e.spinA : 0.6 + Math.sin(e.wob) * 0.2;
+        if (e.tricks) {
+          ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, 18, a, a + 2.4); ctx.stroke();
+        }
+        ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a + Math.PI) * 14, Math.sin(a + Math.PI) * 14); ctx.stroke();
+        ctx.strokeStyle = '#9aa0a6'; ctx.lineWidth = 1.5;
+        const cx = Math.cos(a) * 6, cy = Math.sin(a) * 6;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(cx, cy); ctx.stroke();
+        ctx.strokeStyle = '#8a5a2e'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * 18, cy + Math.sin(a) * 18); ctx.stroke();
+        ctx.restore();
+        ctx.strokeStyle = '#8fae7a'; ctx.lineWidth = 7;
+      } else if (e.armless) {
         // just a stump left
         ctx.beginPath(); ctx.moveTo(-8, -60); ctx.lineTo(-15, -56); ctx.stroke();
         ctx.fillStyle = '#6f8d5c'; ctx.beginPath(); ctx.arc(-15, -56, 3.5, 0, Math.PI * 2); ctx.fill();
@@ -3723,6 +5055,8 @@
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
       const t = state.grid[r][c]; if (!t || t.type === 'hyperPart') continue;
       t.bob += 0.03;
+      if (t.type === 'boat' || t.onBoat) drawBoat(ctx, c * CELL + 50, r * CELL + 82, 1, t.bob);
+      if (t.type === 'boat') continue;
       if (t.type === 'turtle') drawTurtle(ctx, c * CELL + 46, r * CELL + 62, 1, t.throwAnim, t.bob);
       else if (t.type === 'angry') drawTurtle(ctx, c * CELL + 46, r * CELL + 62, 1, t.throwAnim, t.bob, 'angry');
       else if (t.type === 'ultima') drawSnapper(ctx, c * CELL + 92, r * CELL + ULTIMA_Y, ULTIMA_SCALE, t.bob + state.time * 2, { mode: t.mode, openK: t.openK, chew: t.chew, stretch: t.stretch / ULTIMA_SCALE }, true);
@@ -3746,8 +5080,14 @@
         drawMau(ctx, c * CELL + 50, r * CELL + 58, 1, t.hp / t.maxHp, t.blink < 0, t.bob);
         if (t.forti) drawFortiArmor(ctx, c * CELL + 50, r * CELL + 58, 1, t.hp / t.maxHp);
       }
-      else if (t.type === 'vamp') drawVampSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob, t.grown);
-      else if (t.type === 'squid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob);
+      else if (t.type === 'multi') drawTurtle(ctx, c * CELL + 44, r * CELL + 64, 1, t.throwAnim, t.bob, 'multi');
+      else if (t.type === 'mini') { drawTurtle(ctx, c * CELL + 44, r * CELL + 76, 0.5, t.throwAnim, t.bob, 'mini'); if (t.asleep) drawSleepy(c * CELL + 66, r * CELL + 58); }
+      else if (t.type === 'vamp') { drawVampSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob, t.grown, !!t.asleep); if (t.asleep) drawSleepy(c * CELL + 66, r * CELL + 22); }
+      else if (t.type === 'tesla') drawTesla(ctx, c * CELL + 100, r * CELL + 90, 1, t, state.time);
+      else if (t.type === 'loo') drawLoo(ctx, c * CELL + 50, r * CELL + 60, 1, t, state.time);
+      else if (t.type === 'battery') drawBattery(ctx, c * CELL + 50, r * CELL + 58, 1, t, state.time);
+      else if (t.type === 'hsquid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep, true);
+      else if (t.type === 'squid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep);
       if (t.hp < t.maxHp) {
         const bw = t.twoTile ? 160 : 60;
         ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(c * CELL + 20, r * CELL + 2, bw, 6);
@@ -3760,11 +5100,12 @@
       if (t && t.type === 'spray') drawMist(r, c, t);
       if (t && t.type === 'clean') drawMist(r, c, t, true);
       if (t && t.type === 'dragon') drawFlame(r, c, t);
+      if (t && t.type === 'battery') drawBatteryZap(r, c, t);
       if (t && t.type === 'hyper') drawHyperLash(r, c, t);
       if (t && t.type === 'laser') drawBeam(c, r, t);
       if (t && t.type === 'bee') drawBee(ctx, t.x, t.y + (t.mode === 'home' ? Math.sin(t.bob * 2) * 4 : 0), 1, t.face, state.time * 40);
     }
-    state.rocks.forEach(k => k.kind === 'shampoo' ? drawGlob(k) : k.lava ? drawLavaRock(ctx, k.x, k.y + Math.sin(k.x / 30) * 2, k.spin, k.big ? 1.3 : 1) : drawRock(ctx, k.x, k.y + Math.sin(k.x / 30) * 2, k.spin, k.big ? 1.3 : 1));
+    state.rocks.forEach(k => k.kind === 'shampoo' ? drawGlob(k) : k.lava ? drawLavaRock(ctx, k.x, k.y + Math.sin(k.x / 30) * 2, k.spin, k.big ? 1.3 : k.mini ? 0.65 : 1) : drawRock(ctx, k.x, k.y + Math.sin(k.x / 30) * 2, k.spin, k.big ? 1.3 : k.mini ? 0.65 : 1));
     for (const p of state.puffs) {
       const k = p.t / 0.45;
       if (p.stomp) {
@@ -3887,7 +5228,7 @@
         continue;
       }
       if (p.topple) {
-        const fallTime = p.small ? 0.4 : 0.55, kk = p.t;
+        const fallTime = p.small ? 0.4 : 0.55, kk = Math.max(0, p.t - (p.delay || 0));
         const fall = Math.min(1, kk / fallTime);
         const ang = (fall * fall) * (Math.PI / 2); // speeds up as it tips backwards
         if (fall >= 1 && !p.thudded) {
@@ -3904,6 +5245,38 @@
         }
         continue;
       }
+      if (p.helmPop) {
+        // the helmet clangs off, spins, bounces on the grass and fades
+        if (!p.last) p.last = p.t;
+        const step = Math.min(0.05, Math.max(0, p.t - p.last)); p.last = p.t;
+        p.vy += 1100 * step; p.ox += p.vx * step; p.oy += p.vy * step; p.spin += p.vs * step;
+        const floor = 66;
+        if (p.oy > floor) { p.oy = floor; if (!p.bounced) { p.bounced = true; p.vy *= -0.4; p.vx *= 0.5; p.vs *= 0.5; Sound.play('clank'); } else { p.vy = 0; p.vx *= 0.88; p.vs *= 0.88; } }
+        if (p.snap) {
+          ctx.save(); ctx.globalAlpha = 1 - Math.max(0, (p.t - 1.0) / 0.4);
+          ctx.translate(p.x + p.ox, p.y + p.oy); ctx.rotate(p.spin - 0.12);
+          ctx.drawImage(p.snap, -40, -40);
+          ctx.restore();
+        }
+        continue;
+      }
+      if (p.headPop) {
+        // the head arcs up and back, bounces once and rolls to a stop
+        if (!p.last) p.last = p.t;
+        const step = Math.min(0.05, Math.max(0, p.t - p.last)); p.last = p.t;
+        p.vy += 1100 * step; p.ox += p.vx * step; p.oy += p.vy * step; p.spin += p.vs * step;
+        const floor = p.floor || 64; // the head lands when it reaches the grass
+        if (p.oy > floor) { p.oy = floor; if (!p.bounced) { p.bounced = true; p.vy *= -0.35; p.vx *= 0.5; p.vs *= 0.5; Sound.play(p.huge ? 'thud' : 'flop'); if (p.huge) state.shake = Math.max(state.shake, 0.15); } else { p.vy = 0; p.vx *= 0.9; p.vs *= 0.9; } }
+        if (p.snap) {
+          ctx.save(); ctx.globalAlpha = 1 - Math.max(0, (p.t - 1.0) / 0.4);
+          // spin around the middle of the head (about 80 px above the feet)
+          const hy = p.hy || 80;
+          ctx.translate(p.x + p.ox - 2, p.y + p.oy - hy); ctx.rotate(p.spin); ctx.translate(2, hy);
+          ctx.drawImage(p.snap, -SNAP_FOOT_X, -SNAP_FOOT_Y);
+          ctx.restore();
+        }
+        continue;
+      }
       if (p.merge) {
         const kk = p.t / p.life;
         ctx.save(); ctx.translate(p.x, p.y);
@@ -3913,7 +5286,7 @@
         gr.addColorStop(0.5, `rgba(140,120,255,${0.6 * (1 - kk)})`);
         gr.addColorStop(1, 'rgba(76,227,90,0)');
         ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
-        (p.palette === 'ultima' ? ['#a5d04a', '#ffffff', '#b65ac6'] : p.palette === 'clean' ? ['#7fd3e8', '#ffffff', '#ff8fc6'] : ['#3b7fd1', '#8a3fb8', '#4ce35a']).forEach((col, i) => {
+        (p.palette === 'tesla' ? ['#2f63c9', '#ffffff', '#d9944f'] : p.palette === 'ultima' ? ['#a5d04a', '#ffffff', '#b65ac6'] : p.palette === 'clean' ? ['#7fd3e8', '#ffffff', '#ff8fc6'] : ['#3b7fd1', '#8a3fb8', '#4ce35a']).forEach((col, i) => {
           ctx.strokeStyle = col; ctx.globalAlpha = 1 - kk; ctx.lineWidth = 4;
           ctx.beginPath(); ctx.arc(0, 0, 20 + kk * (60 + i * 25), 0, Math.PI * 2); ctx.stroke();
         });
@@ -3985,6 +5358,43 @@
       ctx.fillStyle = `rgba(180,170,150,${0.6 * (1 - k)})`;
       ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
     }
+    for (const sh of state.sheets) {
+      // a square of loo paper with perforations; after its first zombie it's torn
+      ctx.save(); ctx.translate(sh.x, sh.y); ctx.rotate(sh.spin); ctx.scale(LOO.size, LOO.size);
+      ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(-10, -8, 22, 20);
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#c9c2b2'; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      if (sh.hits === 0) {
+        ctx.rect(-11, -11, 22, 22);
+      } else {
+        // ripped: a jagged edge along one side
+        ctx.moveTo(-11, -11); ctx.lineTo(11, -11); ctx.lineTo(11, 4);
+        ctx.lineTo(7, 1); ctx.lineTo(4, 7); ctx.lineTo(0, 2); ctx.lineTo(-3, 9); ctx.lineTo(-7, 3); ctx.lineTo(-11, 8);
+        ctx.closePath();
+      }
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#d8d1c1';
+      for (const px of [-7, -2, 3, 8]) { ctx.beginPath(); ctx.arc(px, -7, 0.9, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = 'rgba(120,180,230,.35)';
+      ctx.beginPath(); ctx.arc(-3, -1, 2, 0, Math.PI * 2); ctx.arc(4, 3, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    for (const b of state.bolts) {
+      // thick zig-zag bolt pointing where it's going, with a crackly glow
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.ang); ctx.scale(b.tesla ? 2 : 1.4, b.tesla ? 2.6 : 1.9); // big and chunky
+      const fl = Math.sin(b.t * 60) * 2;
+      const shape = [[-46, -4 + fl], [-28, 6], [-24, -2], [-6, 8 - fl], [-10, -1], [14, 0], [-4, -9 + fl], [-1, -2], [-22, -10], [-26, -3], [-46, -4 + fl]];
+      const gr = ctx.createRadialGradient(0, 0, 4, 0, 0, 40);
+      gr.addColorStop(0, b.tesla ? 'rgba(170,210,255,.7)' : 'rgba(170,255,170,.6)'); gr.addColorStop(1, b.tesla ? 'rgba(120,170,255,0)' : 'rgba(120,255,120,0)');
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(-10, 0, 40, 0, Math.PI * 2); ctx.fill();
+      ctx.lineJoin = 'round';
+      ctx.beginPath(); shape.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)); ctx.closePath();
+      ctx.fillStyle = b.tesla ? '#a8d4ff' : '#9dff9d'; ctx.fill();
+      ctx.strokeStyle = b.tesla ? '#2f63c9' : '#2f9e3a'; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.moveTo(-36, -2); ctx.lineTo(-24, 2); ctx.lineTo(-8, 2); ctx.lineTo(6, 0); ctx.lineTo(-8, -2); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
     for (const b of state.boulders) {
       const k = Math.min(1, b.t / DIGGER.flight);
       const bx = b.x0 + (b.x1 - b.x0) * k, by = b.y0 + (b.y1 - b.y0) * k - Math.sin(k * Math.PI) * 140;
@@ -4011,6 +5421,7 @@
       ctx.restore();
     }
     state.orbs.forEach(drawOrb);
+    state.coins.forEach(drawCoin);
     if (state.banner > 0) {
       const k = state.banner, a = Math.min(1, (3.2 - k) * 4, k * 2);
       const pulse = 1 + Math.sin((3.2 - k) * 9) * 0.04;
@@ -4031,14 +5442,22 @@
       // like the seed-select screen: the zombies wait on the right side of the lawn, shuffling about
       const kinds = levelZombies(), tNow = performance.now() / 1000;
       const others = kinds.filter(k => k !== 'mutant');
-      const spots = others.map((k, i) => ({ k, lane: i % ROWS, col: COLS - 1 - Math.floor(i / ROWS) }));
+      let spots;
+      if (level.pool) {
+        const wet = others.filter(k => k === 'tube' || k === 'shieldTube'), dry = others.filter(k => k !== 'tube' && k !== 'shieldTube');
+        const dryLanes = [...Array(ROWS).keys()].filter(l => !WATER_LANES.includes(l));
+        spots = [
+          ...wet.map((k, i) => ({ k, lane: WATER_LANES[i % WATER_LANES.length], col: COLS - 1 - Math.floor(i / WATER_LANES.length) })),
+          ...dry.map((k, i) => ({ k, lane: dryLanes[i % dryLanes.length], col: COLS - 1 - Math.floor(i / dryLanes.length) }))
+        ];
+      } else spots = others.map((k, i) => ({ k, lane: i % ROWS, col: COLS - 1 - Math.floor(i / ROWS) }));
       // the big Mutant stands in the middle lane, a little further back so it isn't cut off
       if (kinds.includes('mutant')) spots.push({ k: 'mutant', lane: 2, col: COLS - 2.7 });
       spots.sort((a, b) => a.lane - b.lane);
       for (const sp of spots) {
         const jitter = ((sp.lane * 37 + sp.col * 11) % 30) - 15;
         drawEnemy({ kind: sp.k, lane: sp.lane, x: sp.col * CELL + 55 + jitter, hp: 1, maxHp: 1, base: 1, walking: true,
-          wob: tNow * 2.2 + sp.lane * 1.3 + sp.col, shieldUp: sp.k === 'shield', canUp: sp.k === 'soup', knightUp: sp.k === 'knight', testUp: sp.k === 'teacher' });
+          wob: tNow * 2.2 + sp.lane * 1.3 + sp.col, shieldUp: sp.k === 'shield' || sp.k === 'shieldTube', canUp: sp.k === 'soup', knightUp: sp.k === 'knight', testUp: sp.k === 'teacher' });
       }
     }
     const dz = state.dragZombie;
@@ -4069,6 +5488,8 @@
   tCtx.scale(2, 2); drawTurtle(tCtx, 24, 30, 0.62, 0, 0);
   const wCtx = document.getElementById('whipArt').getContext('2d');
   wCtx.scale(2, 2); drawTurtle(wCtx, 24, 30, 0.62, 0, 0, 'whip');
+  const tsCtx = document.getElementById('teslaSeedArt').getContext('2d');
+  tsCtx.scale(2, 2); drawTesla(tsCtx, 26, 46, 0.42);
   const usCtx = document.getElementById('ultimaSeedArt').getContext('2d');
   usCtx.scale(2, 2); drawSnapper(usCtx, 16, 30, 0.6, 0, { mode: 'closed', openK: 0, chew: 0 }, true);
   const csCtx = document.getElementById('cleanSeedArt').getContext('2d');
@@ -4099,6 +5520,18 @@
   fmCtx.scale(2, 2); drawMau(fmCtx, 26, 32, 0.5, 1, false, 0); drawFortiArmor(fmCtx, 26, 32, 0.5, 1);
   const mCtx = document.getElementById('mauArt').getContext('2d');
   mCtx.scale(2, 2); drawMau(mCtx, 26, 28, 0.55, 1, false, 0);
+  const boatCtx = document.getElementById('boatArt').getContext('2d');
+  if (boatCtx) { boatCtx.fillStyle = '#5cc4ec'; boatCtx.fillRect(0, 60, 104, 44); boatCtx.scale(2, 2); drawBoat(boatCtx, 26, 34, 0.5); boatCtx.setTransform(1, 0, 0, 1, 0, 0); }
+  const looCtx = document.getElementById('looArt').getContext('2d');
+  looCtx.scale(2, 2); drawLoo(looCtx, 26, 26, 0.75);
+  const btCtx = document.getElementById('batteryArt').getContext('2d');
+  btCtx.scale(2, 2); drawBattery(btCtx, 26, 22, 0.55);
+  const hsqCtx = document.getElementById('hsquidArt').getContext('2d');
+  hsqCtx.scale(2, 2); drawSquid(hsqCtx, 26, 30, 0.58, 0, 0, false, true);
+  const muCtx = document.getElementById('multiArt').getContext('2d');
+  muCtx.scale(2, 2); drawTurtle(muCtx, 20, 30, 0.55, 0, 0, 'multi');
+  const mnCtx = document.getElementById('miniArt').getContext('2d');
+  mnCtx.scale(2, 2); drawTurtle(mnCtx, 22, 32, 0.4, 0, 0, 'mini');
   const vsCtx = document.getElementById('vampArt').getContext('2d');
   vsCtx.scale(2, 2); drawVampSquid(vsCtx, 26, 30, 0.58, 0, 0, 1);
   const sCtx = document.getElementById('squidArt').getContext('2d');
