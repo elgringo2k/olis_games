@@ -92,7 +92,7 @@ function spawnZombie(kind, lane, x = board.width + 30) {
   if (level.pool) {
     // zombies in a water lane swim in a rubber ring; the ones that can't swim go to a grass lane instead
     const SWIMMERS = { basic: 'tube', shield: 'shieldTube' };
-    if (level.zombies && level.zombies.includes('soupTube')) SWIMMERS.soup = 'soupTube';
+    if (!level.zombies || level.zombies.includes('soupTube')) SWIMMERS.soup = 'soupTube'; // (Sandbox's pool has them too)
     const swimmer = Object.values(SWIMMERS).includes(kind);
     // Boat Zombies only ever come down a water lane
     if (kind === 'boatZ' && !WATER_LANES.includes(lane)) lane = WATER_LANES[Math.floor(Math.random() * WATER_LANES.length)];

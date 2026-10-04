@@ -505,7 +505,7 @@ function draw() {
     ctx.fillStyle = 'rgba(255,77,94,.18)'; ctx.fillRect(0, dz.at.lane * CELL, board.width, CELL);
     ctx.save(); ctx.globalAlpha = 0.6;
     drawEnemy({ kind: dz.kind, lane: dz.at.lane, x: dz.at.x, hp: 1, maxHp: 1, base: 1, walking: true,
-      wob: state.time * 5, shieldUp: dz.kind === 'shield', canUp: dz.kind === 'soup', knightUp: dz.kind === 'knight', testUp: dz.kind === 'teacher' || dz.kind === 'mini' });
+      wob: state.time * 5, shieldUp: dz.kind === 'shield' || dz.kind === 'shieldTube', canUp: dz.kind === 'soup' || dz.kind === 'soupTube', knightUp: dz.kind === 'knight', testUp: dz.kind === 'teacher' || dz.kind === 'mini' });
     ctx.restore();
   }
   ctx.restore();

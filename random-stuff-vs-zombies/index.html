@@ -170,6 +170,7 @@
   </div>
   <div class="debug-bar" id="debugBar">
     <span>Sandbox: infinite energy, no recharges, no waves.</span>
+    <button id="poolPreset" class="preset-btn" aria-pressed="false">🏊 Pool</button>
     <span class="sep" aria-hidden="true"></span>
     <span>Drag a zombie onto the board:</span>
     <button data-spawn="basic">Zombie</button>
@@ -183,6 +184,10 @@
     <button data-spawn="ninja">Nunjaka</button>
     <button data-spawn="car">Car Zombie</button>
     <button data-spawn="mutant">Mutant</button>
+    <button data-spawn="tube" class="pool-only" hidden>Swimming Tube Zombie</button>
+    <button data-spawn="shieldTube" class="pool-only" hidden>Shield Tube Zombie</button>
+    <button data-spawn="soupTube" class="pool-only" hidden>Soup Can Tube Zombie</button>
+    <button data-spawn="boatZ" class="pool-only" hidden>Boat Zombie</button>
     <span class="sep" aria-hidden="true"></span>
     <button id="openWaveBuilder" class="wave-btn" aria-expanded="false">Custom wave…</button>
   </div>

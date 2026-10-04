@@ -143,6 +143,8 @@ canvas#board {
 .leave-level[hidden] { display: none; }
 .reset-world:focus-visible, .debug-toggle:focus-visible { outline: 3px solid var(--energy); outline-offset: 3px; }
 .debug-bar .wave-btn { background: #ff4d5e; color: #fff; }
+.debug-bar .preset-btn[aria-pressed="true"] { background: #3a9cc9; color: #fff; }
+.debug-bar .pool-only[hidden] { display: none; }
 .wave-builder {
   margin-top: 6px; padding: 10px 12px; border-radius: 8px; border: 2px solid #ff4d5e;
   background: var(--panel); color: var(--ink); font-weight: 700;
@@ -152,6 +154,7 @@ canvas#board {
 .wb-head span { color: var(--ink-soft); font-size: .9rem; }
 .wb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
 .wb-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: rgba(0,0,0,.15); border-radius: 8px; padding: 4px 6px 4px 10px; font-size: .9rem; }
+.wb-row[hidden] { display: none; }
 .wb-row .wb-ctrl { display: flex; align-items: center; gap: 4px; }
 .wb-row button { width: 28px; height: 28px; border-radius: 6px; border: 0; background: #f4efd8; color: #2a2a1e; font: 800 1rem "Nunito", sans-serif; cursor: pointer; }
 .wb-row input { width: 44px; text-align: center; font: 800 .95rem "Nunito", sans-serif; border-radius: 6px; border: 0; padding: 4px 2px; }
