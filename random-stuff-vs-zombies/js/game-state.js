@@ -121,6 +121,8 @@ const unitAllowed = u => {
   if (u === 'jic') return (jicUnlocked() || !!level.sandbox) && !level.rounds; // Sandbox always has it
   if (boughtInShop(u) && Array.isArray(level.units)) return true; // bought in the Shop: can be brought anywhere (with a warning if it can't be used)
   if (level.units === 'owned') return (ownedUnits().has(u) || boughtInShop(u)) && !(level.noEnergy && ENERGY_MAKERS.includes(u)) && !(level.banned || []).includes(u);
+  // Endless offers every defender, except the Shop's ones until you've bought them (Sandbox has everything)
+  if (!level.units && !level.sandbox && (SHOP_SEEDS[u] || SHOP_UNITS.includes(u))) return boughtInShop(u);
   return !level.units || level.units.includes(u);
 };
 const loadout = new Set();
