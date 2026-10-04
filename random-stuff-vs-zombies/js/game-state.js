@@ -34,7 +34,7 @@ const LEVELS = {
     { trickle: { kinds: ['basic', 'shield', 'soup'], count: 7, every: 5 }, horde: { kind: 'soup', count: 28, every: 0.45, banner: 'SOUP HORDE!' } },
     { trickle: { kinds: ['basic', 'shield', 'soup', 'knight'], count: 7, every: 5 }, horde: { kind: 'knight', count: 26, every: 0.45, banner: 'FINAL HORDE!' } }
   ] },
-  5: { name: 'Level 5', units: ['squid', 'turtle', 'whip', 'mau', 'bee', 'spray', 'angry', 'lotl', 'snapper'], waves: 6,
+  5: { name: 'Level 5', units: ['squid', 'turtle', 'whip', 'mau', 'bee', 'spray', 'angry', 'snapper', 'lotl'], waves: 6,
        zombies: ['basic', 'shield', 'soup', 'runner', 'noodler', 'mutant'], finalBoss: 'mutant' },
   n1: { name: 'Level 6', night: true, units: ['squid', 'vamp', 'turtle', 'whip', 'mau', 'bee', 'spray', 'angry', 'lotl', 'snapper'],
         waves: 3, zombies: ['basic', 'shield'] },

@@ -563,7 +563,7 @@ function draw() {
       s = 1.2 + 2.4 * ease;
     }
     const units = rw.units.length ? rw.units.slice(0, 3) : [null];
-    for (let i = units.length - 1; i >= 0; i--) drawRewardPacket(ctx, x + i * 14 * s, y - i * 8 * s, s, units[i], state.time, i === 0 ? 1 : 0);
+    for (let i = units.length - 1; i >= 0; i--) drawRewardPacket(ctx, x + i * 26 * s, y - i * 12 * s, s, units[i], state.time, i === 0 ? 1 : 0);
     if (rw.stage === 'drop' && rw.t > 0.6) {
       ctx.save(); ctx.globalAlpha = 0.6 + 0.4 * Math.sin(state.time * 5);
       ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(30,50,25,.8)'; ctx.lineWidth = 4;

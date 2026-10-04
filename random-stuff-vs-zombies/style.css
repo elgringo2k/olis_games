@@ -369,7 +369,7 @@ canvas#board {
 /* the new-defender screen: the packet, big, with what it does */
 .overlay.reward-screen { background: radial-gradient(circle at 50% 40%, #fffbe6, #f3e7b8 60%, #d9c27a); overflow-y: auto; justify-content: safe center; }
 .reward-screen h2 { color: #5a3d00; text-shadow: 0 2px 0 rgba(255,255,255,.8); }
-.reward-list { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+.reward-list { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
 .reward-item { max-width: 240px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .reward-item h3 { margin: 0; font-family: "Lilita One", "Arial Black", sans-serif; font-size: 1.5rem; color: #2f5a2a; }
 .overlay .reward-item p { color: #4a3a10; font-weight: 700; }
