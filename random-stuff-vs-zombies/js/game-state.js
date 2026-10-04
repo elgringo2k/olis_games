@@ -91,25 +91,31 @@ function refreshLevelCards() {
     const goal = card.querySelector('.level-goal');
     if (!goal.dataset.text) goal.dataset.text = goal.textContent;
     const need = card.dataset.needs || '';
-    goal.textContent = open ? goal.dataset.text : need === 'soon' ? 'Coming soon' : need.startsWith('n') ? `Beat Level ${+need.slice(1) + 5} to unlock` : need.startsWith('c') ? `Beat Horde ${need.slice(1)} to unlock` : `Beat Level ${need} to unlock`;
+    goal.textContent = open ? goal.dataset.text : need === 'soon' ? 'Coming soon' : need.startsWith('n') ? `Beat Level ${+need.slice(1) + 5} to unlock` : need.startsWith('p') ? `Beat Level ${+need.slice(1) + 10} to unlock` : need.startsWith('c') ? `Beat Horde ${need.slice(1)} to unlock` : `Beat Level ${need} to unlock`;
   });
 }
-// only beating the Jicjajic Challenge unlocks it (the Unlock all button just opens levels)
-const jicUnlocked = () => !!progress.beaten.challenge;
+// beating the Jicjajic Challenge unlocks it (and so does Unlock all, which unlocks everything)
+const jicUnlocked = () => !!(progress.beaten.challenge || progress.unlockAll);
 // once the Jicjajic Challenge is beaten, the Jicjajic joins every survival level (and Endless/Sandbox);
 // the challenge itself never offers it
 const ALL_ZOMBIES = ['basic', 'shield', 'soup', 'runner', 'noodler', 'knight', 'teacher', 'mutant'];
-function levelZombies() {
-  if (level.rounds) return [...new Set(level.rounds.flatMap(rd => rd.trickle.kinds.concat(rd.horde.kind)))];
-  const kinds = level.zombies ? level.zombies.slice() : ALL_ZOMBIES.slice();
-  for (const boss of [].concat(level.finalBoss || [])) if (!kinds.includes(boss)) kinds.push(boss);
+// the zombies in a level (the current one unless you say which)
+function levelZombies(L = level) {
+  if (L.rounds) return [...new Set(L.rounds.flatMap(rd => rd.trickle.kinds.concat(rd.horde.kind)))];
+  const kinds = L.zombies ? L.zombies.slice() : ALL_ZOMBIES.slice();
+  for (const boss of [].concat(L.finalBoss || [])) if (!kinds.includes(boss)) kinds.push(boss);
   return kinds;
+}
+// the zombies you've beaten: every zombie in the levels you've beaten (or all of them after Unlock all)
+function zombieBeaten(kind) {
+  if (progress.unlockAll) return true;
+  return Object.keys(progress.beaten).some(k => LEVELS[k] && levelZombies(LEVELS[k]).includes(kind));
 }
 // Shop seed packets, and the defender each one is planted on top of
 const SHOP_SEEDS = { enraged: 'angry', hsquid: 'squid', forti: 'mau' };
 // Shop seed packets for defenders that stand on their own
 const SHOP_UNITS = ['battery'];
-const boughtInShop = u => !!(SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) && !!owned(u);
+const boughtInShop = u => !!(SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) && (!!owned(u) || !!progress.unlockAll); // Unlock all counts as bought
 const MAIN_LEVELS = ['1', '2', '3', '4', '5', 'n1', 'n2', 'n3', 'n4', 'n5', 'p1', 'p2', 'p3', 'p4', 'p5'];
 const ENERGY_MAKERS = ['squid', 'vamp', 'hsquid'];
 function ownedUnits() {
@@ -120,14 +126,21 @@ function ownedUnits() {
   }
   return own;
 }
+// the defenders you have: everything that joins you in a level you've unlocked, the Shop's defenders
+// you've bought, the Jicjajic once its Challenge is beaten (and its fusions with it), or all of them after Unlock all
+function hasDefender(u) {
+  if (progress.unlockAll) return true;
+  if (u === 'jic' || (UNITS[u] && UNITS[u].seed)) return jicUnlocked();
+  if (SHOP_SEEDS[u] || SHOP_UNITS.includes(u)) return boughtInShop(u);
+  return ownedUnits().has(u);
+}
 const unitAllowed = u => {
-  if (u === 'boat') return !!level.pool; // boats only make sense in the pool
-  if (u === 'jic') return (jicUnlocked() || !!level.sandbox) && !level.rounds; // Sandbox always has it
+  if (u === 'boat' && !level.pool) return false; // boats only make sense in the pool
+  if (u === 'jic') return jicUnlocked() && !level.rounds; // once you have it, it joins every survival level
   if (boughtInShop(u) && Array.isArray(level.units)) return true; // bought in the Shop: can be brought anywhere (with a warning if it can't be used)
-  if (level.units === 'owned') return (ownedUnits().has(u) || boughtInShop(u)) && !(level.noEnergy && ENERGY_MAKERS.includes(u)) && !(level.banned || []).includes(u);
-  // Endless offers every defender, except the Shop's ones until you've bought them (Sandbox has everything)
-  if (!level.units && !level.sandbox && (SHOP_SEEDS[u] || SHOP_UNITS.includes(u))) return boughtInShop(u);
-  return !level.units || level.units.includes(u);
+  if (level.units === 'owned') return hasDefender(u) && !(level.noEnergy && ENERGY_MAKERS.includes(u)) && !(level.banned || []).includes(u);
+  if (!level.units) return hasDefender(u); // Endless and Sandbox: only the defenders you have
+  return level.units.includes(u);
 };
 const loadout = new Set();
 let picking = true;

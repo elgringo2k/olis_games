@@ -64,7 +64,8 @@ function drawShopIcon(g, id) {
 function renderShop() {
   const grid = document.getElementById('shopGrid'); grid.innerHTML = '';
   for (const it of SHOP) {
-    const lvl = owned(it.id), maxed = lvl >= it.costs.length, cost = it.costs[lvl];
+    // Unlock all gives you the Shop's defenders (the upgrades you still buy)
+    const lvl = owned(it.id) || (it.seed && progress.unlockAll ? it.costs.length : 0), maxed = lvl >= it.costs.length, cost = it.costs[lvl];
     const card = document.createElement('div'); card.className = 'shop-item' + (it.id === 'energyNight' ? ' night' : '');
     card.innerHTML = `<canvas class="shop-pic" width="96" height="96" aria-hidden="true"></canvas><h3>${it.name}</h3><p>${it.desc}</p><span class="owned">${it.costs.length > 1 ? `Owned: ${lvl} of ${it.costs.length}` : lvl ? 'Owned' : 'Not owned'}</span>`;
     const btn = document.createElement('button');

@@ -53,8 +53,15 @@ leaveBtn.addEventListener('click', () => {
   leaveBtn.textContent = 'Leave level'; leaveBtn.classList.remove('confirm');
   showLevels(); // the level isn't saved: leaving throws away this run
 });
-document.getElementById('unlockAll').addEventListener('click', () => { progress.unlockAll = true; saveProgress(); refreshLevelCards(); });
-document.getElementById('resetProgress').addEventListener('click', () => { progress = { beaten: {}, coins: progress.coins || 0, shop: progress.shop || {} }; saveProgress(); refreshLevelCards(); });
+// Unlock all (on the main menu): every level, every defender (Shop ones and the Jicjajic too) and every almanac entry
+const unlockAllBtn = document.getElementById('unlockAll');
+function refreshUnlockAll() {
+  unlockAllBtn.disabled = !!progress.unlockAll;
+  unlockAllBtn.textContent = progress.unlockAll ? 'Everything unlocked ✓' : 'Unlock all';
+}
+unlockAllBtn.addEventListener('click', () => { progress.unlockAll = true; saveProgress(); refreshLevelCards(); refreshUnlockAll(); });
+document.getElementById('resetProgress').addEventListener('click', () => { progress = { beaten: {}, coins: progress.coins || 0, shop: progress.shop || {} }; saveProgress(); refreshLevelCards(); refreshUnlockAll(); });
+refreshUnlockAll();
 refreshLevelCards();
 setTimeout(syncCoins, 0);
 const levelGrid = document.getElementById('levelGrid');

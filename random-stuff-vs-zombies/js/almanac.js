@@ -113,16 +113,23 @@ function almanacDetail(kind) {
 }
 function almanacGrid() {
   const grid = document.getElementById('almGrid'); grid.innerHTML = '';
-  const list = almTab === 'defenders' ? ALMANAC_DEFENDERS : ALMANAC_ZOMBIES;
+  const zombies = almTab === 'zombies';
+  const list = zombies ? ALMANAC_ZOMBIES : ALMANAC_DEFENDERS;
+  // only the defenders you have, and only the zombies from levels you've beaten
+  const shown = Object.entries(list).filter(([kind]) => zombies ? zombieBeaten(kind) : hasDefender(kind));
   let first = null;
-  for (const [kind, info] of Object.entries(list)) {
+  for (const [kind, info] of shown) {
     const b = document.createElement('button'); b.className = 'alm-item'; b.dataset.kind = kind; b.setAttribute('aria-pressed', 'false');
-    b.appendChild(almanacPic(kind, almTab === 'zombies', 112));
+    b.appendChild(almanacPic(kind, zombies, 112));
     const n = document.createElement('span'); n.textContent = info.name; b.appendChild(n);
     b.addEventListener('click', () => almanacDetail(kind));
     grid.appendChild(b); if (!first) first = kind;
   }
-  almanacDetail(first);
+  if (first) almanacDetail(first);
+  else {
+    const el = document.getElementById('almDetail');
+    if (el) el.innerHTML = `<p>${zombies ? 'Beat a level to see its zombies here.' : 'Unlock a level to see its defenders here.'}</p>`;
+  }
 }
 document.querySelectorAll('.alm-tab').forEach(t => t.addEventListener('click', () => {
   almTab = t.dataset.tab;
