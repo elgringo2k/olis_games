@@ -50,7 +50,7 @@ const BOAT   = { cost: 25, hp: 300, recharge: 3 };
 const LOO    = { cost: 150, hp: 300, fuse: 0.35, sheets: 12, dmg: [250, 125], speed: 280, size: 1.6, maxPerZombie: 4 };
 // Magneticobra: steals soup cans and knight helmets (holds one for 10 s), and pulls in cars and rips them open (holds the parts for 20 s)
 const COBRA  = { cost: 100, hp: 300, reach: 3, hold: 10, carHold: 20, pullSpeed: 420 };
-const COBRA_TIP = { x: 38, y: -36 }; // where the magnet's tips are, from the middle of its tile
+const COBRA_TIP = { x: 30, y: -6 }; // the gap between the ends of his horseshoe body, from the middle of his tile
 const UNITS  = { cobra: COBRA, boat: BOAT, loo: LOO, tesla: TESLA, battery: BATTERY, hsquid: HSQUID, multi: MULTI, mini: MINI, vamp: VAMP, ultima: ULTIMA, chog: CHOG, snapper: SNAPPER, digger: DIGGER, dragon: DRAGON, enraged: ENRAGED, angry: ANGRY, clean: CLEAN, hyper: HYPER_SEED, jic: JIC, lotl: LOTL, badger: BADGER, forti: FORTI, shark: SHARK, lobster: LOBSTER, laser: LASER, turtle: TURTLE, squid: SQUID, whip: WHIP, mau: MAU, bee: BEE, spray: SPRAY, shampoo: SHAMPOO };
 // lanes and x-range a spray at (r, c) covers
 function sprayArea(r, c) {

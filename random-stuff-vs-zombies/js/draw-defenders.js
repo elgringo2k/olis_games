@@ -780,47 +780,52 @@ function drawLoo(g, x, y, s, t = null, time = 0) {
   g.restore();
 }
 function drawCobra(g, x, y, s, t = null, time = 0) {
-  // a green cobra coiled on the grass, holding a big red horseshoe magnet in its mouth
-  const sway = Math.sin(time * 2 + (t ? t.bob : 0)) * 2, lunge = t && t.pullAnim > 0 ? Math.sin(t.pullAnim / 0.35 * Math.PI) * 5 : 0;
-  g.save(); g.translate(x, y); g.scale(s, s);
-  g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(0, 32, 28, 6, 0, 0, Math.PI * 2); g.fill();
-  // coils
-  for (const [cx, cy, rx, ry] of [[0, 25, 26, 9], [2, 17, 22, 8], [-2, 10, 17, 7]]) {
-    g.fillStyle = '#3c7a38'; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#56a24f'; g.beginPath(); g.ellipse(cx, cy - 2, rx - 2, ry - 3, 0, 0, Math.PI * 2); g.fill();
-  }
-  g.translate(sway + lunge, 0);
-  // neck rising out of the coils
-  g.strokeStyle = '#56a24f'; g.lineWidth = 12; g.lineCap = 'round';
-  g.beginPath(); g.moveTo(-4, 8); g.quadraticCurveTo(-12, -8, -4, -24); g.stroke();
-  // hood with its eye-spots
-  g.fillStyle = '#3c7a38'; g.beginPath(); g.ellipse(-6, -24, 17, 19, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#e8d58a'; g.beginPath(); g.ellipse(-6, -22, 9, 13, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#2a4a26'; for (const sy of [-28, -18]) { g.beginPath(); g.arc(-6, sy, 2.2, 0, Math.PI * 2); g.fill(); }
-  // head, looking right
-  g.fillStyle = '#56a24f'; g.beginPath(); g.ellipse(4, -36, 12, 8, 0.1, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#fff'; g.beginPath(); g.arc(7, -39, 3.2, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#1d1d1d'; g.beginPath(); g.arc(8, -39, 1.7, 0, Math.PI * 2); g.fill();
-  // the horseshoe magnet in its mouth, tips pointing at the zombies
-  const tx = COBRA_TIP.x, ty = COBRA_TIP.y;
+  // the cobra IS the magnet: a red snake curled into a horseshoe that opens toward the zombies,
+  // with a silver tail tip on the bottom end and his head (with a silver hood) on the top end
+  const bob = Math.sin(time * 2 + (t ? t.bob : 0)) * 1.5, lunge = t && t.pullAnim > 0 ? Math.sin(t.pullAnim / 0.35 * Math.PI) * 5 : 0;
+  const tx = COBRA_TIP.x, ty = COBRA_TIP.y, R = 20, W = 15;
+  g.save(); g.translate(x, y + bob); g.scale(s, s);
+  g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(-2, 32 - bob, 30, 6, 0, 0, Math.PI * 2); g.fill();
   if (t && (t.pulling || t.pullAnim > 0)) {
-    // magnetic waves
-    g.strokeStyle = `rgba(120,200,255,${0.5 + 0.3 * Math.sin(time * 20)})`; g.lineWidth = 2;
-    for (let i = 0; i < 3; i++) { const rr = 8 + ((time * 40 + i * 9) % 27); g.beginPath(); g.arc(tx, ty, rr, -0.7, 0.7); g.stroke(); }
+    // magnetic waves pouring out of the gap
+    g.strokeStyle = `rgba(120,200,255,${0.5 + 0.3 * Math.sin(time * 20)})`; g.lineWidth = 2.5;
+    for (let i = 0; i < 3; i++) { const rr = 10 + ((time * 40 + i * 10) % 30); g.beginPath(); g.arc(tx - 4, ty, rr, -0.8, 0.8); g.stroke(); }
   }
-  g.strokeStyle = '#d63a3a'; g.lineWidth = 7; g.lineCap = 'butt';
-  g.beginPath(); g.moveTo(tx - 4, ty - 9); g.lineTo(tx - 14, ty - 9); g.arc(tx - 14, ty, 9, -Math.PI / 2, Math.PI / 2, true); g.lineTo(tx - 4, ty + 9); g.stroke();
-  g.fillStyle = '#d7dde2'; g.fillRect(tx - 5, ty - 12.5, 6, 7); g.fillRect(tx - 5, ty + 5.5, 6, 7);
-  // whatever it's holding, stuck to the tips (blinking when it's about to drop it)
+  // the horseshoe body: bottom arm (tail) -> round back -> top arm (neck)
+  const body = () => { g.beginPath(); g.moveTo(tx - 6, ty + R); g.lineTo(-8, ty + R); g.arc(-8, ty, R, Math.PI / 2, -Math.PI / 2); g.lineTo(lunge + tx - 14, ty - R); };
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  g.strokeStyle = '#9e2626'; g.lineWidth = W + 3; body(); g.stroke();
+  g.strokeStyle = '#d63a3a'; g.lineWidth = W; body(); g.stroke();
+  // belly scales along the inside of the curve
+  g.strokeStyle = '#f0b8a8'; g.lineWidth = 3; g.setLineDash([4, 4]);
+  g.beginPath(); g.moveTo(tx - 10, ty + R - 5); g.lineTo(-8, ty + R - 5); g.arc(-8, ty, R - 5, Math.PI / 2, -Math.PI / 2); g.lineTo(lunge + tx - 16, ty - R + 5); g.stroke();
+  g.setLineDash([]);
+  // silver tail tip: the bottom pole
+  g.fillStyle = '#d7dde2'; roundRect(g, tx - 13, ty + R - W / 2, 15, W, 4); g.fill();
+  g.fillStyle = '#aeb5bc'; g.fillRect(tx - 13, ty + R - W / 2, 3, W);
+  // head on the top end: silver hood (the top pole), red face, looking at the zombies
+  g.save(); g.translate(lunge, 0);
+  g.fillStyle = '#d7dde2'; g.beginPath(); g.ellipse(tx - 12, ty - R - 2, 9, 13, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#aeb5bc'; g.beginPath(); g.ellipse(tx - 12, ty - R - 2, 4, 9, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#d63a3a'; g.beginPath(); g.ellipse(tx - 4, ty - R - 3, 10, 7.5, 0.05, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(tx - 3, ty - R - 6, 3, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#1d1d1d'; g.beginPath(); g.arc(tx - 2, ty - R - 6, 1.6, 0, Math.PI * 2); g.fill();
+  // flicking forked tongue
+  if (Math.sin(time * 3 + (t ? t.bob : 0)) > 0.4) {
+    g.strokeStyle = '#7a1f3a'; g.lineWidth = 1.6;
+    g.beginPath(); g.moveTo(tx + 5, ty - R - 1); g.lineTo(tx + 11, ty - R - 1); g.lineTo(tx + 14, ty - R - 4); g.moveTo(tx + 11, ty - R - 1); g.lineTo(tx + 14, ty - R + 2); g.stroke();
+  }
+  g.restore();
+  // whatever he's holding, stuck in the gap between his two ends (blinking when he's about to drop it)
   if (t && t.holding && t.pullAnim <= 0 && !(t.hold < 1.5 && Math.sin(time * 18) < 0)) {
-    g.save(); g.translate(tx + 10, ty);
-    if (t.holding === 'can') { g.rotate(Math.PI / 2); g.scale(0.7, 0.7); drawCan(g, 0, 13, 1); }
-    else if (t.holding === 'helm' && g === ctx) { g.scale(0.65, 0.65); g.translate(8, 0); drawKnightHelm(1, 0); }
+    g.save(); g.translate(tx - 2, ty);
+    if (t.holding === 'can') { g.scale(0.8, 0.8); drawCan(g, 0, 13, 1); }
+    else if (t.holding === 'helm' && g === ctx) { g.scale(0.8, 0.8); drawKnightHelm(1, 0); }
     else if (t.holding === 'car') {
-      g.fillStyle = '#c0392b'; roundRect(g, -2, -14, 18, 10, 3); g.fill(); roundRect(g, 0, 3, 14, 11, 3); g.fill();
-      g.fillStyle = '#222'; g.beginPath(); g.arc(12, -2, 8, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#9aa3a8'; g.beginPath(); g.arc(12, -2, 3.5, 0, Math.PI * 2); g.fill();
-      g.fillStyle = 'rgba(191,227,242,.9)'; g.beginPath(); g.moveTo(-2, 16); g.lineTo(3, 8); g.lineTo(8, 16); g.closePath(); g.fill();
+      g.fillStyle = '#c0392b'; roundRect(g, -12, -12, 18, 10, 3); g.fill(); roundRect(g, -10, 4, 14, 10, 3); g.fill();
+      g.fillStyle = '#222'; g.beginPath(); g.arc(6, 0, 8, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#9aa3a8'; g.beginPath(); g.arc(6, 0, 3.5, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(191,227,242,.9)'; g.beginPath(); g.moveTo(-14, 6); g.lineTo(-10, -2); g.lineTo(-6, 6); g.closePath(); g.fill();
     }
     g.restore();
   }
