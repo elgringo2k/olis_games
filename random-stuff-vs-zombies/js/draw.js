@@ -9,8 +9,7 @@ function draw() {
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
     const t = state.grid[r][c]; if (!t || t.type === 'hyperPart') continue;
     t.bob += 0.03;
-    if (t.type === 'boat' || t.onBoat) drawBoat(ctx, c * CELL + 50, r * CELL + 82, 1, t.bob);
-    if (t.type === 'boat') continue;
+    if (t.type === 'boat') { drawBoat(ctx, c * CELL + 50, r * CELL + 82, 1, t.bob); continue; }
     if (t.type === 'turtle') drawTurtle(ctx, c * CELL + 46, r * CELL + 62, 1, t.throwAnim, t.bob);
     else if (t.type === 'angry') drawTurtle(ctx, c * CELL + 46, r * CELL + 62, 1, t.throwAnim, t.bob, 'angry');
     else if (t.type === 'ultima') drawSnapper(ctx, c * CELL + 92, r * CELL + ULTIMA_Y, ULTIMA_SCALE, t.bob + state.time * 2, { mode: t.mode, openK: t.openK, chew: t.chew, stretch: t.stretch / ULTIMA_SCALE }, true);
@@ -42,6 +41,8 @@ function draw() {
     else if (t.type === 'battery') drawBattery(ctx, c * CELL + 50, r * CELL + 58, 1, t, state.time);
     else if (t.type === 'hsquid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep, true);
     else if (t.type === 'squid') drawSquid(ctx, c * CELL + 50, r * CELL + 60, 1, t.glow, t.bob + (t.asleep ? state.time : 0), !!t.asleep);
+    // the boat goes on after the defender, so the defender sits down inside it
+    if (t.onBoat) drawBoat(ctx, c * CELL + 50, r * CELL + 82, 1, t.bob);
     if (t.hp < t.maxHp) {
       const bw = t.twoTile ? 160 : 60;
       ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(c * CELL + 20, r * CELL + 2, bw, 6);
