@@ -48,7 +48,7 @@ const BATTERY = { cost: 125, hp: 300, shotCost: 50, dmg: 500, reload: 5, boltSpe
 // Loo Roll: bursts into 12 sheets as soon as it's planted; each sheet hits 2 zombies (250, then 125)
 const BOAT   = { cost: 25, hp: 300, recharge: 3 };
 const LOO    = { cost: 150, hp: 300, fuse: 0.35, sheets: 12, dmg: [250, 125], speed: 280, size: 1.6, maxPerZombie: 4 };
-// Wipes: bursts just like a Loo Roll, but every zombie a wipe hits gets a 3x3 patch of foam around it (foam slows like shampoo)
+// Wipes: bursts just like a Loo Roll, leaving a 3x3 patch of foam where it burst and foam under every zombie hit (foam slows like shampoo)
 const WIPES  = { cost: 200, hp: 300, fuse: LOO.fuse };
 // Magneticobra: steals soup cans and knight helmets (holds one for 10 s), and pulls in cars and rips them open (holds the parts for 20 s)
 const COBRA  = { cost: 100, hp: 300, reach: 3, hold: 10, carHold: 20, pullSpeed: 420 };

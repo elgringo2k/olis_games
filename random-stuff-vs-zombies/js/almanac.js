@@ -29,7 +29,7 @@ const ALMANAC_DEFENDERS = {
   multi:   { name: 'Multurtle', dmg: 2, tough: 3, speed: 'Normal', range: '3 lanes', special: 'One rock in its lane and each lane next to it.' },
   boat:    { name: 'Boat', dmg: 0, tough: 3, speed: '—', range: '—', special: 'Pool only: goes on water so you can plant a defender in it.' },
   loo:     { name: 'Loo Roll', dmg: 4, tough: 0, speed: 'Once', range: '12 directions', special: 'Each sheet hits 2 zombies: 250, then 125.' },
-  wipes:   { name: 'Wipes', dmg: 4, tough: 0, speed: 'Once', range: '12 directions', special: 'Like a Loo Roll, plus slippery foam in a 3×3 around each zombie hit.' },
+  wipes:   { name: 'Wipes', dmg: 4, tough: 0, speed: 'Once', range: '12 directions', special: 'Like a Loo Roll, plus slippery foam in a 3×3 where it bursts and under each zombie hit.' },
   battery: { name: 'Battery Tower', dmg: 4, tough: 3, speed: 'Every 5 s', range: 'Closest zombie to your house', special: 'Tap and pay 50 energy to fire.' },
   cobra:   { name: 'Magneticobra', dmg: 0, tough: 3, speed: 'Every 10 s (20 s after a car)', range: '3 lanes, 3 tiles ahead', special: 'Steals soup cans and knight helmets. Pulls in cars and rips them open.' },
   hyper:   { name: 'Hyper Turtle', dmg: 'deathly', tough: 4, speed: 'Normal', range: 'Whole lane', special: 'Fusion. 2 tiles. 300 up close, laser pierces the lane.' },

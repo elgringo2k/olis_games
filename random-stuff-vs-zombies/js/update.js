@@ -212,6 +212,8 @@ function update(dt) {
         }
         removeUnit(r, c);
         state.puffs.push({ x: cx, y: cy, t: 0, paper: true, life: 0.6 });
+        // Wipes leave a 3x3 patch of foam around where they burst
+        if (t.type === 'wipes') for (let dl = -1; dl <= 1; dl++) for (let dc = -1; dc <= 1; dc++) addPuddle(r + dl, c + dc, true);
       }
       continue;
     }
@@ -732,11 +734,7 @@ function update(dt) {
         if ((e.looHits[sh.burst] || 0) >= LOO.maxPerZombie) { sh.hit.push(e); continue; }
         e.looHits[sh.burst] = (e.looHits[sh.burst] || 0) + 1;
         damage(e, LOO.dmg[sh.hits]);
-        if (sh.wipe) {
-          // a wipe leaves foam on the 3x3 tiles around the zombie it hit
-          const ec = Math.floor(e.x / CELL);
-          for (let dl = -1; dl <= 1; dl++) for (let dc = -1; dc <= 1; dc++) addPuddle(e.lane + dl, ec + dc, true);
-        }
+        if (sh.wipe) addPuddle(e.lane, Math.floor(e.x / CELL), true); // a wipe leaves foam where it hit a zombie
         sh.hit.push(e); sh.hits++;
         if (sh.hits >= LOO.dmg.length) {
           // second zombie: the sheet pops into bits of paper

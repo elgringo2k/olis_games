@@ -320,8 +320,9 @@ function drawPuddle(pd) {
     ctx.save(); ctx.globalAlpha = 0.5 * fade;
     ctx.fillStyle = '#eef6fb'; roundRect(ctx, x0 + 5, y0 + 5, CELL - 10, CELL - 10, 22); ctx.fill();
     for (let i = 0; i < 16; i++) {
-      const bx = x0 + 14 + ((i * 41 + pd.seed * 13) % 72), by = y0 + 14 + ((i * 29 + pd.seed * 7) % 72);
-      const br = 7 + (i % 4) * 2.5 + Math.sin(state.time * 2 + i + pd.seed) * 1;
+      // bubbles stay inside their own tile
+      const br = 6 + (i % 4) * 2 + Math.sin(state.time * 2 + i + pd.seed) * 0.8;
+      const bx = x0 + 20 + ((i * 41 + pd.seed * 13) % 60), by = y0 + 20 + ((i * 29 + pd.seed * 7) % 60);
       ctx.globalAlpha = 0.85 * fade;
       ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(160,190,210,.6)'; ctx.lineWidth = 1; ctx.stroke();
