@@ -317,8 +317,25 @@ function draw() {
       // the head arcs up and back, bounces once and rolls to a stop
       if (!p.last) p.last = p.t;
       const step = Math.min(0.05, Math.max(0, p.t - p.last)); p.last = p.t;
-      p.vy += 1100 * step; p.ox += p.vx * step; p.oy += p.vy * step; p.spin += p.vs * step;
-      const floor = p.floor || 64; // the head lands when it reaches the grass
+      if (!p.splashed) p.vy += 1100 * step;
+      p.ox += p.vx * step; p.oy += p.vy * step; p.spin += p.vs * step;
+      const floor = p.floor || 64; // the head lands when it reaches the grass (or the water)
+      const hy = p.hy || 80, waterY = p.y - hy + floor;
+      if (p.water) {
+        // a swimmer's head plops into the water with a splash and sinks out of sight
+        if (p.oy > floor && !p.splashed) {
+          p.splashed = true; p.vy = 25; p.vx = 0; p.vs *= 0.2;
+          state.puffs.push({ x: p.x + p.ox, y: waterY + 6, t: 0, splash: true, life: 0.5 });
+        }
+        if (p.snap) {
+          ctx.save(); ctx.globalAlpha = 1 - Math.max(0, (p.t - 1.0) / 0.4);
+          ctx.beginPath(); ctx.rect(p.x + p.ox - 60, waterY - 200, 120, 204); ctx.clip();
+          ctx.translate(p.x + p.ox - 2, p.y + p.oy - hy); ctx.rotate(p.spin); ctx.translate(2, hy);
+          ctx.drawImage(p.snap, -SNAP_FOOT_X, -SNAP_FOOT_Y);
+          ctx.restore();
+        }
+        continue;
+      }
       if (p.oy > floor) { p.oy = floor; if (!p.bounced) { p.bounced = true; p.vy *= -0.35; p.vx *= 0.5; p.vs *= 0.5; Sound.play(p.huge ? 'thud' : 'flop'); if (p.huge) state.shake = Math.max(state.shake, 0.15); } else { p.vy = 0; p.vx *= 0.9; p.vs *= 0.9; } }
       if (p.snap) {
         ctx.save(); ctx.globalAlpha = 1 - Math.max(0, (p.t - 1.0) / 0.4);

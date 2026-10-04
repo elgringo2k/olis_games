@@ -152,7 +152,7 @@ function drawMutantBody(e, baseY, step, chomp) {
 }
 
 function drawEnemy(e) {
-  if (e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube' || e.kind === 'swimmer' || (e.kind === 'noodler' && e.swimming)) return drawSwimmer(e);
+  if (isSwimming(e)) return drawSwimmer(e);
   if (e.kind === 'boatZ') return drawBoatZombie(e);
   drawEnemyBody(e);
 }
@@ -226,14 +226,18 @@ function drawDiver(e) {
   ctx.restore();
 }
 // a zombie bobbing along in a rubber ring: only the top half shows above the water
+// zombies drawn swimming: the tube zombies, a surfaced Swimmer Zombie, and a Pool Noodler in the water
+const isSwimming = e => e.kind === 'tube' || e.kind === 'shieldTube' || e.kind === 'soupTube' || e.kind === 'swimmer' || (e.kind === 'noodler' && e.swimming);
+// how far down a swimmer sits (drop) and how far up its body the water comes (cut);
+// a Swimmer Zombie up to eat sits lower, with just its head and shoulders showing
+const swimDepth = e => e.kind === 'swimmer' ? { drop: 30, cut: 56 } : { drop: 18, cut: 36 };
 function drawSwimmer(e) {
   const baseY = e.lane * CELL + 92, bob = Math.sin((e.wob || 0) * 1.3) * 2;
   const noodler = e.kind === 'noodler', diver = e.kind === 'swimmer';
   // a Pool Noodler keeps swinging his noodle while he swims; the others just float
   const as = Object.assign({}, e, { kind: e.kind === 'shieldTube' ? 'shield' : e.kind === 'soupTube' ? 'soup' : noodler ? 'noodler' : diver ? 'swimmer' : 'basic', noShadow: true, walking: noodler ? e.walking : false });
-  // a Swimmer Zombie (up out of the water to eat) sits lower, with just its head and shoulders showing
-  ctx.save(); ctx.translate(0, (diver ? 30 : 18) + bob);
-  const cut = diver ? 56 : 36; // how far up the body the water comes
+  ctx.save(); ctx.translate(0, swimDepth(e).drop + bob);
+  const cut = swimDepth(e).cut;
   ctx.save(); ctx.beginPath(); ctx.rect(e.x - 90, baseY - 220, 180, 220 - cut); ctx.clip();
   drawEnemyBody(as);
   ctx.restore();

@@ -732,6 +732,12 @@ function update(dt) {
       state.puffs.push({ t: 0, life: 2.4, topple: true, delay: 0.25, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
       state.puffs.push({ t: 0, life: 1.8, headPop: true, huge: true, hy: 126, floor: 98, snap: snapshotHead(e), x: e.x, y: e.lane * CELL + 92, ox: 0, oy: 0,
         vx: 60 + Math.random() * 40, vy: -380 - Math.random() * 60, spin: 0, vs: 4 + Math.random() * 3, bounced: false });
+    } else if (isSwimming(e)) {
+      // a swimmer: the head pops off and plops into the water, and the body (ring and all) sinks
+      const d = swimDepth(e);
+      state.puffs.push({ t: 0, life: 1.2, sink: true, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92 });
+      state.puffs.push({ t: 0, life: 1.4, headPop: true, water: true, hy: 80 - d.drop, floor: 80 - d.cut, snap: snapshotHead(e), x: e.x, y: e.lane * CELL + 92, ox: 0, oy: 0,
+        vx: 50 + Math.random() * 50, vy: -300 - Math.random() * 60, spin: 0, vs: 6 + Math.random() * 6, ground: 0, bounced: false });
     } else {
       // POP: the head flies off first, then the body falls over
       state.puffs.push({ t: 0, life: 1.6, topple: true, small: true, delay: 0.18, snap: snapshotEnemy(e, false, true), x: e.x, y: e.lane * CELL + 92, thudded: false });
