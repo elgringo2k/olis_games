@@ -14,7 +14,7 @@ function draw() {
     else if (t.type === 'angry') drawTurtle(ctx, c * CELL + 46, r * CELL + 62, 1, t.throwAnim, t.bob, 'angry');
     else if (t.type === 'ultima') drawSnapper(ctx, c * CELL + 92, r * CELL + ULTIMA_Y, ULTIMA_SCALE, t.bob + state.time * 2, { mode: t.mode, openK: t.openK, chew: t.chew, stretch: t.stretch / ULTIMA_SCALE }, true);
     else if (t.type === 'chog') drawChog(ctx, c * CELL + 46, r * CELL + 66, 1, t.bob + state.time, t.size, t.stage);
-    else if (t.type === 'snapper') drawSnapper(ctx, c * CELL + 40, r * CELL + 60, 1, t.bob + state.time * 2, t);
+    else if (t.type === 'snapper') drawSnapper(ctx, c * CELL + 40, r * CELL + (t.onBoat ? 50 : 60), 1, t.bob + state.time * 2, t);
     else if (t.type === 'digger') drawDigger(ctx, c * CELL + 46, r * CELL + 60, 1, t.bob + state.time * 3, t);
     else if (t.type === 'dragon') drawDragon(ctx, c * CELL + 50, r * CELL + 60, 1, t.bob + state.time, t.gear, t.gearFlash);
     else if (t.type === 'enraged') drawTurtle(ctx, c * CELL + 46, r * CELL + 62, 1, t.throwAnim, t.bob + state.time * 2, 'enraged');
