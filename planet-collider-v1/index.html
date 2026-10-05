@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planet collider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --space:#120d2b; --space-deep:#07051a;
+  --panel:rgba(28,22,62,.74); --panel-line:rgba(190,178,255,.16);
+  --ink:#efeaff; --muted:#a59dcf; --lilac:#cfc5ff; --lilac-ink:#1c1540;
+  --magma:#ff8a3d; --track:rgba(207,197,255,.22);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --panel:rgba(241,237,255,.86); --panel-line:rgba(60,40,140,.14);
+    --ink:#1d1640; --muted:#5d5490; --lilac:#3c2f8f; --lilac-ink:#f4f1ff; --track:rgba(60,40,140,.2);
+    --magma:#c4501a;
+  }
+}
+:root[data-theme="light"]{
+  --panel:rgba(241,237,255,.86); --panel-line:rgba(60,40,140,.14);
+  --ink:#1d1640; --muted:#5d5490; --lilac:#3c2f8f; --lilac-ink:#f4f1ff; --track:rgba(60,40,140,.2); --magma:#c4501a;
+}
+:root[data-theme="dark"]{
+  --panel:rgba(28,22,62,.74); --panel-line:rgba(190,178,255,.16);
+  --ink:#efeaff; --muted:#a59dcf; --lilac:#cfc5ff; --lilac-ink:#1c1540; --track:rgba(207,197,255,.22); --magma:#ff8a3d;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--space-deep);color:var(--ink);font:400 15px/1.45 Figtree,"Segoe UI",system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.hud{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 20px) 24px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;pointer-events:none}
+h1{font:700 clamp(22px,3.4vw,34px)/1 Unbounded,"Arial Black",sans-serif;letter-spacing:-.02em;margin:0;color:#f3efff;text-shadow:0 2px 18px rgba(0,0,0,.5)}
+.sub{margin:8px 0 0;color:#b7aee0;font-size:14px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.stats{display:flex;gap:22px;text-align:right}
+.stat b{display:block;font:500 20px/1.1 Unbounded,"Arial Black",sans-serif;color:#f3efff;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat span{font-size:12px;color:#a59dcf}
+.stat.hot b{color:#ffb070}
+.dock{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:min(640px,calc(100% - 32px));background:var(--panel);border:1px solid var(--panel-line);border-radius:22px 22px 22px 8px;padding:16px 18px 14px;backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);color:var(--ink);box-shadow:0 18px 50px rgba(3,2,15,.45)}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;border:0}
+.presets legend{font-size:13px;color:var(--muted);margin-bottom:8px;padding:0}
+.chip{appearance:none;border:1px solid var(--panel-line);background:transparent;color:var(--ink);font:500 14px/1 Figtree,system-ui,sans-serif;padding:9px 14px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--lilac)}
+.chip[aria-checked="true"]{background:var(--lilac);color:var(--lilac-ink);border-color:var(--lilac)}
+.sliders{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 18px}
+label.s{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+label.s .row{display:flex;justify-content:space-between;gap:8px;white-space:nowrap}
+label.s output{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--lilac);height:22px;margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.btn{appearance:none;border:1px solid var(--panel-line);background:transparent;color:var(--ink);font:600 14px/1 Figtree,system-ui,sans-serif;padding:10px 15px;border-radius:12px;cursor:pointer}
+.btn.primary{background:var(--lilac);color:var(--lilac-ink);border-color:var(--lilac)}
+.btn[aria-pressed="true"]{border-color:var(--lilac);box-shadow:inset 0 0 0 1px var(--lilac)}
+.btn:hover{border-color:var(--lilac)}
+.sel{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-left:auto}
+.spawnsel{margin-left:0}
+select{font:500 14px Figtree,system-ui,sans-serif;background:transparent;color:var(--ink);border:1px solid var(--panel-line);border-radius:10px;padding:7px 8px}
+select option{color:#1d1640}
+.modes{display:inline-flex;padding:3px;border:1px solid var(--panel-line);border-radius:12px;margin-bottom:12px;gap:2px}
+.mode{appearance:none;border:0;background:transparent;color:var(--muted);font:600 14px/1 Figtree,system-ui,sans-serif;padding:8px 16px;border-radius:9px;cursor:pointer}
+.mode[aria-checked="true"]{background:var(--lilac);color:var(--lilac-ink)}
+.spins{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sliders.three{grid-template-columns:repeat(3,1fr)}
+.btn.small{font-size:13px;padding:8px 10px;font-weight:600}
+[hidden]{display:none!important}
+.inspect{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:min(300px,calc(100% - 32px));background:var(--panel);border:1px solid var(--panel-line);border-radius:18px;padding:14px 16px 12px;backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);color:var(--ink);box-shadow:0 18px 50px rgba(3,2,15,.45);font-size:13px}
+.inspect h2{font:700 17px/1.2 Unbounded,"Arial Black",sans-serif;margin:0 24px 8px 0;letter-spacing:-.01em}
+.inspect .x{position:absolute;top:8px;right:10px;appearance:none;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:4px}
+.inspect .status{display:inline-block;margin:0 0 10px;padding:4px 10px;border-radius:999px;font-weight:600;background:rgba(150,220,170,.18);color:#9fe3b4}
+.inspect .status[data-tone="hot"]{background:rgba(255,140,60,.2);color:#ffb070}
+.inspect .status[data-tone="mend"]{background:rgba(140,190,255,.18);color:#a9cbff}
+.inspect .status[data-tone="new"]{background:rgba(200,160,255,.2);color:#d6bdff}
+.inspect .status[data-tone="gone"]{background:rgba(160,160,180,.18);color:#c8c4dc}
+.inspect dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+.inspect dt{color:var(--muted)}
+.inspect dd{margin:0;font-variant-numeric:tabular-nums}
+.spinctl{margin-top:12px;border-top:1px solid var(--panel-line);padding-top:10px}
+.spinctl label{display:flex;flex-direction:column;gap:4px;color:var(--muted)}
+.spinctl .row{display:flex;justify-content:space-between;gap:8px}
+.spinctl output{color:var(--ink);font-weight:600}
+.spinctl .btns{display:flex;gap:8px;margin-top:8px}
+.spinctl .btn:disabled{opacity:.45;cursor:not-allowed}
+.stat.cool b{color:#b9d4ff}
+:focus-visible{outline:2px solid #ffd27a;outline-offset:2px}
+.toggle-dock{display:none}
+.legend{margin-top:12px;font-size:12px;color:var(--muted)}
+.lrow{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin-bottom:4px}
+.lrow strong{color:var(--ink);font-weight:600;min-width:64px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.lnote{margin:6px 0 0;max-width:72ch}
+.linkbtn{appearance:none;background:none;border:0;padding:0;color:var(--lilac);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.lrow .thin{opacity:.6}
+.lrow .avg{color:var(--ink);opacity:.75}
+.bodies{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:12px}
+.bodies label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.bodies select{font-size:15px;font-weight:600;padding:7px 10px}
+.bodies .vs{font-size:13px;color:var(--muted)}
+@media (max-width:720px){
+  .hud{padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 0;flex-direction:column;gap:10px}
+  .stats{text-align:left;gap:18px}
+  .stat b{font-size:16px}
+  .sub{display:none}
+  .dock{left:10px;right:10px;width:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);padding:12px 14px;max-height:52vh;overflow-y:auto}
+  .sliders,.sliders.three{grid-template-columns:1fr 1fr;gap:10px 16px}
+  .presets{flex-wrap:nowrap;overflow-x:auto;margin:0 -14px 2px;padding:0 14px 4px;scrollbar-width:none}
+  .presets legend{display:none}
+  .chip{white-space:nowrap}
+  .legend{display:block}
+  .bodies{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .bodies label{flex-direction:column;align-items:stretch;gap:4px}
+  .bodies select{width:100%}
+  .bodies .vs{display:none}
+  .collapsible.extra{margin-top:12px}
+  .dock.collapsed .extra{display:none}
+  .bar{margin-top:10px}
+  .btn{padding:9px 12px}
+  .toggle-dock{display:inline-flex}
+  .dock.collapsed .sel{display:none}
+  .sel{margin-left:0}
+  .inspect{top:calc(env(safe-area-inset-top,0px) + 120px);bottom:auto;left:10px;right:10px;width:auto}
+}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Simulation of two planets made of particles colliding. Drag to move the view, right-drag to throw rocks."></canvas>
+<div class="hud">
+  <div>
+    <h1 id="title">Planet collider</h1>
+    <p class="sub" id="subtitle">Each dot is a chunk of rock pulling on every other chunk. Drag to look around, scroll to zoom, click to inspect, right-drag to spawn.</p>
+  </div>
+  <div class="stats" aria-live="off">
+    <div class="stat"><b id="sTime">0.0 s</b><span id="lTime">since launch</span></div>
+    <div class="stat"><b id="sN">0</b><span id="lN">particles</span></div>
+    <div class="stat hot" id="stHot"><b id="sHot">300 K</b><span id="lHot">hottest now</span></div>
+  </div>
+</div>
+
+<div class="dock" id="dock">
+  <div class="modes" role="radiogroup" aria-label="What collides">
+    <button type="button" class="mode" role="radio" aria-checked="true" data-mode="planets">Planets</button>
+    <button type="button" class="mode" role="radio" aria-checked="false" data-mode="galaxies">Galaxies</button>
+  </div>
+  <div id="planetUI">
+    <div class="bodies">
+      <label>Target <select id="iTarget"></select></label>
+      <span class="vs">hit by</span>
+      <label>Impactor <select id="iImpactor"></select></label>
+    </div>
+    <fieldset class="presets" role="radiogroup" aria-label="Collision type" id="presets"></fieldset>
+    <div class="collapsible extra">
+      <div class="sliders">
+        <label class="s" title="Impactor width compared with the target's. Picking bodies sets their real ratio; the slider snaps back to it."><span class="row">Impactor size <output id="oRatio"></output></span><input id="iRatio" type="range" min="-2" max="2" step="0.01"></label>
+        <label class="s"><span class="row"><span id="lAngle">Impact angle</span> <output id="oAngle"></output></span><input id="iAngle" type="range" min="0" max="80" step="1"></label>
+        <label class="s" title="Speed at contact, in multiples of the pair's mutual escape speed"><span class="row"><span id="lSpeed">Impact speed</span> <output id="oSpeed"></output></span><input id="iSpeed" type="range" min="0.8" max="3" step="0.05"></label>
+        <label class="s"><span class="row">Time speed <output id="oTime"></output></span><input id="iTime" type="range" min="0.25" max="2.5" step="0.25"></label>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+  <div id="galaxyUI" hidden>
+    <div class="bodies">
+      <label>Galaxy <select id="gTarget"></select></label>
+      <span class="vs">meets</span>
+      <label>Galaxy <select id="gImpactor"></select></label>
+    </div>
+    <fieldset class="presets" role="radiogroup" aria-label="Encounter type" id="gpresets"></fieldset>
+    <div class="collapsible extra">
+      <div class="sliders three">
+        <label class="s" title="Distance between the two galaxy centres at their closest, if they were point masses"><span class="row">Closest approach <output id="oPeri"></output></span><input id="iPeri" type="range" min="0" max="4" step="0.05"></label>
+        <label class="s" title="Speed at closest approach, in multiples of the escape speed there. Below 1 the galaxies are bound and will come back."><span class="row">Speed <output id="oGSpeed"></output></span><input id="iGSpeed" type="range" min="0.6" max="2" step="0.05"></label>
+        <label class="s"><span class="row">Time speed <output id="oGTime"></output></span><input id="iGTime" type="range" min="0.25" max="2.5" step="0.25"></label>
+      </div>
+      <div class="spins">
+        <button type="button" class="btn small" id="bSpinT" title="Which way the first galaxy's disk turns, compared with the way the pair orbit each other">First spins with orbit</button>
+        <button type="button" class="btn small" id="bSpinI" title="Which way the second galaxy's disk turns, compared with the way the pair orbit each other">Second spins with orbit</button>
+      </div>
+      <div class="legend" id="glegend"></div>
+    </div>
+  </div>
+  <div class="bar">
+    <button class="btn primary" id="bRestart">Launch again</button>
+    <button class="btn" id="bPause" aria-pressed="false">Pause</button>
+    <button class="btn" id="bTrails" aria-pressed="false">Trails</button>
+    <button class="btn" id="bFollow" aria-pressed="true">Following</button>
+    <button class="btn" id="bThrow" aria-pressed="false" title="When on, dragging spawns the chosen object instead of moving the view (right-drag always spawns)">Spawn mode</button>
+    <label class="sel spawnsel">Spawn <select id="iSpawn"></select></label>
+    <label class="sel collapsible">Detail
+      <select id="iDetail">
+        <option value="1500">Light</option>
+        <option value="2500">Normal</option>
+        <option value="4200">Dense</option>
+      </select>
+    </label>
+    <button class="btn toggle-dock" id="bDock" aria-expanded="true" aria-controls="dock">Fewer settings</button>
+  </div>
+</div>
+<div class="inspect" id="inspect" hidden aria-live="polite">
+  <button type="button" class="x" id="inClose" aria-label="Close">×</button>
+  <h2 id="inName"></h2>
+  <p id="inStatus" class="status"></p>
+  <dl id="inRows"></dl>
+  <div class="spinctl" id="inSpinBox" hidden>
+    <label><span class="row">Spin <output id="inSpinOut"></output></span>
+      <input type="range" id="inSpin" min="-1.5" max="1.5" step="0.01" aria-label="Spin speed, as a fraction of break-up speed; left is backwards"></label>
+    <div class="btns"><button type="button" class="btn small" id="inStop">Stop spin</button><button type="button" class="btn small" id="inReal">Real spin</button></div>
+  </div>
+</div>
+<script>
+const Sim = (() => {
+  const MAXN = 14000;
+  const P = {
+    r: 3, K: 2.0e5, alpha: 1.0, beta: 2.0, G: 1000, theta: 0.85,
+    heatScale: 1 / 14000, coolTau: 7
+  };
+  let N = 0;
+  const x = new Float64Array(MAXN), y = new Float64Array(MAXN);
+  const vx = new Float64Array(MAXN), vy = new Float64Array(MAXN);
+  const ax = new Float64Array(MAXN), ay = new Float64Array(MAXN);
+  const m = new Float64Array(MAXN), heat = new Float64Array(MAXN);
+  const mat = new Uint8Array(MAXN), pid = new Uint8Array(MAXN);
+  const rad = new Float64Array(MAXN), rb = new Float64Array(MAXN);
+  const uid = new Uint32Array(MAXN); let nextUid = 1; // permanent id per particle (indices shift when particles are removed)
+  const kf = new Float64Array(MAXN).fill(1); // pressure stiffness factor (stiffer for bodies bigger than the scene's own)
+  const gxa = new Float64Array(MAXN), gya = new Float64Array(MAXN);
+  let gravDirty = true;
+
+  // ---- Barnes-Hut quadtree (flat arrays) ----
+  const MAXNODES = MAXN * 6;
+  const nx0 = new Float64Array(MAXNODES), ny0 = new Float64Array(MAXNODES), ns = new Float64Array(MAXNODES);
+  const child = new Int32Array(MAXNODES), body = new Int32Array(MAXNODES);
+  const nm = new Float64Array(MAXNODES), ncx = new Float64Array(MAXNODES), ncy = new Float64Array(MAXNODES);
+  const nextB = new Int32Array(MAXN);
+  const stack = new Int32Array(1024);
+  let nodeCount = 0;
+
+  function initNode(n, x0, y0, s) { nx0[n] = x0; ny0[n] = y0; ns[n] = s; child[n] = -1; body[n] = -1; nm[n] = 0; ncx[n] = 0; ncy[n] = 0; }
+  function quad(n, i) { const h = ns[n] * 0.5; return (x[i] >= nx0[n] + h ? 1 : 0) + (y[i] >= ny0[n] + h ? 2 : 0); }
+
+  function insert(i) {
+    let n = 0;
+    for (;;) {
+      if (child[n] === -1) {
+        if (body[n] === -1) { body[n] = i; nextB[i] = -1; return; }
+        if (ns[n] < 0.05 || nodeCount + 4 > MAXNODES) { nextB[i] = body[n]; body[n] = i; return; }
+        const c = nodeCount; nodeCount += 4; child[n] = c;
+        const h = ns[n] * 0.5;
+        for (let q = 0; q < 4; q++) initNode(c + q, nx0[n] + (q & 1) * h, ny0[n] + (q >> 1) * h, h);
+        const old = body[n]; body[n] = -1;
+        const qo = quad(n, old); body[c + qo] = old; nextB[old] = -1;
+      }
+      n = child[n] + quad(n, i);
+    }
+  }
+
+  function buildTree() {
+    let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+    for (let i = 0; i < N; i++) {
+      if (x[i] < minx) minx = x[i]; if (x[i] > maxx) maxx = x[i];
+      if (y[i] < miny) miny = y[i]; if (y[i] > maxy) maxy = y[i];
+    }
+    const s = Math.max(maxx - minx, maxy - miny) * 1.0001 + 1;
+    nodeCount = 1; initNode(0, minx, miny, s);
+    for (let i = 0; i < N; i++) insert(i);
+    for (let n = nodeCount - 1; n >= 0; n--) {
+      let M = 0, cx = 0, cy = 0;
+      if (child[n] === -1) {
+        for (let j = body[n]; j !== -1; j = nextB[j]) { M += m[j]; cx += m[j] * x[j]; cy += m[j] * y[j]; }
+      } else {
+        const c = child[n];
+        for (let q = 0; q < 4; q++) { const mm = nm[c + q]; M += mm; cx += mm * ncx[c + q]; cy += mm * ncy[c + q]; }
+      }
+      nm[n] = M; if (M > 0) { ncx[n] = cx / M; ncy[n] = cy / M; }
+    }
+  }
+
+  function gravity() {
+    const G = P.G, th2 = P.theta * P.theta;
+    for (let i = 0; i < N; i++) {
+      const xi = x[i], yi = y[i], eps2 = rad[i] * rad[i];
+      let gx = 0, gy = 0, sp = 0;
+      stack[sp++] = 0;
+      while (sp > 0) {
+        const n = stack[--sp];
+        if (nm[n] === 0) continue;
+        if (child[n] === -1) {
+          for (let j = body[n]; j !== -1; j = nextB[j]) {
+            if (j === i) continue;
+            const dx = x[j] - xi, dy = y[j] - yi;
+            const d2 = dx * dx + dy * dy + eps2;
+            const f = G * m[j] / (d2 * Math.sqrt(d2));
+            gx += f * dx; gy += f * dy;
+          }
+        } else {
+          const dx = ncx[n] - xi, dy = ncy[n] - yi;
+          const d2 = dx * dx + dy * dy;
+          if (ns[n] * ns[n] < th2 * d2) {
+            const dd = d2 + eps2;
+            const f = G * nm[n] / (dd * Math.sqrt(dd));
+            gx += f * dx; gy += f * dy;
+          } else if (sp < 1020) {
+            const c = child[n];
+            stack[sp++] = c; stack[sp++] = c + 1; stack[sp++] = c + 2; stack[sp++] = c + 3;
+          }
+        }
+      }
+      gxa[i] = gx; gya[i] = gy;
+    }
+    // The tree's approximations leave a tiny net self-pull, which would make a lone planet creep
+    // across space (and leave its rings behind). Removing it restores momentum conservation.
+    let M = 0, sx = 0, sy = 0;
+    for (let i = 0; i < N; i++) { M += m[i]; sx += m[i] * gxa[i]; sy += m[i] * gya[i]; }
+    if (M > 0) { sx /= M; sy /= M; for (let i = 0; i < N; i++) { gxa[i] -= sx; gya[i] -= sy; } }
+  }
+
+  // ---- contacts via spatial hash ----
+  let H = 1 << 13;
+  let cellStart = new Int32Array(H + 1), order = new Int32Array(MAXN);
+  const ph = new Int32Array(MAXN), pcx = new Int32Array(MAXN), pcy = new Int32Array(MAXN);
+  const hv = new Int32Array(9);
+  function hash(cx, cy) { return ((Math.imul(cx, 73856093) ^ Math.imul(cy, 19349663)) >>> 0) & (H - 1); }
+
+  // ---- fluid forces: SPH with number-density pressure ----
+  // Each particle's pressure comes from how crowded it is compared with rest spacing. Using number
+  // density (not mass density) keeps sharp boundaries between dense iron and light rock or gas,
+  // and lets heavy material sink and light material float, as it does inside real planets.
+  const HF = 2.2;                         // smoothing length = HF × particle radius
+  let relV2 = 0;                          // largest squared speed between nearby particles (last step)
+  const nn = new Float64Array(MAXN), pr = new Float64Array(MAXN), n0 = new Float64Array(MAXN);
+  const bal = new Uint8Array(MAXN); // 1 = deep in a black hole's pull: moves ballistically, no pressure
+  let PMAX = MAXN * 24;
+  let pI = new Int32Array(PMAX), pJ = new Int32Array(PMAX), pR = new Float64Array(PMAX), pDW = new Float64Array(PMAX), pNX = new Float64Array(PMAX), pNY = new Float64Array(PMAX);
+  const W0 = (h) => 7 / (4 * Math.PI * h * h);           // Wendland C2 at r = 0 (2D)
+  function kernel(rr, h) { const q = rr / h; if (q >= 2) return 0; const t = 1 - q / 2; return 7 / (4 * Math.PI * h * h) * t * t * t * t * (1 + 2 * q); }
+  function dKernel(rr, h) { const q = rr / h; if (q >= 2) return 0; const t = 1 - q / 2; return -35 / (4 * Math.PI * h * h * h) * q * t * t * t; }
+  // Rest number density of a hex lattice of particles with radius 1; scales as 1/r².
+  const N0_UNIT = (() => {
+    const h = HF, d = 2, rowH = d * Math.sqrt(3) / 2; let sum = 0;
+    for (let row = -6; row <= 6; row++) for (let col = -6; col <= 6; col++) {
+      const px = col * d + ((row & 1) ? 1 : 0), py = row * rowH; sum += kernel(Math.hypot(px, py), h);
+    }
+    return sum;
+  })();
+
+  // is a particle near the black hole heading back out? (only those can slam into the gas outside)
+  function outward(i) { return (vx[i] - bh.vx) * (x[i] - bh.x) + (vy[i] - bh.vy) * (y[i] - bh.y) > 0; }
+  // ---- neighbour search with one grid per particle-size class ----
+  // Big bodies can use big particles (fewer of them, so the frame rate holds up) without slowing the
+  // search for small ones: each class has its own grid sized to its particles, and every particle looks
+  // for neighbours of its own size or bigger in those grids (so each pair is found once, from the
+  // smaller side, with a 3×3 cell search).
+  const MAXCLS = 16;
+  const cls = { n: 0, key: new Int32Array(MAXCLS), maxR: new Float64Array(MAXCLS), cell: new Float64Array(MAXCLS),
+    cnt: new Int32Array(MAXCLS), H: new Int32Array(MAXCLS), start: [], order: [] };
+  const pclass = new Uint8Array(MAXN), ph2 = new Int32Array(MAXN);
+  function buildGrids() {
+    cls.n = 0;
+    for (let i = 0; i < N; i++) {
+      const key = Math.round(Math.log2(rb[i] / P.r) * 2);
+      let c = 0; while (c < cls.n && cls.key[c] !== key) c++;
+      if (c === cls.n) { if (cls.n >= MAXCLS) c = cls.n - 1; else { cls.key[c] = key; cls.maxR[c] = 0; cls.cnt[c] = 0; cls.n++; } }
+      pclass[i] = c; cls.cnt[c]++; if (rb[i] > cls.maxR[c]) cls.maxR[c] = rb[i];
+    }
+    // sort classes by size (small first), remapping members
+    const idx = [...Array(cls.n).keys()].sort((a, b) => cls.maxR[a] - cls.maxR[b]), remap = new Int32Array(cls.n);
+    const k2 = idx.map(c => cls.key[c]), m2 = idx.map(c => cls.maxR[c]), n2 = idx.map(c => cls.cnt[c]);
+    idx.forEach((c, j) => remap[c] = j);
+    for (let j = 0; j < cls.n; j++) { cls.key[j] = k2[j]; cls.maxR[j] = m2[j]; cls.cnt[j] = n2[j]; cls.cell[j] = 2 * HF * m2[j] * 1.02; }
+    for (let i = 0; i < N; i++) pclass[i] = remap[pclass[i]];
+    for (let c = 0; c < cls.n; c++) {
+      let want = 64; while (want < cls.cnt[c] * 2) want <<= 1;
+      if (cls.H[c] !== want || !cls.start[c]) { cls.H[c] = want; cls.start[c] = new Int32Array(want + 1); }
+      else cls.start[c].fill(0);
+      if (!cls.order[c] || cls.order[c].length < cls.cnt[c]) cls.order[c] = new Int32Array(Math.max(64, cls.cnt[c] * 2));
+    }
+    for (let i = 0; i < N; i++) {
+      const c = pclass[i], cell = cls.cell[c], Hc = cls.H[c];
+      const h = ((Math.imul(Math.floor(x[i] / cell), 73856093) ^ Math.imul(Math.floor(y[i] / cell), 19349663)) >>> 0) & (Hc - 1);
+      ph2[i] = h; cls.start[c][h + 1]++;
+    }
+    for (let c = 0; c < cls.n; c++) { const st = cls.start[c], Hc = cls.H[c]; for (let h = 0; h < Hc; h++) st[h + 1] += st[h]; cls.fill = cls.fill || []; cls.fill[c] = st.slice(0, Hc); }
+    for (let i = 0; i < N; i++) { const c = pclass[i]; cls.order[c][cls.fill[c][ph2[i]]++] = i; }
+  }
+  // calls fn(j) for every particle in class c's grid within the 3×3 cells around (px, py)
+  const hv2 = new Int32Array(9);
+  function forNear(c, px, py, fn) {
+    const cell = cls.cell[c], Hc = cls.H[c], st = cls.start[c], ord = cls.order[c];
+    const cx = Math.floor(px / cell), cy = Math.floor(py / cell);
+    let nh = 0;
+    for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+      const h = ((Math.imul(cx + ox, 73856093) ^ Math.imul(cy + oy, 19349663)) >>> 0) & (Hc - 1);
+      let dup = false; for (let t = 0; t < nh; t++) if (hv2[t] === h) { dup = true; break; }
+      if (dup) continue; hv2[nh++] = h;
+      for (let q = st[h], end = st[h + 1]; q < end; q++) if (fn(ord[q]) === true) return true;
+    }
+    return false;
+  }
+  function contacts(dt) {
+    const K = P.K, cs = Math.sqrt(K), alpha = P.alpha, beta = P.beta, hs = P.heatScale * dt * 0.5;
+    for (let i = 0; i < N; i++) {
+      // nn holds the area-weighted density φ = Σ (particle area) × kernel: a big particle counts for as much
+      // space as it fills, so big and small particles can sit side by side (at rest φ = N0_UNIT for any size)
+      nn[i] = rb[i] * rb[i] * W0(HF * rb[i]); n0[i] = N0_UNIT / (rb[i] * rb[i]);
+      if (bh && bh.active) { const ex = x[i] - bh.x, ey = y[i] - bh.y; bal[i] = ex * ex + ey * ey < bh.rbal * bh.rbal ? 1 : 0; } else bal[i] = 0;
+    }
+    buildGrids();
+
+    // pass 1: neighbour pairs and number density
+    let np = 0; relV2 = 0;
+    for (let i = 0; i < N; i++) {
+      const xi = x[i], yi = y[i], hi = HF * rb[i], ci = pclass[i];
+      for (let c = ci; c < cls.n; c++) {
+        const ord = cls.order[c], st = cls.start[c], cell = cls.cell[c], Hc = cls.H[c];
+        const cx = Math.floor(xi / cell), cy = Math.floor(yi / cell);
+        let nh = 0;
+        for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+          const hh = ((Math.imul(cx + ox, 73856093) ^ Math.imul(cy + oy, 19349663)) >>> 0) & (Hc - 1);
+          let dup = false; for (let t = 0; t < nh; t++) if (hv[t] === hh) { dup = true; break; }
+          if (dup) continue; hv[nh++] = hh;
+          for (let q = st[hh], end = st[hh + 1]; q < end; q++) {
+            const j = ord[q];
+            if ((c === ci && j <= i) || (bal[i] && bal[j])) continue;
+            const dx = x[j] - xi, dy = y[j] - yi, d2 = dx * dx + dy * dy;
+            const h = 0.5 * (hi + HF * rb[j]), sup = 2 * h;
+            // stability check: neighbours, plus anything closing in fast from a little further out
+            const rvx = vx[j] - vx[i], rvy = vy[j] - vy[i];
+            if (d2 < sup * sup && !bal[i] && !bal[j]) { const rv2 = rvx * rvx + rvy * rvy; if (rv2 > relV2) relV2 = rv2; }
+            else if (!(bal[i] || bal[j]) || outward(bal[i] ? i : j)) { const close = -(rvx * dx + rvy * dy); if (close > 0) { const c2 = close * close / d2; if (c2 > relV2) relV2 = c2; } }
+            // material falling ballistically near a black hole still counts for the step-size check above
+            // (it can come back out fast), but it doesn't push or get pushed
+            if (d2 >= sup * sup || d2 === 0 || bal[i] || bal[j]) continue;
+            const d = Math.sqrt(d2), w = kernel(d, h);
+            nn[i] += rb[j] * rb[j] * w; nn[j] += rb[i] * rb[i] * w;
+            if (np >= PMAX) grow();
+            pI[np] = i; pJ[np] = j; pR[np] = d; pDW[np] = dKernel(d, h); pNX[np] = dx / d; pNY[np] = dy / d; np++;
+          }
+        }
+      }
+    }
+    // pressure: stiffness per unit area density, so every material compresses by the same small strain
+    for (let i = 0; i < N; i++) {
+      const s = nn[i] / N0_UNIT - 1;
+      pr[i] = s > 0 ? K * kf[i] * m[i] * n0[i] * s : 0;
+    }
+    // pass 2: pressure + artificial viscosity (which also turns impact energy into heat)
+    for (let p = 0; p < np; p++) {
+      const i = pI[p], j = pJ[p], nx = pNX[p], ny = pNY[p], dw = pDW[p], d = pR[p];
+      // (forces follow from the area-weighted density; with equal sizes this is plain number-density SPH)
+      const ai = rb[i] * rb[i], aj = rb[j] * rb[j], fi = nn[i], fj = nn[j], mi = m[i], mj = m[j];
+      const ni = fi / ai, nj = fj / aj;                          // effective number densities
+      let f = ai * aj * (pr[i] / (fi * fi) + pr[j] / (fj * fj)) * dw;     // ≤ 0: pushes the pair apart
+      const vn = (vx[j] - vx[i]) * nx + (vy[j] - vy[i]) * ny;   // < 0 when approaching
+      if (vn < 0) {
+        const h = 0.5 * HF * (rb[i] + rb[j]);
+        const mu = h * vn * d / (d * d + 0.01 * h * h);
+        const rho = 0.5 * (mi * ni + mj * nj);
+        const Pi = (-alpha * cs * Math.sqrt(kf[i] > kf[j] ? kf[i] : kf[j]) * mu + beta * mu * mu) / rho;
+        f += mi * mj * Pi * dw;
+        const e = mi * mj * Pi * dw * vn * hs;                    // ≥ 0
+        heat[i] += e / mi; heat[j] += e / mj;
+      }
+      const Fx = f * nx, Fy = f * ny;
+      ax[i] += Fx / mi; ay[i] += Fy / mi;
+      ax[j] -= Fx / mj; ay[j] -= Fy / mj;
+    }
+  }
+  function grow() {
+    const n2 = PMAX * 2, cp = (A, T) => { const b = new T(n2); b.set(A); return b; };
+    pI = cp(pI, Int32Array); pJ = cp(pJ, Int32Array); pR = cp(pR, Float64Array); pDW = cp(pDW, Float64Array); pNX = cp(pNX, Float64Array); pNY = cp(pNY, Float64Array);
+    PMAX = n2;
+  }
+
+  let time = 0, stepCount = 0;
+  function step(dt, settling) {
+    if (gravDirty || (stepCount & 1) === 0) { buildTree(); gravity(); gravDirty = false; }
+    // rings need fresh gravity every step: reusing last step's pull would slowly push them outward
+    if (NR) ringGravity();
+    for (let i = 0; i < N; i++) { ax[i] = gxa[i]; ay[i] = gya[i]; }
+    contacts(dt);
+    const cool = Math.exp(-dt / P.coolTau);
+    if (bh && bh.active) moveWithBlackHole(dt, cool);
+    else for (let i = 0; i < N; i++) {
+      vx[i] += ax[i] * dt; vy[i] += ay[i] * dt;
+      x[i] += vx[i] * dt; y[i] += vy[i] * dt;
+      let h = heat[i] * cool; heat[i] = h > 1.6 ? 1.6 : h;
+    }
+    let bad = false;
+    for (let i = 0; i < N; i++) if (!(Math.abs(x[i]) < 1e12 && Math.abs(vx[i]) < 1e9 && Math.abs(y[i]) < 1e12 && Math.abs(vy[i]) < 1e9)) { bad = true; break; }
+    if (bad) dropBroken();
+    if (NR) moveRings(dt);
+    if (settling) settleFix();
+    if (fresh.length) settleFresh();
+    time += dt; stepCount++;
+    if (stepCount % 120 === 0) cull();
+  }
+
+  // ---- black hole: a point mass that only interacts through gravity ----
+  // Its pull changes very fast close in, so particles near it take many small sub-steps of their
+  // own. Anything that would need more than MAXSUB sub-steps per step is counted as swallowed.
+  let bh = null;
+  const MAXSUB = 2000;
+  function moveWithBlackHole(dt, cool) {
+    const GM = P.G * bh.M; let bax = 0, bay = 0, eaten = false;
+    for (let i = 0; i < N; i++) {
+      vx[i] += ax[i] * dt; vy[i] += ay[i] * dt;
+      let h = heat[i] * cool; heat[i] = h > 1.6 ? 1.6 : h;
+      let dx = x[i] - bh.x, dy = y[i] - bh.y, r2 = dx * dx + dy * dy, r = Math.sqrt(r2);
+      if (r < bh.rcap) { swallow(i); eaten = true; continue; }
+      if (r < bh.rbal) { const hot = 1.6 * (1 - r / bh.rbal); if (heat[i] < hot) heat[i] = hot; } // infalling gas heats up (illustrative)
+      const v0x = vx[i], v0y = vy[i];
+      let left = dt, s = 0, gone = false;
+      while (left > 0) { // sub-steps shrink as the particle gets closer (a fixed fraction of the local orbit time)
+        const torb = Math.sqrt(r2 * r / GM), hdt = Math.min(left, 0.03 * torb);
+        const f = GM / (r2 * r);
+        vx[i] -= f * dx * hdt; vy[i] -= f * dy * hdt;
+        if (r < bh.rdisk) { // gas orbiting close in slowly drains inward, a stand-in for accretion-disk viscosity
+          // (sped up: about 30 orbits to drain, a few orbits in the innermost part; real disks take far longer)
+          const ux = dx / r, uy = dy / r, vr = vx[i] * ux + vy[i] * uy, tx = vx[i] - vr * ux, ty = vy[i] - vr * uy;
+          const k = hdt / ((r < bh.rinner ? 3 : 30) * 6.2832 * torb);
+          vx[i] -= k * tx; vy[i] -= k * ty;
+        }
+        x[i] += vx[i] * hdt; y[i] += vy[i] * hdt;
+        left -= hdt;
+        dx = x[i] - bh.x; dy = y[i] - bh.y; r2 = dx * dx + dy * dy; r = Math.sqrt(r2);
+        if (r < bh.rcap || ++s > MAXSUB) { gone = true; break; }
+      }
+      // Close passes can leave a particle with a little too much energy from the integration; never let
+      // anything leave faster than 1.5× the local escape speed (only numerical error could do that).
+      // Further out, nothing should move faster than material flung from the edge of that zone (or a fast
+      // thrown rock), so cap that too: a single runaway particle could otherwise blow the gas apart.
+      { const ex = vx[i] - bh.vx, ey = vy[i] - bh.vy, v2 = ex * ex + ey * ey;
+        const lim = r < bh.rbal ? 2.25 * 2 * GM / Math.max(r, 1e-9) : Math.max(2.56 * 2 * GM / Math.max(bh.rbal, 1e-9), 9000 * 9000);
+        if (v2 > lim && !gone) { const f = Math.sqrt(lim / v2); vx[i] = bh.vx + ex * f; vy[i] = bh.vy + ey * f; } }
+      // the black hole feels an equal and opposite tug
+      bax -= m[i] * (vx[i] - v0x); bay -= m[i] * (vy[i] - v0y);
+      if (gone) { swallow(i); eaten = true; }
+    }
+    bh.vx += bax / bh.M; bh.vy += bay / bh.M;
+    bh.x += bh.vx * dt; bh.y += bh.vy * dt;
+    if (eaten) dropBroken();
+  }
+  function swallow(i) {
+    const M = bh.M + m[i];
+    bh.vx = (bh.M * bh.vx + m[i] * vx[i]) / M; bh.vy = (bh.M * bh.vy + m[i] * vy[i]) / M;
+    bh.M = M; bh.eaten += m[i];
+    x[i] = Infinity; // removed by dropBroken
+  }
+  // ---- planetary rings: test particles that orbit in the planets' gravity but don't pull back ----
+  // (Saturn's rings weigh about 1/30-millionth of Saturn, so ignoring their own gravity is fine.)
+  const MAXRING = 24000;
+  const qx = new Float64Array(MAXRING), qy = new Float64Array(MAXRING), qvx = new Float64Array(MAXRING), qvy = new Float64Array(MAXRING);
+  const qgx = new Float64Array(MAXRING), qgy = new Float64Array(MAXRING), qc = new Uint8Array(MAXRING);
+  let NR = 0;
+  function treeAccel(px, py, eps2) {
+    // more accurate than the planets' setting: rings are sensitive to small errors
+    const G = P.G, th2 = 0.7 * 0.7; let gx = 0, gy = 0, sp = 0;
+    stack[sp++] = 0;
+    while (sp > 0) {
+      const n = stack[--sp];
+      if (nm[n] === 0) continue;
+      if (child[n] === -1) {
+        for (let j = body[n]; j !== -1; j = nextB[j]) {
+          const dx = x[j] - px, dy = y[j] - py, d2 = dx * dx + dy * dy + eps2, f = G * m[j] / (d2 * Math.sqrt(d2));
+          gx += f * dx; gy += f * dy;
+        }
+      } else {
+        const dx = ncx[n] - px, dy = ncy[n] - py, d2 = dx * dx + dy * dy;
+        if (ns[n] * ns[n] < th2 * d2) { const dd = d2 + eps2, f = G * nm[n] / (dd * Math.sqrt(dd)); gx += f * dx; gy += f * dy; }
+        else if (sp < 1020) { const c = child[n]; stack[sp++] = c; stack[sp++] = c + 1; stack[sp++] = c + 2; stack[sp++] = c + 3; }
+      }
+    }
+    tgx = gx; tgy = gy;
+  }
+  let tgx = 0, tgy = 0;
+  function ringGravity() {
+    const e2 = (0.5 * P.r) ** 2;
+    for (let i = 0; i < NR; i++) { treeAccel(qx[i], qy[i], e2); qgx[i] = tgx; qgy[i] = tgy; }
+  }
+  // Ring particles hitting a planet particle are absorbed.
+  function moveRings(dt) {
+    const GM = bh && bh.active ? P.G * bh.M : 0;
+    let w = 0;
+    for (let i = 0; i < NR; i++) {
+      let ax = qgx[i], ay = qgy[i];
+      if (GM) {
+        const dx = qx[i] - bh.x, dy = qy[i] - bh.y, r2 = dx * dx + dy * dy, r = Math.sqrt(r2);
+        if (r < Math.max(bh.rbal * 0.2, bh.rcap)) continue; // falls in
+        const f = GM / (r2 * r); ax -= f * dx; ay -= f * dy;
+      }
+      qvx[i] += ax * dt; qvy[i] += ay * dt; qx[i] += qvx[i] * dt; qy[i] += qvy[i] * dt;
+      // hit a planet?
+      const px = qx[i], py = qy[i];
+      let hit = false;
+      for (let c = 0; c < cls.n && !hit; c++) hit = forNear(c, px, py, j => { if (j >= N) return false; const dx = x[j] - px, dy = y[j] - py, rr = rad[j] * 1.05; return dx * dx + dy * dy < rr * rr; });
+      if (hit) continue;
+      if (w !== i) { qx[w] = qx[i]; qy[w] = qy[i]; qvx[w] = qvx[i]; qvy[w] = qvy[i]; qgx[w] = qgx[i]; qgy[w] = qgy[i]; qc[w] = qc[i]; }
+      w++;
+    }
+    NR = w;
+  }
+  // rings: [{ from, to (in sim units), weight, c (colour index) }]; places n particles on circular
+  // orbits around body id, using the actual gravity at each spot, moving with the body.
+  function addRings(id, rings, n) {
+    let M = 0, cx = 0, cy = 0, pvx = 0, pvy = 0;
+    for (let i = 0; i < N; i++) if (pid[i] === id) { M += m[i]; cx += m[i] * x[i]; cy += m[i] * y[i]; pvx += m[i] * vx[i]; pvy += m[i] * vy[i]; }
+    if (!M) return; cx /= M; cy /= M; pvx /= M; pvy /= M;
+    buildTree();
+    let wsum = 0; for (const r of rings) wsum += r.weight * (r.to * r.to - r.from * r.from);
+    const e2 = (0.5 * P.r) ** 2;
+    for (const r of rings) {
+      const k = Math.round(n * r.weight * (r.to * r.to - r.from * r.from) / wsum);
+      for (let t = 0; t < k && NR < MAXRING; t++) {
+        const rr = Math.sqrt(r.from * r.from + Math.random() * (r.to * r.to - r.from * r.from)), th = Math.random() * 6.2832;
+        const px = cx + rr * Math.cos(th), py = cy + rr * Math.sin(th);
+        treeAccel(px, py, e2);
+        const g = Math.hypot(tgx, tgy), v = Math.sqrt(g * rr);
+        qx[NR] = px; qy[NR] = py; qvx[NR] = pvx - v * Math.sin(th); qvy[NR] = pvy + v * Math.cos(th);
+        qgx[NR] = tgx; qgy[NR] = tgy; qc[NR] = r.c; NR++;
+      }
+    }
+    gravDirty = true;
+  }
+  // ---- finding the clump a particle belongs to (for inspecting objects) ----
+  // Friends-of-friends: particles closer than ~1.35 × their combined radii are part of the same object.
+  const mark = new Int32Array(MAXN), queue = new Int32Array(MAXN); let stamp = 1;
+  function clumpOf(seed) {
+    if (seed < 0 || seed >= N || !cls.n) return new Int32Array(0);
+    stamp++; let qh = 0, qt = 0; queue[qt++] = seed; mark[seed] = stamp;
+    while (qh < qt) {
+      const i = queue[qh++], xi = x[i], yi = y[i], ri = rb[i];
+      for (let c = 0; c < cls.n; c++) forNear(c, xi, yi, j => {
+        if (j >= N || mark[j] === stamp) return false;
+        const dx = x[j] - xi, dy = y[j] - yi, L = 1.35 * (ri + rb[j]);
+        if (dx * dx + dy * dy < L * L) { mark[j] = stamp; queue[qt++] = j; }
+        return false;
+      });
+    }
+    return queue.slice(0, qt);
+  }
+  function indexOfUid(u) { for (let i = 0; i < N; i++) if (uid[i] === u) return i; return -1; }
+  function dropBroken() {
+    let w = 0;
+    for (let i = 0; i < N; i++) {
+      if (!(Math.abs(x[i]) < 1e12 && Math.abs(vx[i]) < 1e9 && Math.abs(y[i]) < 1e12 && Math.abs(vy[i]) < 1e9)) continue;
+      if (w !== i) { x[w] = x[i]; y[w] = y[i]; vx[w] = vx[i]; vy[w] = vy[i]; m[w] = m[i]; heat[w] = heat[i]; mat[w] = mat[i]; pid[w] = pid[i]; rad[w] = rad[i]; rb[w] = rb[i]; kf[w] = kf[i]; uid[w] = uid[i]; gxa[w] = gxa[i]; gya[w] = gya[i]; }
+      w++;
+    }
+    N = w; gravDirty = true;
+  }
+  // A body spawned mid-run starts as an unsquashed lattice; for a short while, let it settle under its own
+  // gravity (calming internal motion, keeping its overall motion) so the settling isn't mistaken for heat.
+  let fresh = [];
+  function settleBody(id, dur) { fresh.push({ id, until: time + dur }); }
+  function settleFresh() {
+    fresh = fresh.filter(f => f.until > time);
+    for (const f of fresh) {
+      let M = 0, px = 0, py = 0;
+      for (let i = 0; i < N; i++) if (pid[i] === f.id) { M += m[i]; px += m[i] * vx[i]; py += m[i] * vy[i]; }
+      if (!M) continue; px /= M; py /= M;
+      for (let i = 0; i < N; i++) if (pid[i] === f.id) { vx[i] = px + (vx[i] - px) * 0.94; vy[i] = py + (vy[i] - py) * 0.94; heat[i] = 0; }
+    }
+  }
+  function settleFix() {
+    const M = [0, 0, 0, 0], PX = [0, 0, 0, 0], PY = [0, 0, 0, 0];
+    for (let i = 0; i < N; i++) { const p = pid[i]; M[p] += m[i]; PX[p] += m[i] * vx[i]; PY[p] += m[i] * vy[i]; }
+    for (let i = 0; i < N; i++) {
+      const p = pid[i];
+      vx[i] = (vx[i] - PX[p] / M[p]) * 0.94;
+      vy[i] = (vy[i] - PY[p] / M[p]) * 0.94;
+      heat[i] = 0;
+    }
+  }
+
+  function com() {
+    let M = 0, cx = 0, cy = 0;
+    for (let i = 0; i < N; i++) { M += m[i]; cx += m[i] * x[i]; cy += m[i] * y[i]; }
+    if (bh) { M += bh.M; cx += bh.M * bh.x; cy += bh.M * bh.y; }
+    return M > 0 ? { x: cx / M, y: cy / M, M } : { x: 0, y: 0, M: 0 };
+  }
+
+  let cullRadius = 1e9;
+  function cull() {
+    const C = com();
+    const R2 = cullRadius * cullRadius;
+    let w = 0;
+    for (let i = 0; i < N; i++) {
+      const dx = x[i] - C.x, dy = y[i] - C.y;
+      if (dx * dx + dy * dy > R2) continue;
+      if (w !== i) { x[w] = x[i]; y[w] = y[i]; vx[w] = vx[i]; vy[w] = vy[i]; m[w] = m[i]; heat[w] = heat[i]; mat[w] = mat[i]; pid[w] = pid[i]; rad[w] = rad[i]; rb[w] = rb[i]; kf[w] = kf[i]; uid[w] = uid[i]; }
+      w++;
+    }
+    if (w !== N) gravDirty = true;
+    N = w;
+    let k = 0;
+    for (let i = 0; i < NR; i++) {
+      const dx = qx[i] - C.x, dy = qy[i] - C.y;
+      if (dx * dx + dy * dy > R2) continue;
+      if (k !== i) { qx[k] = qx[i]; qy[k] = qy[i]; qvx[k] = qvx[i]; qvy[k] = qvy[i]; qgx[k] = qgx[i]; qgy[k] = qgy[i]; qc[k] = qc[i]; }
+      k++;
+    }
+    NR = k;
+  }
+
+  // Fill a disc with a jittered hex lattice. layers: [{to: fraction, mat, mass}]
+  // pr: particle radius for this body (defaults to the standard size); mass scales with particle area.
+  function addBody(cx, cy, R, layers, id, bvx = 0, bvy = 0, pr = P.r, stiff = 1) {
+    const r = pr, d = 2 * r, rowH = d * Math.sqrt(3) / 2, mScale = (pr / P.r) ** 2;
+    if (pr < minR) minR = pr;
+    if (pr > maxR) maxR = pr;
+    if (stiff > kfMax) kfMax = stiff;
+    soundRate = Math.max(soundRate, Math.sqrt(stiff) / (HF * pr));
+    const rows = Math.ceil(R / rowH);
+    let added = 0;
+    for (let row = -rows; row <= rows; row++) {
+      const py = row * rowH, off = (row & 1) ? r : 0;
+      const cols = Math.ceil(R / d) + 1;
+      for (let col = -cols; col <= cols; col++) {
+        const px = col * d + off;
+        const rr = Math.sqrt(px * px + py * py);
+        if (rr > R - r * 0.5 || N >= MAXN) continue;
+        const f = rr / R;
+        let L = layers[layers.length - 1];
+        for (const l of layers) if (f <= l.to) { L = l; break; }
+        x[N] = cx + px + (Math.random() - 0.5) * 0.15; y[N] = cy + py + (Math.random() - 0.5) * 0.15;
+        vx[N] = bvx; vy[N] = bvy; m[N] = L.mass * mScale; mat[N] = L.mat; heat[N] = 0; pid[N] = id;
+        rad[N] = r * (0.9 + Math.random() * 0.2); rb[N] = r; kf[N] = stiff; uid[N] = nextUid++;
+        N++; added++;
+      }
+    }
+    gravDirty = true;
+    return added;
+  }
+  function radiusFor(n, pr = P.r) { return pr * Math.sqrt(n / 0.9069); }
+  let minR = 3, maxR = 3, kfMax = 1, soundRate = 0; // soundRate: max over bodies of √stiffness / smoothing length
+  // Small particles vibrate faster, so the caller splits each step into this many sub-steps.
+  // How many sub-steps a step of length dt needs to stay stable (a CFL condition): information
+  // must not cross more than part of a particle's smoothing length per sub-step, whether it travels
+  // as a pressure wave or with a fast-moving particle such as a thrown rock.
+  // Uses the speed between nearby particles (within a few smoothing lengths), not the overall motion,
+  // so a planet falling fast towards a black hole doesn't force needlessly tiny steps.
+  function subdiv(dt) {
+    // sound crossing a particle (stiff, big ones can be as fast to cross as soft, small ones), plus fast motion
+    const rate = Math.sqrt(P.K) * soundRate + 1.2 * Math.sqrt(relV2) / (HF * minR);
+    return Math.max(1, Math.ceil(dt * rate / 0.6 - 0.02));
+  }
+  function bodyMass(id) { let M = 0; for (let i = 0; i < N; i++) if (pid[i] === id) M += m[i]; return M; }
+  function shiftBody(id, dx, dy, bvx, bvy) {
+    for (let i = 0; i < N; i++) if (pid[i] === id) { x[i] += dx; y[i] += dy; vx[i] += bvx; vy[i] += bvy; }
+  }
+  function clear() { fresh = []; gravDirty = true; minR = P.r; maxR = P.r; kfMax = 1; soundRate = 0; bh = null; relV2 = 0; NR = 0; N = 0; time = 0; stepCount = 0; }
+
+  return {
+    get bh() { return bh; }, set bh(v) { bh = v; }, settleBody, uid, clumpOf, indexOfUid,
+    qx, qy, qc, addRings, get NR() { return NR; },
+    get room() { return MAXN - N; },
+    accelAt(px, py) { buildTree(); treeAccel(px, py, (0.5 * P.r) ** 2); gravDirty = true; return [tgx, tgy]; },
+    P, rad, x, y, vx, vy, m, heat, mat, pid, step, addBody, radiusFor, subdiv, bodyMass, shiftBody, clear, com,
+    get N() { return N; }, get time() { return time; },
+    set cullRadius(v) { cullRadius = v; }, get cullRadius() { return cullRadius; }
+  };
+})();
+if (typeof module !== 'undefined') module.exports = Sim;
+// Layer boundaries are fractions of radius; densities in g/cm³ are typical values for each layer
+// from interior models, chosen so each body's overall density matches its measured mean (avg).
+// Layer boundaries use real radii, except rocky crusts, which are thickened to 12% of the radius
+// (real ones are 0.3–2.3%) so they're visible. Layer densities stay real.
+const BODIES = {
+  // The Sun: about half its mass is packed into the core (inner quarter of its radius), almost all the
+  // rest into the radiative zone (to 0.71 R), and only ~2% into the churning convective zone on top.
+  // Average densities per zone come from that split; the real density runs from ~150 g/cm³ at the
+  // centre to almost nothing at the visible surface.
+  sun: { name: 'Sun', km: 695700, avg: 1.41, star: true, coreK: 1.57e7, layers: [
+    { name: 'core', to: 0.25, rho: 45, col: '#fff6d8' }, { name: 'radiative zone', to: 0.71, rho: 1.98, col: '#ffd060' }, { name: 'convective zone', to: 1, rho: 0.044, col: '#ff8f2a' } ] },
+  mercury: { name: 'Mercury', km: 2440, avg: 5.43, layers: [
+    { name: 'iron core', to: 0.83, rho: 7.0, col: '#e6c27a' }, { name: 'mantle', to: 0.88, rho: 3.3, col: '#8b7f86' }, { name: 'crust', to: 1, rho: 2.9, col: '#b9b2b4' } ] },
+  venus: { name: 'Venus', km: 6052, avg: 5.24, layers: [
+    { name: 'iron core', to: 0.53, rho: 10.6, col: '#f2cf7a' }, { name: 'mantle', to: 0.88, rho: 4.3, col: '#b4643c' }, { name: 'crust', to: 1, rho: 2.9, col: '#e8c27f' } ] },
+  earth: { name: 'Earth', km: 6371, avg: 5.51, layers: [
+    { name: 'iron core', to: 0.546, rho: 10.9, col: '#f4c56b' }, { name: 'mantle', to: 0.88, rho: 4.5, col: '#c9673e' }, { name: 'crust', to: 1, rho: 2.8, col: '#4fb3c8' } ] },
+  moon: { name: 'Moon', km: 1737, avg: 3.34, layers: [
+    { name: 'iron core', to: 0.2, rho: 7.0, col: '#e2c98e' }, { name: 'mantle', to: 0.88, rho: 3.35, col: '#8e8a9c' }, { name: 'crust', to: 1, rho: 2.55, col: '#d6d3dc' } ] },
+  ganymede: { name: 'Ganymede', km: 2631, avg: 1.94, layers: [ // Jupiter's moon: iron core, rock, then ~900 km of ice and ocean
+    { name: 'iron core', to: 0.35, rho: 5.15, col: '#e2c27e' }, { name: 'rocky mantle', to: 0.66, rho: 3.4, col: '#8a6f5a' }, { name: 'ice and ocean', to: 1, rho: 1.25, col: '#c9d3dc' } ] },
+  titan: { name: 'Titan', km: 2575, avg: 1.88, layers: [ // Saturn's moon: hydrated-rock core, high-pressure ice and ocean, ice crust
+    { name: 'rocky core', to: 0.78, rho: 2.65, col: '#9a7b5c' }, { name: 'deep ice and ocean', to: 0.96, rho: 1.25, col: '#6f9fb8' }, { name: 'ice crust', to: 1, rho: 0.95, col: '#e0a654' } ] },
+  mars: { name: 'Mars', km: 3390, avg: 3.93, layers: [
+    { name: 'iron core', to: 0.54, rho: 6.2, col: '#f0d9b5' }, { name: 'mantle', to: 0.88, rho: 3.55, col: '#a8402d' }, { name: 'crust', to: 1, rho: 2.9, col: '#e4783f' } ] },
+  jupiter: { name: 'Jupiter', km: 69911, avg: 1.33, layers: [
+    { name: 'dilute core', to: 0.3, rho: 8, col: '#f6e2b8' }, { name: 'metallic hydrogen', to: 0.82, rho: 1.8, col: '#c47a52' }, { name: 'molecular hydrogen', to: 1, rho: 0.4, col: '#e7c79a' } ] },
+  saturn: { name: 'Saturn', km: 58232, avg: 0.69, layers: [
+    { name: 'fuzzy core', to: 0.25, rho: 6, col: '#fff1c9' }, { name: 'metallic hydrogen', to: 0.6, rho: 1.6, col: '#d39a55' }, { name: 'molecular hydrogen', to: 1, rho: 0.35, col: '#ecd9a6' } ] },
+  uranus: { name: 'Uranus', km: 25362, avg: 1.27, layers: [
+    { name: 'rocky core', to: 0.2, rho: 9, col: '#e9e1c8' }, { name: 'water-ammonia ice', to: 0.75, rho: 2.5, col: '#5aa7b8' }, { name: 'hydrogen-helium', to: 1, rho: 0.3, col: '#a7e3e6' } ] },
+  neptune: { name: 'Neptune', km: 24622, avg: 1.64, layers: [
+    { name: 'rocky core', to: 0.25, rho: 9, col: '#e6dcc6' }, { name: 'water-ammonia ice', to: 0.8, rho: 2.7, col: '#3a5fc4' }, { name: 'hydrogen-helium', to: 1, rho: 0.3, col: '#7aa2ee' } ] },
+  // ROXs 42Bb: a young (~2 million years), still-hot giant orbiting a pair of red dwarfs ~150 AU out,
+  // about 9 Jupiter masses and 2.5 Jupiter radii (estimates range ~6–15 M_J and 2.1–2.5 R_J). Its
+  // interior hasn't been measured, so the layers follow a standard fully-convective gas-giant profile
+  // (an n = 1 polytrope) that adds up to its overall density. It glows dull red at ~2,000 K.
+  roxs42bb: { name: 'ROXs 42Bb', km: 178730, avg: 0.715, layers: [
+    { name: 'hot dense centre', to: 0.3, rho: 2.1, col: '#ffd29a' }, { name: 'metallic hydrogen', to: 0.75, rho: 1.23, col: '#e0823c' }, { name: 'glowing hydrogen envelope', to: 1, rho: 0.3, col: '#c4552e' } ] },
+  pluto: { name: 'Pluto', km: 1188, avg: 1.85, layers: [
+    { name: 'rocky core', to: 0.75, rho: 3.0, col: '#9b7d62' }, { name: 'water ice', to: 0.997, rho: 1.0, col: '#e3d6c4' }, { name: 'nitrogen ice', to: 1, rho: 1.0, col: '#f2b98f' } ] }
+};
+// A stellar-mass black hole: 3 Suns, about the heaviest neutron-star-to-black-hole range.
+// km is its event-horizon radius (Schwarzschild radius, 2GM/c²).
+// Saturn's main rings at their real distances from the planet's centre (km), with a weight for how
+// densely packed (bright) each is: the faint C ring, the bright B ring, the Cassini Division gap,
+// then the A ring.
+BODIES.saturn.rings = [
+  { name: 'C ring', from: 74490, to: 91983, weight: 0.25, col: '#9a8c78' },
+  { name: 'B ring', from: 91983, to: 117516, weight: 1.0, col: '#efe2c4' },
+  { name: 'A ring', from: 122053, to: 136774, weight: 0.55, col: '#d6c7a6' }
+];
+// Real rotation periods (sidereal, hours; negative = spins backwards). ROXs 42Bb's isn't known.
+BODIES.sun.dayH = 609.1;
+BODIES.mercury.dayH = 1407.6;
+BODIES.venus.dayH = -5832.5;
+BODIES.earth.dayH = 23.934;
+BODIES.moon.dayH = 655.7;
+BODIES.ganymede.dayH = 171.7;
+BODIES.titan.dayH = 382.7;
+BODIES.mars.dayH = 24.623;
+BODIES.jupiter.dayH = 9.925;
+BODIES.saturn.dayH = 10.656;
+BODIES.uranus.dayH = -17.24;
+BODIES.neptune.dayH = 16.11;
+BODIES.pluto.dayH = -153.29;
+BODIES.bh3 = { name: 'Black hole (3 Suns)', short: 'Black hole (3 Suns)', km: 8.86, blackhole: true, Msun: 3, layers: [] };
+const G_SI = 6.674e-11, M_SUN = 1.989e30;
+const realMassKg = b => b.blackhole ? b.Msun * M_SUN : b.avg * 1000 * 4 / 3 * Math.PI * (b.km * 1000) ** 3;
+const ROCK_COLOR = '#a9a6bd';
+function meanDensity(b) { let p = 0, s = 0; for (const l of b.layers) { s += l.rho * (l.to * l.to - p * p); p = l.to; } return s; }
+
+const Scenario = {
+  rock: [{ to: 1, mat: 6, mass: 3.0 }],
+  // k scales the masses so bodies weigh as if they were spheres (mass ∝ radius³), not flat disks:
+  // that keeps real mass ratios and real tidal (Roche) limits in this 2D world.
+  layersFor(b, base, k = 1) { return b.layers.map((l, j) => ({ to: l.to, mat: base + j, mass: l.rho * k })); },
+  palette(t, i) { const ic = i.layers.length ? i.layers.map(l => l.col) : ['#000000', '#000000', '#000000']; return [...t.layers.map(l => l.col), ...ic, ROCK_COLOR]; },
+  // Builds both bodies already in their launch positions (COM at origin), at rest.
+  // A planet falling past (or into) a black hole. The angle setting picks the closest approach,
+  // in units of the tidal radius: 0° is a straight plunge, 30° grazes the tidal radius, 80° passes
+  // at about twice it. Speed 1× is a parabolic (just unbound) orbit, as for a star or planet
+  // wandering in from far away.
+  buildBH(S, o) {
+    S.clear();
+    const t = o.target, r0 = S.P.r;
+    const R1 = S.radiusFor(o.total);
+    S.P.G = 1000 * 110 * 1.4 / (meanDensity(t) * R1);
+    S.addBody(0, 0, R1, this.layersFor(t, 0), 0);
+    const M1 = S.bodyMass(0), ratio = realMassKg(o.impactor) / realMassKg(t), Mbh = ratio * M1, G = S.P.G;
+    const rt = R1 * Math.cbrt(ratio);                 // tidal radius
+    // (a closest approach inside the body itself would mean starting with the black hole buried in it)
+    const rp = o.angle > 0 ? Math.max(2 * Math.sin(o.angle * Math.PI / 180) * rt, 1.15 * R1) : 0;
+    let D0 = Math.max(1.5 * rt, 1.3 * rp + 3 * R1);
+    const Mt = M1 + Mbh, mu = G * Mt;
+    let rvx, rvy; // planet velocity relative to the black hole
+    if (rp < 1e-3 * rt) { rvx = -o.speed * Math.sqrt(2 * mu / D0); rvy = 0; }
+    else {
+      // speed is in multiples of the escape speed at closest approach: 1 = parabolic, 0.71 = circular
+      const sp = Math.max(o.speed, 0.71), vp = sp * Math.sqrt(2 * mu / rp), L = rp * vp, E = vp * vp / 2 - mu / rp;
+      if (E < 0) { // bound: never start beyond the far end of the orbit
+        const ra = (-mu - Math.sqrt(Math.max(0, mu * mu + 2 * E * L * L))) / (2 * E);
+        if (ra < D0) D0 = Math.max(ra * 0.999, rp * 1.001);
+      }
+      const v0 = Math.sqrt(Math.max(1e-6, 2 * (E + mu / D0))), vt = Math.min(L / D0, v0);
+      rvx = -Math.sqrt(Math.max(0, v0 * v0 - vt * vt)); rvy = vt;
+    }
+    const fp = Mbh / Mt, fb = M1 / Mt;
+    S.shiftBody(0, D0 * fp, 0, 0, 0);
+    // Real sizes: the event horizon (Schwarzschild radius) in sim units. Anything falling in from far away
+    // whose path comes within two horizon radii (4GM/c²) is captured, as general relativity predicts.
+    const kmU = t.km / R1, rs = o.impactor.km / kmU;
+    S.bh = { x: -D0 * fb, y: 0, vx: 0, vy: 0, M: Mbh, M0: Mbh, eaten: 0, active: false, rs, rcap: 2 * rs, rbal: 0.3 * rt, rdisk: 0.8 * rt, rinner: 0.05 * rt };
+    S.cullRadius = Math.max(45 * R1, 40 * rt);
+    // real time per simulated second, from the planet's own free-fall time
+    const tReal = Math.sqrt((t.km * 1000) ** 3 / (G_SI * realMassKg(t))), tSim = Math.sqrt(R1 ** 3 / (G * M1));
+    const kmPerUnit = t.km / R1;
+    return { ref: { body: t, R: R1, M: M1, kRef: R1 }, kRef: R1, R1, R2: 0, r1: r0, r2: r0, Rmax: R1, dist0: D0, M1, M2: Mbh, bh: true, rt, rp, ratio, kmPerUnit,
+      launchV: [rvx * fp, rvy * fp, -rvx * fb, -rvy * fb], secPerSec: tReal / tSim, vesc: Math.sqrt(2 * G * M1 / R1) };
+  },
+  build(S, o) {
+    if (o.impactor.blackhole) return this.buildBH(S, o);
+    if (o.orbit) return this.buildPointOrbit(S, o);
+    S.clear();
+    const t = o.target, im = o.impactor, q = o.ratio, r0 = S.P.r;
+    // Split the particle budget by area. If one body would get too few particles to show its
+    // layers, give it a floor of particles and make its particles smaller (down to half size).
+    const NMIN = Math.min(160, Math.round(o.total * 0.07));
+    let n1 = o.total / (1 + q * q), n2 = o.total - n1, R1, R2, r1 = r0, r2 = r0;
+    if (n1 >= NMIN && n2 >= NMIN) { R1 = S.radiusFor(n1); R2 = q * R1; }
+    else if (q < 1) {
+      R1 = S.radiusFor(o.total - NMIN); R2 = q * R1;
+      r2 = Math.max(0.5 * r0, R2 / Math.sqrt(NMIN / 0.9069)); r2 = Math.min(r2, R2 / 0.6);
+    } else {
+      R2 = S.radiusFor(o.total - NMIN); R1 = R2 / q;
+      r1 = Math.max(0.5 * r0, R1 / Math.sqrt(NMIN / 0.9069)); r1 = Math.min(r1, R1 / 0.6);
+    }
+    // Normalise gravity so the most compressed body squashes by the same small amount
+    // whatever its density; escape speeds come out similar for every pair.
+    const Rm = Math.max(R1, R2), k1 = R1 / Rm, k2 = R2 / Rm;
+    o.k1 = k1; o.k2 = k2;
+    const load = Math.max(meanDensity(t) * R1 * k1, meanDensity(im) * R2 * k2);
+    S.P.G = 1000 * 110 * 1.4 / load;
+    const dist0 = 2.2 * (R1 + R2);
+    S.addBody(0, 0, R1, this.layersFor(t, 0, k1), 0, 0, 0, r1);
+    const M1 = S.bodyMass(0);
+    S.addBody(dist0, 0, R2, this.layersFor(im, 3, k2), 1, 0, 0, r2);
+    const M2 = S.bodyMass(1), Mt = M1 + M2, G = S.P.G, Rs = R1 + R2;
+    const vesc = Math.sqrt(2 * G * Mt / Rs);
+    const vc = o.speed * vesc;
+    const v0 = Math.sqrt(Math.max(vc * vc - 2 * G * Mt * (1 / Rs - 1 / dist0), (0.15 * vesc) ** 2));
+    const th = o.angle * Math.PI / 180;
+    const b0 = Math.min(Rs * vc * Math.sin(th) / v0, dist0 * 0.9);
+    const X = Math.sqrt(dist0 * dist0 - b0 * b0);
+    S.shiftBody(0, -X * M2 / Mt, -b0 * M2 / Mt, 0, 0);
+    S.shiftBody(1, X * M1 / Mt - dist0, b0 * M1 / Mt, 0, 0);
+    S.cullRadius = 45 * Math.max(R1, R2);
+    return { R1, R2, r1, r2, Rmax: Math.max(R1, R2), dist0, M1, M2, v0, vesc, kRef: Rm, ref: { body: t, R: R1, M: M1, kRef: Rm } };
+  },
+  // "Tear into rings": the impactor orbits the target inside its Roche limit, the distance inside which
+  // the target's tides beat the impactor's own gravity (for a fluid body, 2.44 × target radius ×
+  // cube root of target density / impactor density). The whole particle budget goes to the impactor
+  // so it can be resolved at its real size; the target is a point of gravity (exact outside a round
+  // planet) drawn at its real size, and debris that reaches its surface falls in.
+  // Angle sets closest approach (2·sin(angle) Roche limits); speed is in multiples of escape speed
+  // there (0.71 = circular).
+  buildPointOrbit(S, o) {
+    S.clear();
+    const t = o.target, im = o.impactor;
+    const R2 = S.radiusFor(o.total);
+    S.P.G = 1000 * 110 * 1.4 / (meanDensity(im) * R2);
+    S.addBody(0, 0, R2, this.layersFor(im, 3), 1);
+    const M2 = S.bodyMass(1), ratio = realMassKg(t) / realMassKg(im), M1 = ratio * M2, G = S.P.G;
+    const kmU = im.km / R2, Rt = t.km / kmU;
+    const roche = 2.44 * Rt * Math.cbrt(t.avg / im.avg);
+    const rp = Math.max(2 * Math.sin(o.angle * Math.PI / 180) * roche, Rt + 1.6 * R2);
+    const sp = Math.max(o.speed, 0.71), mu = G * (M1 + M2), vp = sp * Math.sqrt(2 * mu / rp);
+    const fa = M2 / (M1 + M2), fb = M1 / (M1 + M2);
+    S.shiftBody(1, rp * fb, 0, 0, 0);
+    S.bh = { kind: 'planet', x: -rp * fa, y: 0, vx: 0, vy: 0, M: M1, M0: M1, eaten: 0, active: false, rcap: Rt, rbal: 0, rdisk: 0, rinner: 0, rs: 0 };
+    S.cullRadius = 40 * rp;
+    const tReal = Math.sqrt((im.km * 1000) ** 3 / (G_SI * realMassKg(im))), tSim = Math.sqrt(R2 ** 3 / (G * M2));
+    return { ref: { body: im, R: R2, M: M2, kRef: R2 }, kRef: R2, R1: R2, R2: 0, r1: S.P.r, r2: S.P.r, Rmax: R2, dist0: rp, M1: M2, M2: M1, bh: true, pointPlanet: true, planetR: Rt,
+      roche, rp, ratio, kmPerUnit: kmU, secPerSec: tReal / tSim, launchV: [0, vp * fb, 0, -vp * fa], vesc: Math.sqrt(2 * G * M2 / R2) };
+  },
+  // Conversion from sim units to real ones, using the scene's reference body.
+  units(S, g) {
+    const ref = g.ref, kmPerUnit = ref.body.km / ref.R, kgPerMass = realMassKg(ref.body) / ref.M;
+    const tReal = Math.sqrt((ref.body.km * 1000) ** 3 / (G_SI * realMassKg(ref.body))), tSim = Math.sqrt(ref.R ** 3 / (S.P.G * ref.M));
+    return { kmPerUnit, kgPerMass, secPerSec: tReal / tSim };
+  },
+  // ---- spawning extra bodies mid-simulation, at real size relative to the scene ----
+  // Bodies far bigger than the scene's own are built from proportionally bigger particles.
+  // An empty world has no scale until something arrives: the first planet sets it (built at full
+  // detail, like a normal target). A black hole or rock arriving first uses an Earth-sized scale.
+  ensureScale(S, g, body) {
+    if (g.ref) return;
+    const b = body && !body.blackhole && body.layers && body.layers.length ? body : BODIES.earth;
+    const R = S.radiusFor(1800);
+    S.P.G = 1000 * 110 * 1.4 / (meanDensity(b) * R);
+    const M = meanDensity(b) * 0.9069 * (R / S.P.r) ** 2; // what a body of R made of standard particles weighs
+    g.ref = { body: b, R, M, kRef: R }; g.kRef = R; g.Rmax = R; g.vesc = Math.sqrt(2 * S.P.G * M / R);
+    S.cullRadius = Math.max(S.cullRadius, 60 * R);
+  },
+  spawnSize(S, g, body) {
+    if (!g.ref) return { R: body.blackhole ? 0 : S.radiusFor(1800), pr: S.P.r, shrunk: false, kmU: body.km / S.radiusFor(1800) };
+    const ref = g.ref, kmU = ref.body.km / ref.R, r0 = S.P.r;
+    if (body.blackhole) return { R: body.km / kmU, pr: 0, shrunk: false, kmU };
+    let R = body.km / kmU, shrunk = false, pr = r0;
+    const cap = Math.max(8, Math.min(1500, S.room - 50)), nAt = (rad, p) => 0.9069 * (rad / p) ** 2;
+    if (nAt(R, r0) < 60) pr = Math.max(0.5 * r0, R / Math.sqrt(60 / 0.9069));
+    if (nAt(R, pr) > cap) pr = R / Math.sqrt(cap / 0.9069);
+    // (big bodies simply get big particles: they stay at real size and the particle count stays manageable)
+    if (R < 0.6 * pr) R = 0.6 * pr;
+    return { R, pr, shrunk, kmU };
+  },
+  spawn(S, g, body, x, y, vx, vy, pid, matBase) {
+    this.ensureScale(S, g, body);
+    const ref = g.ref, sz = this.spawnSize(S, g, body);
+    if (body.blackhole) {
+      if (S.bh) return { error: 'There can only be one black hole' };
+      const M = realMassKg(body) / realMassKg(ref.body) * ref.M, rs = sz.R, rt = ref.R * Math.cbrt(M / ref.M);
+      S.bh = { kind: 'bh', km: body.km, Msun: body.Msun, x, y, vx, vy, M, M0: M, eaten: 0, active: true, rs, rcap: 2 * rs, rbal: 0.3 * rt, rdisk: 0.8 * rt, rinner: 0.05 * rt };
+      return { ok: true };
+    }
+    if (S.room < 60) return { error: 'No room for more particles: launch again or use Light detail' };
+    const k = sz.R / ref.kRef, load = meanDensity(body) * sz.R * k, loadRef = 1000 * 110 * 1.4 / S.P.G;
+    S.addBody(x, y, sz.R, this.layersFor(body, matBase, k), pid, vx, vy, sz.pr, Math.max(1, load / loadRef));
+    S.settleBody(pid, 0.6);
+    // don't let the clean-up of far-flung debris delete the rest of the scene when something huge arrives
+    const C = S.com(); S.cullRadius = Math.max(S.cullRadius, 45 * sz.R + 2 * Math.hypot(x - C.x, y - C.y));
+    if (body.rings && !sz.shrunk) S.addRings(pid, body.rings.map((r, j) => ({ from: r.from / sz.kmU, to: r.to / sz.kmU, weight: r.weight, c: j })), 3000);
+    return { ok: true, shrunk: sz.shrunk };
+  },
+  // Add ring particles for any body that has rings (after launch, so they move with it).
+  addRings(S, g, o) {
+    [[o.target, 0, g.R1], [o.impactor, 1, g.R2]].forEach(([b, id, R]) => {
+      if (!b.rings || !R) return;
+      const kmU = b.km / R;
+      S.addRings(id, b.rings.map((r, k) => ({ from: r.from / kmU, to: r.to / kmU, weight: r.weight, c: k })), o.ringCount);
+    });
+  },
+  launch(S, g) {
+    if (g.bh) {
+      S.shiftBody(g.pointPlanet ? 1 : 0, 0, 0, g.launchV[0], g.launchV[1]);
+      const b = S.bh; b.vx = g.launchV[2]; b.vy = g.launchV[3]; b.active = true;
+      return;
+    }
+    const Mt = g.M1 + g.M2;
+    S.shiftBody(0, 0, 0, g.v0 * g.M2 / Mt, 0);
+    S.shiftBody(1, 0, 0, -g.v0 * g.M1 / Mt, 0);
+  }
+};
+if (typeof module !== "undefined") module.exports = { Scenario, BODIES };
+// Galaxy collisions. Units: kpc, km/s, solar masses; time unit kpc/(km/s) ≈ 977.8 Myr.
+// Each galaxy's gravity comes from a smooth model of its dark-matter halo, bulge and disk that moves
+// with the galaxy. Stars are test particles orbiting in the combined pull of both galaxies (the
+// "restricted" approach Toomre & Toomre used for the first tidal-tail simulations). Dynamical
+// friction, the drag a galaxy feels ploughing through another's dark matter, lets them merge.
+// Masses and sizes are rounded published estimates; the true values are uncertain.
+// Black-hole masses: Sgr A* ≈ 4.3 million Suns, Andromeda's ≈ 140 million, the LMC's ≈ 600,000
+// (Han et al. 2025, from hypervelocity stars). None is known in Triangulum or the SMC.
+const GALAXIES = {
+  milkyway: { name: 'Milky Way', kind: 'Barred spiral', Mb: 1.5e10, ab: 0.7, Md: 5e10, ad: 3, Mh: 1.0e12, ah: 30, Rd: 2.6, Rmax: 16,
+    bulge: 0.12, bar: 0.1, barLen: 4, arms: 2, pitch: 13, armFrac: 0.5, clumps: 0, weight: 1.0,
+    bh: { name: 'Sagittarius A*', M: 4.3e6 }, col: ['#ffd59a', '#f4ecdf', '#8fbaff'] },
+  andromeda: { name: 'Andromeda', kind: 'Spiral', Mb: 3e10, ab: 1.0, Md: 7e10, ad: 5, Mh: 1.0e12, ah: 30, Rd: 5.3, Rmax: 26,
+    bulge: 0.18, bar: 0, barLen: 0, arms: 2, pitch: 9, armFrac: 0.45, clumps: 0, weight: 1.15,
+    bh: { name: 'M31*', M: 1.4e8 }, col: ['#ffc988', '#ffe8d8', '#c9a6ff'] },
+  triangulum: { name: 'Triangulum', kind: 'Flocculent spiral', Mb: 1e8, ab: 0.3, Md: 5e9, ad: 1.5, Mh: 4e11, ah: 25, Rd: 1.6, Rmax: 9,
+    bulge: 0.03, bar: 0, barLen: 0, arms: 4, pitch: 20, armFrac: 0.4, clumps: 0, weight: 0.55,
+    bh: null, noBh: 'no central black hole found; any there is under a few thousand Suns', col: ['#ffe0b0', '#e8f0ff', '#7fd8ff'] },
+  lmc: { name: 'Large Magellanic Cloud', short: 'Large Magellanic Cl.', kind: 'Irregular (barred)', Mb: 0, ab: 0.5, Md: 3e9, ad: 1.5, Mh: 1.2e11, ah: 15, Rd: 1.4, Rmax: 6,
+    bulge: 0, bar: 0.22, barLen: 1.8, arms: 1, pitch: 25, armFrac: 0.25, clumps: 5, weight: 0.45,
+    bh: { name: 'LMC black hole', M: 6e5, note: 'inferred in 2025 from stars it flung out' }, col: ['#ffe9c2', '#e9e4ff', '#a4b8ff'] },
+  smc: { name: 'Small Magellanic Cloud', short: 'Small Magellanic Cl.', kind: 'Irregular dwarf', Mb: 0, ab: 0.5, Md: 1e9, ad: 1.0, Mh: 1.5e10, ah: 5, Rd: 0.9, Rmax: 3.5,
+    bulge: 0, bar: 0.15, barLen: 1.0, arms: 0, pitch: 25, armFrac: 0, clumps: 6, weight: 0.3,
+    bh: null, noBh: 'no central black hole known', col: ['#fff0d0', '#f0e0ff', '#ffb0d8'] }
+};
+
+const GalaxySim = (() => {
+  const G = 4.30091e-6, MYR = 977.8, LY_PER_KPC = 3261.56;
+  let DF = 0.1; // Coulomb logarithm × fudge for extended (not point-like) galaxies
+  const MAX = 60000;
+  const x = new Float64Array(MAX), y = new Float64Array(MAX), vx = new Float64Array(MAX), vy = new Float64Array(MAX);
+  const gid = new Uint8Array(MAX), kind = new Uint8Array(MAX); // kind: 0 bulge/bar, 1 disk, 2 arm/young stars
+  let N = 0, timeMyr = 0;
+  const cores = [];
+
+  const mass = g => g.Mb + g.Md + g.Mh + (g.bh ? g.bh.M : 0);
+  // Inward pull per unit mass at distance r from a galaxy's centre.
+  function gmag(g, r) {
+    let f = G * g.Mh / ((r + g.ah) * (r + g.ah));                      // Hernquist dark-matter halo
+    if (g.Mb) f += G * g.Mb / ((r + g.ab) * (r + g.ab));               // Hernquist bulge
+    const q = r * r + g.ad * g.ad; f += G * g.Md * r / (q * Math.sqrt(q)); // Plummer stand-in for the disk
+    if (g.bh) { const b = r * r + 0.0009; f += G * g.bh.M * r / (b * Math.sqrt(b)); } // central black hole (softened over ~100 ly)
+    return f;
+  }
+  const vcirc = (g, r) => Math.sqrt(Math.max(1e-9, r * gmag(g, r)));
+  // Dark-matter density (for dynamical friction), softened near the centre.
+  function rho(g, r) { r = Math.max(r, 1); return g.Mh * g.ah / (2 * Math.PI * r * Math.pow(r + g.ah, 3)) + 3 * g.Md / (4 * Math.PI * g.ad ** 3) * Math.pow(1 + r * r / (g.ad * g.ad), -2.5); }
+  function erf(z) { const t = 1 / (1 + 0.3275911 * z); return 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z); }
+
+  let seed = 1;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const gauss = () => { let u = rnd() || 1e-9, v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2832 * v); };
+
+  function addStar(c, px, py, pvx, pvy, k) {
+    if (N >= MAX) return;
+    x[N] = c.x + px; y[N] = c.y + py; vx[N] = c.vx + pvx; vy[N] = c.vy + pvy; gid[N] = c.id; kind[N] = k; N++;
+  }
+  function populate(c, n, spin) {
+    const g = c.g, ang0 = rnd() * 6.2832;
+    const nb = Math.round(n * g.bulge), nbar = Math.round(n * g.bar), nd = n - nb - nbar;
+    const circ = (R, th, s, k, disp) => {
+      const v = vcirc(g, R), px = R * Math.cos(th), py = R * Math.sin(th);
+      addStar(c, px, py, -s * v * Math.sin(th) + gauss() * disp * v, s * v * Math.cos(th) + gauss() * disp * v, k);
+    };
+    for (let i = 0; i < nb; i++) { // bulge: random orbit directions, so it's held up by random motion
+      const u = Math.min(0.97, rnd()), su = Math.sqrt(u), R = Math.min(g.ab * su / (1 - su), 4 * g.ab) + 0.02;
+      circ(R, rnd() * 6.2832, rnd() < 0.5 ? 1 : -1, 0, 0.25);
+    }
+    for (let i = 0; i < nbar; i++) { // bar: elongated cloud of old stars along one axis
+      const a = (rnd() * 2 - 1) * g.barLen, b = gauss() * 0.18 * g.barLen;
+      const ca = Math.cos(ang0), sa = Math.sin(ang0), px = a * ca - b * sa, py = a * sa + b * ca;
+      circ(Math.hypot(px, py) + 0.02, Math.atan2(py, px), spin, 0, 0.08);
+    }
+    const clumps = [];
+    for (let k = 0; k < g.clumps; k++) clumps.push({ R: g.Rd * (0.5 + rnd() * 2), th: rnd() * 6.2832, s: g.Rd * (0.25 + rnd() * 0.3) });
+    for (let i = 0; i < nd; i++) {
+      let R, th, k = 1;
+      do { R = -g.Rd * Math.log((rnd() || 1e-9) * (rnd() || 1e-9)); } while (R > g.Rmax); // exponential disk
+      th = rnd() * 6.2832;
+      if (g.arms && rnd() < g.armFrac && R > 0.6 * g.Rd) { // stars bunched along logarithmic spiral arms
+        const arm = Math.floor(rnd() * g.arms);
+        th = ang0 + arm * 6.2832 / g.arms + spin * Math.log(R / g.Rd) / Math.tan(g.pitch * Math.PI / 180) + gauss() * 0.22;
+        k = 2;
+      } else if (clumps.length && rnd() < 0.35) { // star-forming clumps of irregular galaxies
+        const cl = clumps[Math.floor(rnd() * clumps.length)];
+        const px = cl.R * Math.cos(cl.th) + gauss() * cl.s, py = cl.R * Math.sin(cl.th) + gauss() * cl.s;
+        R = Math.hypot(px, py) + 0.02; th = Math.atan2(py, px); k = 2;
+      }
+      circ(R, th, spin, k, 0.05);
+    }
+  }
+
+  // o: { target, impactor (models), peri (kpc), speed (× escape speed at pericentre), spinT, spinI (+1 with the orbit, −1 against), stars }
+  function build(o) {
+    N = 0; timeMyr = 0; cores.length = 0; seed = 12345;
+    const A = o.target, B = o.impactor, MA = mass(A), MB = mass(B), Mt = MA + MB;
+    let D0 = 2.3 * (A.Rmax + B.Rmax) + 1.2 * o.peri + 20;
+    // Orbit set-up uses the real pull between two extended galaxies, not two points:
+    // U(d) is the potential energy at separation d, found by integrating the force inward.
+    const mu = MA * MB / Mt, force = d => 0.5 * (MA * gmag(B, d) + MB * gmag(A, d));
+    const U = d => { // integrate from far away (log-spaced) down to d
+      const dmax = 20000; let u = -G * MA * MB / dmax, lo = Math.log(d), hi = Math.log(dmax), n = 400, h = (hi - lo) / n;
+      for (let k = 0; k < n; k++) { const r0 = Math.exp(lo + k * h), r1 = Math.exp(lo + (k + 1) * h), rm = Math.sqrt(r0 * r1); u -= force(rm) * (r1 - r0); }
+      return u;
+    };
+    let rx, ry = 0, rvx, rvy;
+    if (o.peri < 0.5) { // head-on: speed given relative to escape speed at the starting distance
+      rx = D0; rvx = -o.speed * Math.sqrt(2 * -U(D0) / mu); rvy = 0;
+    } else {
+      const q = o.peri, vp = o.speed * Math.sqrt(2 * -U(q) / mu), L = q * vp, E = 0.5 * mu * vp * vp + U(q);
+      // if the orbit is bound and turns around before D0, start at that turning point instead
+      let ke = E - U(D0);
+      if (ke <= 0.5 * mu * (L / D0) ** 2) {
+        let lo = q, hi = D0;
+        for (let k = 0; k < 60; k++) { const mid = 0.5 * (lo + hi); if (E - U(mid) > 0.5 * mu * (L / mid) ** 2) lo = mid; else hi = mid; }
+        D0 = lo * 0.999; ke = E - U(D0);
+      }
+      const v0 = Math.sqrt(2 * ke / mu), vt = Math.min(L / D0, v0);
+      rx = D0; rvx = -Math.sqrt(Math.max(0, v0 * v0 - vt * vt)); rvy = vt;
+    }
+    const fa = MB / Mt, fb = MA / Mt;
+    cores.push({ id: 0, g: A, M: MA, x: -rx * fa, y: -ry * fa, vx: -rvx * fa, vy: -rvy * fa });
+    cores.push({ id: 1, g: B, M: MB, x: rx * fb, y: ry * fb, vx: rvx * fb, vy: rvy * fb });
+    // Star counts: more for bigger galaxies, but every galaxy gets enough to see its shape.
+    const wA = A.weight, wB = B.weight, nA = Math.round(o.stars * wA / (wA + wB)), nB = o.stars - nA;
+    populate(cores[0], nA, o.spinT);
+    populate(cores[1], nB, o.spinI);
+    return { D0, Rmax: Math.max(A.Rmax, B.Rmax), MA, MB };
+  }
+
+  // dtMyr: step length in millions of years.
+  function step(dtMyr) {
+    const dt = dtMyr / MYR, A = cores[0], B = cores[1];
+    // galaxies pull on each other (averaged so momentum is conserved) …
+    const dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy) + 1e-6, ux = dx / d, uy = dy / d;
+    const F = 0.5 * (A.M * gmag(B.g, d) + B.M * gmag(A.g, d));
+    let fx = F * ux, fy = F * uy;
+    // … and feel dynamical friction (Chandrasekhar's formula) when their dark matter overlaps.
+    const rvx = A.vx - B.vx, rvy = A.vy - B.vy, v = Math.hypot(rvx, rvy) + 1e-6;
+    let drag = 0;
+    for (const [P, Q] of [[A, B], [B, A]]) {
+      const sigma = 0.7 * vcirc(Q.g, Q.g.ah), X = v / (Math.SQRT2 * sigma);
+      const fX = erf(X) - 2 * X / Math.sqrt(Math.PI) * Math.exp(-X * X);
+      drag += DF * 4 * Math.PI * G * G * P.M * P.M * rho(Q.g, d) / (v * v) * fX;
+    }
+    const mu = A.M * B.M / (A.M + B.M);
+    drag = Math.min(drag, 0.5 * mu * v / dt); // never reverse the motion in one step
+    fx -= drag * rvx / v; fy -= drag * rvy / v;
+    A.vx += fx / A.M * dt; A.vy += fy / A.M * dt; B.vx -= fx / B.M * dt; B.vy -= fy / B.M * dt;
+    A.x += A.vx * dt; A.y += A.vy * dt; B.x += B.vx * dt; B.y += B.vy * dt;
+    // stars: test particles in both galaxies' gravity
+    const gA = A.g, gB = B.g;
+    for (let i = 0; i < N; i++) {
+      let ax = 0, ay = 0;
+      let ex = A.x - x[i], ey = A.y - y[i], r = Math.sqrt(ex * ex + ey * ey) + 1e-3, f = gmag(gA, r) / r;
+      ax += f * ex; ay += f * ey;
+      ex = B.x - x[i]; ey = B.y - y[i]; r = Math.sqrt(ex * ex + ey * ey) + 1e-3; f = gmag(gB, r) / r;
+      ax += f * ex; ay += f * ey;
+      vx[i] += ax * dt; vy[i] += ay * dt; x[i] += vx[i] * dt; y[i] += vy[i] * dt;
+    }
+    timeMyr += dtMyr;
+  }
+  function com() {
+    const A = cores[0], B = cores[1], M = A.M + B.M;
+    return { x: (A.M * A.x + B.M * B.x) / M, y: (A.M * A.y + B.M * B.y) / M, vx: (A.M * A.vx + B.M * B.vx) / M, vy: (A.M * A.vy + B.M * B.vy) / M };
+  }
+  const separation = () => Math.hypot(cores[1].x - cores[0].x, cores[1].y - cores[0].y);
+  return { setDF: v => { DF = v; }, x, y, vx, vy, gid, kind, cores, build, step, com, separation, vcirc, mass, LY_PER_KPC,
+    get N() { return N; }, get timeMyr() { return timeMyr; } };
+})();
+if (typeof module !== 'undefined') module.exports = { GalaxySim, GALAXIES };
+(() => {
+const S = Sim, DT = 1 / 240;
+const canvas = document.getElementById('c'), ctx = canvas.getContext('2d', { alpha: false });
+const $ = id => document.getElementById(id);
+
+const PRESETS = [
+  { id: 'moon', name: 'Glancing blow', angle: 50, speed: 1.15 },
+  { id: 'head', name: 'Head-on', angle: 0, speed: 1.4 },
+  { id: 'run', name: 'Hit and run', angle: 62, speed: 1.9 },
+  { id: 'shatter', name: 'Shatter', angle: 10, speed: 2.5 },
+  { id: 'merge', name: 'Slow merge', angle: 30, speed: 0.9 },
+  { id: 'rings', name: 'Tear into rings', angle: 18, speed: 0.72, orbit: true }
+];
+const RMIN = 0.01, RMAX = 100;
+const realRatio = (t, i) => BODIES[i].km / BODIES[t].km;
+const clampRatio = r => Math.max(RMIN, Math.min(RMAX, r));
+const state = { target: 'earth', impactor: 'mars', ratio: clampRatio(realRatio('earth', 'mars')), angle: 50, speed: 1.15, time: 1, detail: innerWidth < 720 ? 1500 : 2500,
+  paused: false, trails: false, autoZoom: true, follow: true, throwMode: false, preset: 'moon', mode: 'planets', spawn: 'rock' };
+
+// ---------- colours ----------
+let BASE = Scenario.palette(BODIES.earth, BODIES.mars);
+const RAMP = [[0, [194, 42, 16]], [0.45, [255, 122, 26]], [0.9, [255, 196, 90]], [1.3, [255, 240, 196]]];
+const LEVELS = [0.07, 0.18, 0.32, 0.48, 0.66, 0.86, 1.1]; // heat thresholds -> 8 levels
+const NL = 8;
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+function ramp(h) {
+  for (let i = 0; i < RAMP.length - 1; i++) {
+    const [a, ca] = RAMP[i], [b, cb] = RAMP[i + 1];
+    if (h <= b) { const t = Math.max(0, (h - a) / (b - a)); return ca.map((v, k) => v + (cb[k] - v) * t); }
+  }
+  return RAMP[RAMP.length - 1][1];
+}
+const levelHeat = l => l === 0 ? 0 : (LEVELS[l - 1] + (LEVELS[l] ?? 1.4)) / 2;
+const COLORS = [], GLOW = [];
+function buildColors() {
+  COLORS.length = 0;
+  for (let m = 0; m < BASE.length; m++) for (let l = 0; l < NL; l++) {
+    const b = hex(BASE[m]), h = levelHeat(l), r = ramp(h), t = Math.min(1, h / 0.55);
+    const c = b.map((v, k) => Math.round(v + (r[k] - v) * t));
+    COLORS.push(`rgb(${c[0]},${c[1]},${c[2]})`);
+  }
+}
+buildColors();
+for (let l = 0; l < NL; l++) { const r = ramp(levelHeat(l)).map(Math.round); GLOW.push(`rgba(${r[0]},${r[1]},${r[2]},${(0.05 + 0.13 * l / NL).toFixed(3)})`); }
+// draw buckets (material × heat level); spawned bodies add materials, so buckets are made as needed
+const bucketIdx = [], bucketN = new Int32Array(256 * NL);
+function levelOf(h) { let l = 0; while (l < LEVELS.length && h >= LEVELS[l]) l++; return l; }
+
+// ---------- canvas & stars ----------
+let W = 0, Hh = 0, dpr = 1, stars = null;
+function resize() {
+  dpr = Math.min(2, devicePixelRatio || 1);
+  W = innerWidth; Hh = innerHeight;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(Hh * dpr);
+  stars = document.createElement('canvas'); stars.width = canvas.width; stars.height = canvas.height;
+  const s = stars.getContext('2d');
+  const g = s.createRadialGradient(stars.width * 0.7, stars.height * 0.3, 0, stars.width * 0.7, stars.height * 0.3, Math.max(stars.width, stars.height) * 0.9);
+  g.addColorStop(0, '#1f1650'); g.addColorStop(0.5, '#120d2b'); g.addColorStop(1, '#07051a');
+  s.fillStyle = g; s.fillRect(0, 0, stars.width, stars.height);
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const n = Math.round(W * Hh / 2600);
+  for (let i = 0; i < n; i++) {
+    const a = 0.15 + rnd() * 0.6, rr = (rnd() < 0.92 ? 0.6 : 1.3) * dpr;
+    s.fillStyle = `rgba(${220 + rnd() * 35 | 0},${215 + rnd() * 40 | 0},255,${a.toFixed(2)})`;
+    s.beginPath(); s.arc(rnd() * stars.width, rnd() * stars.height, rr, 0, 6.283); s.fill();
+  }
+}
+addEventListener('resize', resize); resize();
+
+// ---------- simulation lifecycle ----------
+let geo = null, phase = 'settle', settleLeft = 0, launchT = 0;
+const cam = { x: 0, y: 0, z: 1, zt: 1 };
+// The visible area for the simulation: either above the control panel or beside it, whichever is roomier.
+const vr = { cx: 0, cy: 0, w: 1, h: 1 };
+function measureView() {
+  const top = document.querySelector('.hud').getBoundingClientRect().bottom + 10;
+  const d = $('dock').getBoundingClientRect();
+  const above = { cx: W / 2, cy: (top + d.top - 10) / 2, w: W * 0.92, h: d.top - 10 - top };
+  const beside = { cx: (d.right + W) / 2, cy: (top + Hh) / 2, w: W - d.right - 20, h: Hh - top - 10 };
+  const score = r => Math.min(r.w, r.h);
+  const pick = score(beside) > score(above) ? beside : above;
+  if (score(pick) >= 160) Object.assign(vr, pick); else Object.assign(vr, { cx: W / 2, cy: Hh / 2, w: W * 0.92, h: Hh * 0.6 });
+}
+function fitZoom(extent) { return Math.min(vr.w, vr.h) * 0.5 / extent; }
+function restart() {
+  measureView();
+  if (state.mode === 'galaxies') { restartGalaxies(); return; }
+  if (state.target === 'empty') { restartEmpty(); return; }
+  const tb = BODIES[state.target], ib = BODIES[state.impactor];
+  BASE = Scenario.palette(tb, ib); buildColors();
+  geo = Scenario.build(S, { total: state.detail, target: tb, impactor: ib, ratio: state.ratio, angle: state.angle, speed: state.speed, orbit: state.orbit && !ib.blackhole });
+  renderLegend();
+  spawnPid = 3; spawnMats = {}; spawnNames = {}; spawnKeys = {}; origMass = {}; closeInspector();
+  phase = 'settle'; settleLeft = 150;
+  // keep a ringed planet's rings in view too
+  geo.ringR = 0;
+  if (!geo.pointPlanet) for (const [b, R] of [[tb, geo.R1], [ib, geo.R2]]) if (b.rings && R) geo.ringR = Math.max(geo.ringR, b.rings[b.rings.length - 1].to / (b.km / R));
+  const ext = Math.max(geo.bh ? geo.dist0 + geo.R1 * 1.5 : geo.dist0 * Math.max(geo.M1, geo.M2) / (geo.M1 + geo.M2) + Math.min(geo.R1, geo.R2) * 1.3 + 20, geo.ringR * 1.05);
+  cam.x = S.bh ? S.bh.x : 0; cam.y = S.bh ? S.bh.y : 0; cam.z = cam.zt = fitZoom(ext);
+  r80 = ext;
+  if (typeof setFollow === 'function' && $('bFollow')) setFollow(true);
+  if ($('iSpawn')) syncSpawnOptions();
+  if (state.trails) clearFull = true;
+}
+
+// An empty world: nothing until you spawn it (the first planet you add sets the scale).
+function restartEmpty() {
+  S.clear(); S.cullRadius = 1e9;
+  BASE = Scenario.palette(BODIES.earth, BODIES.mars); buildColors();
+  geo = { empty: true, ref: null, R1: 0, R2: 0, Rmax: 150, dist0: 600, M1: 1, M2: 0, vesc: 150, kRef: null, ringR: 0 };
+  spawnPid = 3; spawnMats = {}; spawnNames = {}; spawnKeys = {}; origMass = {}; closeInspector();
+  phase = 'run'; launchT = S.time;
+  cam.x = 0; cam.y = 0; cam.z = cam.zt = fitZoom(700); r80 = 700;
+  renderLegend(); setFollow(true); syncSpawnOptions(); syncInputs();
+  if (state.trails) clearFull = true;
+}
+let r80 = 300, frameNo = 0, clearFull = true;
+const distBuf = new Float64Array(70000);
+function comState() {
+  if (state.mode === 'galaxies') return GS.com();
+  let M = 0, cx = 0, cy = 0, pvx = 0, pvy = 0;
+  for (let i = 0; i < S.N; i++) { const m = S.m[i]; M += m; cx += m * S.x[i]; cy += m * S.y[i]; pvx += m * S.vx[i]; pvy += m * S.vy[i]; }
+  const b = S.bh; if (b) { M += b.M; cx += b.M * b.x; cy += b.M * b.y; pvx += b.M * b.vx; pvy += b.M * b.vy; }
+  if (!M) return { x: cam.x, y: cam.y, vx: 0, vy: 0 }; // empty world
+  return { x: cx / M, y: cy / M, vx: pvx / M, vy: pvy / M };
+}
+function updateCamera() {
+  const c = comState();
+  // with a black hole, keep it centred (zooming in on it then works at any magnification)
+  const f = state.mode === 'planets' && S.bh && geo.bh ? S.bh : c;
+  if (state.follow) { cam.x += (f.x - cam.x) * 0.12; cam.y += (f.y - cam.y) * 0.12; }
+  if (frameNo % 20 === 0) measureView();
+  if (state.mode === 'galaxies') {
+    if (state.autoZoom && frameNo % 5 === 0) {
+      const n = GS.N, stride = Math.max(1, Math.floor(n / 6000)); let k = 0;
+      for (let i = 0; i < n; i += stride) distBuf[k++] = Math.hypot(GS.x[i] - c.x, GS.y[i] - c.y);
+      const sub = distBuf.subarray(0, k); sub.sort();
+      r80 = Math.max(sub[Math.floor(k * 0.9)] * 1.1, ggeo.Rmax * 1.2);
+    }
+  } else if (state.autoZoom && phase === 'run' && frameNo % 5 === 0 && S.N > 5) {
+    const n = S.N;
+    for (let i = 0; i < n; i++) distBuf[i] = Math.hypot(S.x[i] - c.x, S.y[i] - c.y);
+    const sub = distBuf.subarray(0, n); sub.sort();
+    // also keep each whole body in view (a small impactor is only a few % of the particles)
+    const bm = [0, 0], bx = [0, 0], by = [0, 0];
+    for (let i = 0; i < n; i++) { const p = S.pid[i]; if (p < 2) { bm[p] += S.m[i]; bx[p] += S.m[i] * S.x[i]; by[p] += S.m[i] * S.y[i]; } }
+    let rb = 0;
+    for (let p = 0; p < 2; p++) if (bm[p]) rb = Math.max(rb, Math.hypot(bx[p] / bm[p] - c.x, by[p] / bm[p] - c.y) + (p ? geo.R2 : geo.R1) * 1.15);
+    r80 = Math.max(sub[Math.floor(n * 0.85)] * 1.2, geo.Rmax * 1.6, geo.ringR * 1.05, rb);
+  }
+  if (state.autoZoom) { cam.zt = fitZoom(r80); cam.z += (cam.zt - cam.z) * (cam.zt < cam.z ? 0.12 : 0.04); }
+}
+
+// ---------- render ----------
+let hottest = 0;
+function render() {
+  if (state.mode === 'galaxies') { renderGalaxies(); return; }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (state.trails && !clearFull) { ctx.globalAlpha = 0.18; ctx.drawImage(stars, 0, 0); ctx.globalAlpha = 1; }
+  else { ctx.drawImage(stars, 0, 0); clearFull = false; }
+  const z = cam.z * dpr, ox = vr.cx * dpr - cam.x * z, oy = vr.cy * dpr - cam.y * z;
+  if (S.bh && S.bh.kind === 'planet') drawPointPlanet(S.bh, z, ox, oy);
+  bucketN.fill(0);
+  const n = S.N, X = S.x, Y = S.y, Hh2 = S.heat, MAT = S.mat, R = S.rad;
+  let hot = 0;
+  const pad = 20;
+  for (let i = 0; i < n; i++) {
+    const sx = X[i] * z + ox, sy = Y[i] * z + oy;
+    const h = Hh2[i]; if (h > hot) hot = h;
+    if (sx < -pad || sy < -pad || sx > canvas.width + pad || sy > canvas.height + pad) continue;
+    const b = MAT[i] * NL + levelOf(h);
+    (bucketIdx[b] || (bucketIdx[b] = new Int32Array(16000)))[bucketN[b]++] = i;
+  }
+  hottest = hot;
+  // rings first, so the planets sit on top of them
+  if (S.NR) {
+    const qx = S.qx, qy = S.qy, qc = S.qc, s = Math.max(1, 1.4 * dpr), hs = s / 2;
+    const rings = BODIES.saturn.rings; // the only ringed body
+    const alpha = [0.5, 0.95, 0.7];
+    ctx.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < rings.length; k++) {
+      const [r, g, b] = hex(rings[k].col); ctx.fillStyle = `rgba(${r},${g},${b},${alpha[k]})`;
+      for (let i = 0; i < S.NR; i++) if (qc[i] === k) ctx.fillRect(qx[i] * z + ox - hs, qy[i] * z + oy - hs, s, s);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  const small = S.P.r * z < 1.6;
+  for (let b = 0, NB = BASE.length * NL; b < NB; b++) {
+    const cnt = bucketN[b]; if (!cnt) continue;
+    const idx = bucketIdx[b];
+    ctx.fillStyle = COLORS[b];
+    if (small) {
+      for (let k = 0; k < cnt; k++) { const i = idx[k]; const s = Math.max(1.2, R[i] * z * 1.9); ctx.fillRect(X[i] * z + ox - s / 2, Y[i] * z + oy - s / 2, s, s); }
+    } else {
+      ctx.beginPath();
+      for (let k = 0; k < cnt; k++) { const i = idx[k]; const sx = X[i] * z + ox, sy = Y[i] * z + oy, rr = R[i] * z * 1.18; ctx.moveTo(sx + rr, sy); ctx.arc(sx, sy, rr, 0, 6.2832); }
+      ctx.fill();
+    }
+  }
+  // glow for hot material
+  ctx.globalCompositeOperation = 'lighter';
+  for (let l = 2; l < NL; l++) {
+    ctx.fillStyle = GLOW[l]; ctx.beginPath();
+    for (let m = 0; m < BASE.length; m++) {
+      const b = m * NL + l, cnt = bucketN[b], idx = bucketIdx[b];
+      for (let k = 0; k < cnt; k++) { const i = idx[k]; const sx = X[i] * z + ox, sy = Y[i] * z + oy, rr = Math.max(2.5 * dpr, R[i] * z * (2.2 + l * 0.35)); ctx.moveTo(sx + rr, sy); ctx.arc(sx, sy, rr, 0, 6.2832); }
+    }
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  if (S.bh && S.bh.kind !== 'planet') drawRealBH(S.bh, z, ox, oy);
+  drawSelection(z, ox, oy);
+  // throw preview
+  if (drag) {
+    const a = toScreen(drag.wx, drag.wy), b = toScreen(drag.wx2, drag.wy2);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rr = spawnRadius() * cam.z;
+    ctx.strokeStyle = 'rgba(207,197,255,.85)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(a.x, a.y, Math.max(3, rr), 0, 6.283); ctx.stroke();
+    const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy);
+    if (L > 6) {
+      ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+      const ux = dx / L, uy = dy / L;
+      ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - ux * 10 - uy * 6, b.y - uy * 10 + ux * 6); ctx.lineTo(b.x - ux * 10 + uy * 6, b.y - uy * 10 - ux * 6); ctx.closePath();
+      ctx.fillStyle = 'rgba(207,197,255,.85)'; ctx.fill();
+      const t = throwVel();
+      const nm = state.spawn === 'rock' ? 'rock' : BODIES[state.spawn].name;
+      const label = `${nm}, ${(t.v / geo.vesc).toFixed(1)}× escape speed${t.capped ? ' (max)' : ''}`;
+      ctx.font = '600 13px Figtree, system-ui, sans-serif'; ctx.textBaseline = 'middle';
+      ctx.textAlign = ux < -0.3 ? 'right' : 'left';
+      ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillText(label, b.x + (ux < -0.3 ? -13 : 13) + 1, b.y - 13 + 1);
+      ctx.fillStyle = '#efeaff'; ctx.fillText(label, b.x + (ux < -0.3 ? -13 : 13), b.y - 13);
+    }
+  }
+}
+function toScreen(wx, wy) { return { x: (wx - cam.x) * cam.z + vr.cx, y: (wy - cam.y) * cam.z + vr.cy }; }
+function toWorld(sx, sy) { return { x: (sx - vr.cx) / cam.z + cam.x, y: (sy - vr.cy) / cam.z + cam.y }; }
+
+// ---------- galaxy mode ----------
+const GS = GalaxySim, MYR_PER_SEC = 50;   // at 1× time speed, one second shows 50 million years
+const GPRESETS = [
+  { id: 'merge', name: 'Close pass and merge', peri: 1.0, speed: 0.9, spinT: 1, spinI: 1 },
+  { id: 'flyby', name: 'Flyby', peri: 2.2, speed: 1.3, spinT: 1, spinI: 1 },
+  { id: 'retro', name: 'One spins backwards', peri: 1.0, speed: 0.9, spinT: 1, spinI: -1 },
+  { id: 'headon', name: 'Head-on', peri: 0, speed: 0.9, spinT: 1, spinI: 1 },
+  { id: 'slow', name: 'Slow spiral-in', peri: 2.6, speed: 0.75, spinT: 1, spinI: 1 }
+];
+const gstate = { target: 'milkyway', impactor: 'andromeda', peri: 1.0, speed: 0.9, spinT: 1, spinI: 1, stars: innerWidth < 720 ? 8000 : 20000, preset: 'merge' };
+const ALT_COL = ['#ffd0b0', '#ffe0f0', '#ff9fd0'];
+let ggeo = { Rmax: 20, D0: 100 }, GCOL = [], bhEvent = null;
+const gBucket = Array.from({ length: 6 }, () => new Int32Array(70000)), gBucketN = new Int32Array(6);
+function periKpc() { return gstate.peri * Math.max(GALAXIES[gstate.target].Rmax, GALAXIES[gstate.impactor].Rmax); }
+const fmtLy = kpc => { const ly = kpc * GS.LY_PER_KPC; return ly >= 1e6 ? (ly / 1e6).toFixed(1) + ' million ly' : Math.round(ly / 1000).toLocaleString() + ',000 ly'; };
+function restartGalaxies() {
+  const A = GALAXIES[gstate.target], B = GALAXIES[gstate.impactor];
+  bhEvent = null;
+  ggeo = GS.build({ target: A, impactor: B, peri: periKpc(), speed: gstate.speed, spinT: gstate.spinT, spinI: gstate.spinI, stars: gstate.stars });
+  const ca = A.col, cb = gstate.target === gstate.impactor ? ALT_COL : B.col;
+  const alpha = [0.55, 0.32, 0.6];
+  GCOL = [...ca, ...cb].map((c, i) => { const [r, g, b] = hex(c); return `rgba(${r},${g},${b},${alpha[i % 3]})`; });
+  renderGalaxyLegend();
+  const ext = ggeo.D0 * 0.5 + ggeo.Rmax * 0.7;
+  cam.x = 0; cam.y = 0; cam.z = cam.zt = fitZoom(ext); r80 = ext;
+  setFollow(true);
+  if (state.trails) clearFull = true;
+}
+function renderGalaxies() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  if (state.trails && !clearFull) { ctx.globalAlpha = 0.12; ctx.drawImage(stars, 0, 0); ctx.globalAlpha = 1; }
+  else { ctx.drawImage(stars, 0, 0); clearFull = false; }
+  const z = cam.z * dpr, ox = vr.cx * dpr - cam.x * z, oy = vr.cy * dpr - cam.y * z;
+  ctx.globalCompositeOperation = 'lighter';
+  // soft glow of each galaxy's crowded centre
+  for (const c of GS.cores) {
+    const sx = c.x * z + ox, sy = c.y * z + oy, rr = Math.max(4 * dpr, (c.g.ab + 0.4 * c.g.Rd) * 2.2 * z);
+    const gr = ctx.createRadialGradient(sx, sy, 0, sx, sy, rr);
+    const col = hex(c.g.col[0]);
+    gr.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},0.5)`); gr.addColorStop(1, `rgba(${col[0]},${col[1]},${col[2]},0)`);
+    ctx.fillStyle = gr; ctx.fillRect(sx - rr, sy - rr, rr * 2, rr * 2);
+  }
+  gBucketN.fill(0);
+  const n = GS.N, X = GS.x, Y = GS.y, GI = GS.gid, KI = GS.kind, wpx = canvas.width, hpx = canvas.height;
+  for (let i = 0; i < n; i++) {
+    const sx = X[i] * z + ox, sy = Y[i] * z + oy;
+    if (sx < -2 || sy < -2 || sx > wpx + 2 || sy > hpx + 2) continue;
+    const b = GI[i] * 3 + KI[i]; gBucket[b][gBucketN[b]++] = i;
+  }
+  const s = Math.max(1, 1.25 * dpr), hs = s / 2;
+  for (let b = 0; b < 6; b++) {
+    const cnt = gBucketN[b], idx = gBucket[b]; if (!cnt) continue;
+    ctx.fillStyle = GCOL[b];
+    for (let k = 0; k < cnt; k++) { const i = idx[k]; ctx.fillRect(X[i] * z + ox - hs, Y[i] * z + oy - hs, s, s); }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  drawBlackHoles(z, ox, oy);
+}
+// ---------- black holes ----------
+// Markers are not to scale: Sgr A*'s event horizon is about 0.0000004 light-years across.
+const fmtSuns = m => m >= 1e9 ? (m / 1e9).toFixed(1) + ' billion' : m >= 1e6 ? (m >= 1e7 ? Math.round(m / 1e6) : (m / 1e6).toFixed(1)) + ' million' : Math.round(m / 1e3) + ',000';
+function bhMarker(sx, sy, M, label) {
+  const R = (2.5 + 1.6 * Math.log10(Math.max(M, 1e5) / 1e5)) * dpr;
+  ctx.globalCompositeOperation = 'lighter';
+  const gr = ctx.createRadialGradient(sx, sy, R * 0.5, sx, sy, R * 1.8);
+  gr.addColorStop(0, 'rgba(255,170,80,0.9)'); gr.addColorStop(0.35, 'rgba(255,120,40,0.35)'); gr.addColorStop(1, 'rgba(255,90,20,0)');
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(sx, sy, R * 1.8, 0, 6.2832); ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(sx, sy, R * 0.62, 0, 6.2832); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,226,170,0.95)'; ctx.lineWidth = Math.max(1, 0.9 * dpr); ctx.beginPath(); ctx.arc(sx, sy, R * 0.7, 0, 6.2832); ctx.stroke();
+  if (label) {
+    ctx.font = `600 ${12 * dpr}px Figtree, system-ui, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const tx = sx + R * 2 + 4 * dpr;
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillText(label, tx + dpr, sy + dpr);
+    ctx.fillStyle = '#ffe2b0'; ctx.fillText(label, tx, sy);
+  }
+}
+// A black hole drawn at its true size: the event horizon, 2GM/c² (about 8.9 km for 3 Suns).
+// Usually that's far smaller than a pixel, so a dashed ring shows where it is.
+// A planet that acts only as a point of gravity (when another body is torn apart around it), drawn at
+// its true size with its layers.
+function drawPointPlanet(b, z, ox, oy) {
+  const t = BODIES[state.target], sx = b.x * z + ox, sy = b.y * z + oy, R = b.rcap * z;
+  for (let k = t.layers.length - 1; k >= 0; k--) {
+    ctx.fillStyle = t.layers[k].col; ctx.beginPath(); ctx.arc(sx, sy, Math.max(1, R * t.layers[k].to), 0, 6.2832); ctx.fill();
+  }
+  ctx.font = `600 ${12 * dpr}px Figtree, system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillText(t.name, sx + dpr, sy + R + 8 * dpr + dpr);
+  ctx.fillStyle = '#efeaff'; ctx.fillText(t.name, sx, sy + R + 8 * dpr);
+}
+function drawRealBH(b, z, ox, oy) {
+  const sx = b.x * z + ox, sy = b.y * z + oy, R = b.rs * z, km = b.km || BODIES[state.impactor].km;
+  // an isolated black hole is simply dark; it only glows while it is swallowing gas
+  const de = b.eaten - (b.lastEaten || 0); b.lastEaten = b.eaten;
+  b.glow = Math.max((b.glow || 0) * 0.97, Math.min(1, de / (geo.M1 * 0.002)));
+  if (R >= 0.3) {
+    if (b.glow > 0.02) {
+      ctx.globalCompositeOperation = 'lighter';
+      const gr = ctx.createRadialGradient(sx, sy, R, sx, sy, R * 3);
+      gr.addColorStop(0, `rgba(255,200,120,${(0.6 * b.glow).toFixed(3)})`); gr.addColorStop(1, 'rgba(255,140,60,0)');
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(sx, sy, R * 3, 0, 6.2832); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(sx, sy, Math.max(R, 0.5), 0, 6.2832); ctx.fill();
+  }
+  ctx.font = `600 ${12 * dpr}px Figtree, system-ui, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  let label;
+  if (R < 6 * dpr) {
+    ctx.strokeStyle = 'rgba(255,226,170,0.8)'; ctx.lineWidth = dpr; ctx.setLineDash([3 * dpr, 3 * dpr]);
+    ctx.beginPath(); ctx.arc(sx, sy, 10 * dpr, 0, 6.2832); ctx.stroke(); ctx.setLineDash([]);
+    label = `black hole, ${Math.round(2 * km)} km` + (R < 0.5 ? ' (smaller than a pixel)' : '');
+  } else label = `event horizon, ${Math.round(2 * km)} km across`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const ty = sy + Math.max(14 * dpr, R + 8 * dpr);
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillText(label, sx + dpr, ty + dpr);
+  ctx.fillStyle = '#ffe2b0'; ctx.fillText(label, sx, ty);
+}
+function drawBlackHoles(z, ox, oy) {
+  const [A, B] = GS.cores, ba = A.g.bh, bb = B.g.bh;
+  const sep = GS.separation();
+  if (ba && bb && !bhEvent && sep < 0.3) {
+    const M = ba.M + bb.M, eta = ba.M * bb.M / (M * M);
+    bhEvent = { t0: performance.now(), M: M * (1 - 0.19 * eta), x: A.x, y: A.y };
+  }
+  if (bhEvent) {
+    const sx = A.x * z + ox, sy = A.y * z + oy, age = (performance.now() - bhEvent.t0) / 1000;
+    if (age < 5) { // gravitational-wave ripples (drawn as rings; real ones are far too faint to see)
+      ctx.lineWidth = 2 * dpr;
+      for (let k = 0; k < 4; k++) {
+        const a = age - k * 0.35; if (a <= 0) continue;
+        const rr = a * Math.min(canvas.width, canvas.height) * 0.16, al = Math.max(0, 0.7 * (1 - age / 5) * (1 - k * 0.2));
+        ctx.strokeStyle = `rgba(190,220,255,${al.toFixed(3)})`; ctx.beginPath(); ctx.arc(sx, sy, rr, 0, 6.2832); ctx.stroke();
+      }
+      ctx.font = `700 ${14 * dpr}px Figtree, system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillStyle = `rgba(230,240,255,${Math.min(1, 2 * (1 - age / 5)).toFixed(3)})`;
+      ctx.fillText('Black holes merged', sx, sy - 34 * dpr);
+    }
+    bhMarker(sx, sy, bhEvent.M, `merged black hole, ${fmtSuns(bhEvent.M)} Suns`);
+    return;
+  }
+  const far = sep * z > 110 * dpr;
+  for (const c of GS.cores) if (c.g.bh) bhMarker(c.x * z + ox, c.y * z + oy, c.g.bh.M, far || !(ba && bb) ? `${c.g.bh.name}, ${fmtSuns(c.g.bh.M)} Suns` : '');
+}
+function updateGalaxyStats() {
+  const t = GS.timeMyr;
+  $('sTime').textContent = t < 1000 ? Math.round(t) + ' million' : (t / 1000).toFixed(2) + ' billion';
+  $('sN').textContent = GS.N.toLocaleString();
+  const d = GS.separation();
+  $('sHot').textContent = d < 1 ? 'merged' : fmtLy(d).replace(' ly', '');
+  $('lHot').textContent = d < 1 ? 'galaxy centres' : 'light-years apart';
+}
+function fmtMass(m) { return m >= 1e12 ? (m / 1e12).toFixed(1) + ' trillion' : Math.round(m / 1e9) + ' billion'; }
+function renderGalaxyLegend() {
+  const L = $('glegend'); L.textContent = '';
+  const same = gstate.target === gstate.impactor;
+  [[GALAXIES[gstate.target], GALAXIES[gstate.target].col], [GALAXIES[gstate.impactor], same ? ALT_COL : GALAXIES[gstate.impactor].col]].forEach(([g, col]) => {
+    const row = document.createElement('div'); row.className = 'lrow';
+    const nm = document.createElement('strong'); nm.textContent = g.name; row.appendChild(nm);
+    const sw = document.createElement('span'); for (const c of col) { const i = document.createElement('i'); i.style.background = c; sw.appendChild(i); } row.appendChild(sw);
+    const info = document.createElement('span');
+    info.textContent = `${g.kind}, about ${fmtLy(2 * g.Rmax)} across, ${fmtMass(GS.mass(g))} Suns of mass. ` +
+      (g.bh ? `Black hole ${g.bh.name}: ${fmtSuns(g.bh.M)} Suns${g.bh.note ? ' (' + g.bh.note + ')' : ''}.` : `Black hole: ${g.noBh}.`);
+    row.appendChild(info); L.appendChild(row);
+  });
+  const note = document.createElement('p'); note.className = 'lnote';
+  note.textContent = 'Black-hole markers are hugely enlarged; when two merge, about 5% of their mass (for an equal pair) leaves as gravitational waves. Stars orbit in the gravity of both galaxies. Invisible dark matter holds about 90% of the mass, and its drag is what makes galaxies merge. Both disks share one plane; values are rounded estimates.';
+  L.appendChild(note);
+}
+function syncGalaxyInputs() {
+  $('gTarget').value = gstate.target; $('gImpactor').value = gstate.impactor;
+  $('iPeri').value = gstate.peri; $('iGSpeed').value = gstate.speed; $('iGTime').value = state.time;
+  $('oPeri').textContent = gstate.peri < 0.03 ? 'dead centre' : fmtLy(periKpc());
+  $('oGSpeed').textContent = (+gstate.speed).toFixed(2) + '×';
+  $('oGTime').textContent = (+state.time) + '×';
+  $('bSpinT').textContent = gstate.spinT > 0 ? 'First spins with orbit' : 'First spins against orbit';
+  $('bSpinI').textContent = gstate.spinI > 0 ? 'Second spins with orbit' : 'Second spins against orbit';
+  for (const b of $('gpresets').querySelectorAll('.chip')) b.setAttribute('aria-checked', String(b.dataset.id === gstate.preset));
+}
+function setupGalaxyControls() {
+  const gp = $('gpresets');
+  const lg = document.createElement('legend'); lg.textContent = 'Pick an encounter, or tune your own below'; gp.appendChild(lg);
+  for (const p of GPRESETS) {
+    const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.id = p.id; b.textContent = p.name;
+    b.addEventListener('click', () => { Object.assign(gstate, { peri: p.peri, speed: p.speed, spinT: p.spinT, spinI: p.spinI, preset: p.id }); syncGalaxyInputs(); restart(); });
+    gp.appendChild(b);
+  }
+  for (const id of ['gTarget', 'gImpactor']) {
+    const el = $(id);
+    for (const [k, g] of Object.entries(GALAXIES)) { const o = document.createElement('option'); o.value = k; o.textContent = g.short || g.name; el.appendChild(o); }
+    el.addEventListener('change', () => { gstate[id === 'gTarget' ? 'target' : 'impactor'] = el.value; syncGalaxyInputs(); restart(); });
+  }
+  const bindG = (id, key) => {
+    const el = $(id);
+    el.addEventListener('input', () => { gstate[key] = parseFloat(el.value); gstate.preset = null; syncGalaxyInputs(); });
+    el.addEventListener('change', restart);
+  };
+  bindG('iPeri', 'peri'); bindG('iGSpeed', 'speed');
+  $('iGTime').addEventListener('input', e => { state.time = parseFloat(e.target.value); syncInputs(); syncGalaxyInputs(); });
+  $('bSpinT').addEventListener('click', () => { gstate.spinT *= -1; gstate.preset = null; syncGalaxyInputs(); restart(); });
+  $('bSpinI').addEventListener('click', () => { gstate.spinI *= -1; gstate.preset = null; syncGalaxyInputs(); restart(); });
+}
+const DETAIL_OPTS = { planets: [['1500', 'Light'], ['2500', 'Normal'], ['4200', 'Dense']], galaxies: [['8000', 'Light'], ['20000', 'Normal'], ['40000', 'Dense']] };
+const MODE_TEXT = {
+  planets: { title: 'Planet collider', sub: 'Each dot is a chunk of rock pulling on every other chunk. Drag to look around, scroll to zoom, click to inspect, right-drag to spawn.', lTime: 'since launch', lN: 'particles', lHot: 'hottest now', canvas: 'Simulation of two planets made of particles colliding. Drag to move the view, right-drag to spawn objects.' },
+  galaxies: { title: 'Galaxy collider', sub: 'Each dot stands for millions of stars. Drag to look around, scroll to zoom.', lTime: 'years', lN: 'star dots', lHot: 'light-years apart', canvas: 'Simulation of two galaxies colliding. Drag to move the view, scroll to zoom.' }
+};
+function setMode(mode) {
+  if (state.mode === mode) return;
+  state.mode = mode;
+  for (const b of document.querySelectorAll('.mode')) b.setAttribute('aria-checked', String(b.dataset.mode === mode));
+  $('planetUI').hidden = mode !== 'planets'; $('galaxyUI').hidden = mode !== 'galaxies';
+  $('bThrow').hidden = mode !== 'planets'; document.querySelector('.spawnsel').hidden = mode !== 'planets';
+  if (mode !== 'planets' && state.throwMode) $('bThrow').click();
+  const t = MODE_TEXT[mode];
+  $('title').textContent = t.title; $('subtitle').textContent = t.sub; document.title = t.title;
+  $('lTime').textContent = t.lTime; $('lN').textContent = t.lN; $('lHot').textContent = t.lHot;
+  $('stHot').classList.toggle('cool', mode === 'galaxies'); $('stHot').classList.toggle('hot', mode === 'planets');
+  canvas.setAttribute('aria-label', t.canvas);
+  const sel = $('iDetail'); sel.textContent = '';
+  for (const [v, l] of DETAIL_OPTS[mode]) { const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o); }
+  sel.value = String(mode === 'planets' ? state.detail : gstate.stars);
+  $('bRestart').textContent = mode === 'planets' ? 'Launch again' : 'Start again';
+  syncGalaxyInputs(); setCursor(); measureView(); restart();
+}
+
+// ---------- loop ----------
+// Bodies made of small particles need shorter steps to stay stable.
+// Fast material (a thrown rock, a violent impact) automatically gets more, shorter sub-steps.
+function simStep(settling) { const k = Math.min(24, S.subdiv(DT)); for (let j = 0; j < k; j++) S.step(DT / k, settling); }
+let last = performance.now(), fpsAcc = 0;
+function frame(now) {
+  const dtReal = Math.min(0.1, (now - last) / 1000); last = now;
+  if (state.mode === 'galaxies') {
+    if (!state.paused) { const sub = Math.max(1, Math.round(4 * state.time)); for (let k = 0; k < sub; k++) GS.step(MYR_PER_SEC * DT); }
+  } else if (phase === 'settle') {
+    for (let k = 0; k < 15 && settleLeft > 0; k++, settleLeft--) simStep(true);
+    if (settleLeft <= 0) {
+      Scenario.launch(S, geo); phase = 'run'; launchT = S.time;
+      for (const p of [0, 1]) origMass[p] = S.bodyMass(p);
+      if (!geo.pointPlanet) Scenario.addRings(S, geo, { target: BODIES[state.target], impactor: BODIES[state.impactor], ringCount: Math.round(state.detail * 2) });
+    }
+  } else if (!state.paused) {
+    const sub = Math.max(1, Math.min(10, Math.round(4 * state.time)));
+    const t0 = performance.now();
+    for (let k = 0; k < sub; k++) {
+      simStep(false);
+      if (performance.now() - t0 > 28) break; // keep the page responsive on slow devices
+    }
+  }
+  keyPan(dtReal);
+  updateCamera();
+  render();
+  if (state.mode === 'planets') { drawFlash(); if (sel && frameNo % 10 === 0) updateInspector(); }
+  if (frameNo % 6 === 0) updateStats();
+  frameNo++;
+  requestAnimationFrame(frame);
+}
+// hottest material: impact heating, or a star's core if there is one in the scene
+function hotK() {
+  let k = 280 + hottest * 2700;
+  for (const key of [state.target, state.impactor, ...Object.keys(spawnMats)]) { const b = BODIES[key]; if (b && b.coreK && (key !== state.impactor || !geo.pointPlanet || true)) k = Math.max(k, b.coreK); }
+  return k;
+}
+const fmtK = k => k >= 1e6 ? (k / 1e6).toFixed(1) + ' million K' : (Math.round(k / 10) * 10).toLocaleString() + ' K';
+const fmtDur = s => s < 120 ? Math.round(s) + ' s' : s < 7200 ? (s / 60).toFixed(0) + ' min' : s < 172800 ? (s / 3600).toFixed(1) + ' hours' : (s / 86400).toFixed(1) + ' days';
+function updateStats() {
+  if (state.mode === 'galaxies') { updateGalaxyStats(); return; }
+  if (geo && geo.bh) {
+    const t = phase === 'run' ? (S.time - launchT) * geo.secPerSec : 0;
+    $('sTime').textContent = fmtDur(t);
+    $('sN').textContent = (S.bh.eaten / geo.M1 * 100).toFixed(S.bh.eaten / geo.M1 < 0.1 ? 1 : 0) + '%';
+    $('lN').textContent = geo.pointPlanet ? `fell into ${BODIES[state.target].name}` : 'swallowed';
+    $('sHot').textContent = fmtK(hotK());
+    return;
+  }
+  $('lN').textContent = 'particles';
+  $('sTime').textContent = (phase === 'run' ? (S.time - launchT) : 0).toFixed(1) + ' s';
+  $('sN').textContent = S.N.toLocaleString();
+  $('sHot').textContent = fmtK(hotK());
+}
+
+// ---------- mouse & touch: look around, throw rocks ----------
+let drag = null, pan = null, pinch = null;
+const pointers = new Map();
+// Throw velocity from the drag, capped so the sim can still keep up with it.
+const THROW_K = 1.6, THROW_MAX = 8000;
+function throwVel() {
+  let vx = (drag.wx2 - drag.wx) * THROW_K, vy = (drag.wy2 - drag.wy) * THROW_K;
+  const v = Math.hypot(vx, vy), capped = v > THROW_MAX;
+  if (capped) { vx *= THROW_MAX / v; vy *= THROW_MAX / v; }
+  return { vx, vy, v: Math.min(v, THROW_MAX), capped };
+}
+// ---------- inspecting objects: click one to see what it is and what it's doing ----------
+let sel = null, spawnNames = {}, spawnKeys = {}, origMass = {};
+const M_EARTH = 5.972e24, M_JUP = 1.898e27, M_SUN_KG = 1.989e30, M_MOON = 7.342e22;
+function pidName(p) { return p === 0 ? BODIES[state.target].name : p === 1 ? BODIES[state.impactor].name : p === 2 ? 'thrown rocks' : (spawnNames[p] || 'spawned body'); }
+function pidBody(p) { return p === 0 ? BODIES[state.target] : p === 1 ? BODIES[state.impactor] : p >= 3 ? BODIES[spawnKeys[p]] || null : null; }
+function fmtMassKg(kg) {
+  if (kg >= 0.08 * M_SUN_KG) return (kg / M_SUN_KG).toFixed(2) + ' Suns';
+  if (kg >= 50 * M_EARTH) return (kg / M_JUP).toFixed(2) + ' Jupiters';
+  if (kg >= 0.05 * M_EARTH) return (kg / M_EARTH).toFixed(kg >= M_EARTH ? 2 : 3) + ' Earths';
+  if (kg >= 1e-3 * M_MOON) return (kg / M_MOON).toFixed(3) + ' Moons';
+  return kg.toExponential(2) + ' kg';
+}
+function trySelect(sx, sy) {
+  const z = cam.z;
+  if (S.bh) { const p = toScreen(S.bh.x, S.bh.y); if (Math.hypot(p.x - sx, p.y - sy) < 18 || (S.bh.kind === 'planet' && Math.hypot(p.x - sx, p.y - sy) < S.bh.rcap * z)) { sel = { kind: S.bh.kind === 'planet' ? 'point' : 'bh' }; updateInspector(); return; } }
+  const w = toWorld(sx, sy); let best = -1, bd = Infinity;
+  for (let i = 0; i < S.N; i++) { const d = Math.hypot(S.x[i] - w.x, S.y[i] - w.y); if (d < bd) { bd = d; best = i; } }
+  if (best >= 0 && bd * z < Math.max(14, S.rad[best] * z * 1.6)) {
+    sel = { kind: 'clump', uids: [S.uid[best]], hist: [], shattered: false, firstT: S.time, firstM: 0 };
+    updateInspector();
+  } else closeInspector();
+}
+function closeInspector() { sel = null; const p = $('inspect'); if (p) p.hidden = true; }
+function inspRow(k, v) { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; return [dt, dd]; }
+function showInspector(name, status, tone, rows, spin) {
+  const p = $('inspect'); p.hidden = false;
+  $('inSpinBox').hidden = !spin;
+  if (spin) {
+    if (!sel.spinBusy) $('inSpin').value = Math.max(-1.5, Math.min(1.5, spin.frac));
+    $('inSpinOut').textContent = spin.text;
+    $('inReal').disabled = !spin.realOK; $('inReal').title = spin.realOK ? `Set its real rotation (${spin.realText})` : 'Real rotation unknown for this body';
+  }
+  $('inName').textContent = name;
+  const st = $('inStatus'); st.textContent = status; st.dataset.tone = tone;
+  const dl = $('inRows'); dl.textContent = '';
+  for (const [k, v] of rows) dl.append(...inspRow(k, v));
+}
+function updateInspector() {
+  if (!sel || !geo || !geo.ref) return;
+  const U = Scenario.units(S, geo), kms = v => (v * U.kmPerUnit / U.secPerSec).toFixed(1) + ' km/s';
+  const C = comState();
+  if (sel.kind === 'bh' || sel.kind === 'point') {
+    const b = S.bh; if (!b) { closeInspector(); return; }
+    const v = Math.hypot(b.vx - C.vx, b.vy - C.vy), eaten = b.eaten * U.kgPerMass;
+    if (sel.kind === 'bh') {
+      showInspector('Black hole', b.eaten > 0 && b.glow > 0.05 ? 'Feeding' : 'Quiet', b.glow > 0.05 ? 'hot' : 'calm', [
+        ['Mass', fmtMassKg(b.M * U.kgPerMass)], ['Event horizon', `${Math.round(2 * (b.km || BODIES.bh3.km))} km across`],
+        ['Swallowed so far', eaten > 0 ? fmtMassKg(eaten) : 'nothing yet'], ['Speed', kms(v)]]);
+    } else {
+      const t = BODIES[state.target];
+      showInspector(t.name, 'Holding steady (acts as a fixed point of gravity here)', 'calm', [
+        ['Mass', fmtMassKg(b.M * U.kgPerMass)], ['Size', `${Math.round(2 * t.km).toLocaleString()} km across`],
+        ['Debris that fell in', eaten > 0 ? fmtMassKg(eaten) : 'none yet'], ['Speed', kms(v)]]);
+    }
+    return;
+  }
+  // find the object again from any surviving member
+  let idx = -1;
+  for (const u of sel.uids) { idx = S.indexOfUid(u); if (idx >= 0) break; }
+  if (idx < 0) { showInspector(sel.name || 'Object', S.bh ? 'Gone: swallowed or flung far away' : 'Gone: flung far away', 'gone', []); return; }
+  const mem = S.clumpOf(idx), n = mem.length;
+  let M = 0, cx = 0, cy = 0, pvx = 0, pvy = 0, hsum = 0, area = 0;
+  const byPid = {};
+  for (const i of mem) { const m = S.m[i]; M += m; cx += m * S.x[i]; cy += m * S.y[i]; pvx += m * S.vx[i]; pvy += m * S.vy[i]; hsum += m * S.heat[i]; area += S.rad[i] * S.rad[i]; byPid[S.pid[i]] = (byPid[S.pid[i]] || 0) + m; }
+  cx /= M; cy /= M; pvx /= M; pvy /= M;
+  let Ixx = 0, Iyy = 0, Ixy = 0, L = 0;
+  for (const i of mem) { const m = S.m[i], dx = S.x[i] - cx, dy = S.y[i] - cy; Ixx += m * dx * dx; Iyy += m * dy * dy; Ixy += m * dx * dy; L += m * (dx * (S.vy[i] - pvy) - dy * (S.vx[i] - pvx)); }
+  const I = Ixx + Iyy, Rg = Math.sqrt(I / M), tr = I / 2, det = Math.sqrt(Math.max(0, (Ixx - Iyy) ** 2 / 4 + Ixy * Ixy));
+  const elong = Math.sqrt((tr + det) / Math.max(1e-9, tr - det));
+  const omega = I > 0 ? L / I : 0;
+  // keep tracking with a handful of members (the clicked particle may get swallowed or merge away)
+  sel.uids = [sel.uids[0]]; for (let k = 0; k < Math.min(8, n); k++) sel.uids.push(S.uid[mem[Math.floor(Math.random() * n)]]);
+  sel.cx = cx; sel.cy = cy; sel.Rg = Rg;
+  const pids = Object.keys(byPid).map(Number).sort((a, b) => byPid[b] - byPid[a]);
+  const main = pids[0], share = byPid[main] / M;
+  const name = n <= 3 ? `Debris from ${pidName(main)}` : share > 0.9 ? pidName(main) : `${pidName(main)}–${pidName(pids[1])} mix`;
+  sel.name = name;
+  // status from how mass, size and shape are changing
+  const now = S.time; sel.hist.push({ t: now, M, Rg }); while (sel.hist.length > 2 && now - sel.hist[1].t > 0.6) sel.hist.shift();
+  const old = sel.hist[0], dt = Math.max(1e-6, now - old.t);
+  const mRate = (M - old.M) / old.M / dt, gRate = (Rg - old.Rg) / old.Rg / dt;
+  const heat = hsum / M, orig = origMass[main] || M;
+  let status = 'Normal', tone = 'calm';
+  if (dt < 0.25) { status = 'Measuring…'; tone = 'calm'; }
+  else if (mRate < -0.08 || gRate > 0.15) { status = elong > 2.2 ? 'Being torn apart' : 'Shattering'; tone = 'hot'; sel.shattered = true; }
+  else if (mRate > 0.04 || gRate < -0.1) {
+    if (M < 0.25 * orig || share < 0.7) { status = 'Forming: gathering debris'; tone = 'new'; }
+    else { status = sel.shattered ? 'Reforming' : 'Growing'; tone = 'mend'; }
+  }
+  else if (elong > 1.8) { status = 'Stretched'; tone = 'hot'; }
+  else if (Math.abs(gRate) > 0.04) { status = 'Settling'; tone = 'mend'; }
+  if (heat > 0.5 && tone !== 'gone') status += ', molten';
+  const star = pids.some(p => { const b = pidBody(p); return b && b.star; });
+  const T = star ? 'core about 15.7 million K' : Math.round((280 + heat * 2700) / 10) * 10 + ' K average';
+  const comp = pids.slice(0, 3).map(p => `${pidName(p)} ${Math.round(byPid[p] / M * 100)}%`).join(', ');
+  const spinT = Math.abs(omega) > 1e-6 ? fmtDur(2 * Math.PI / Math.abs(omega) * U.secPerSec) : null;
+  // spin control: in fractions of break-up speed (where the equator would be in orbit)
+  const Req = 1.05 * Math.sqrt(area), wBreak = Math.sqrt(S.P.G * M / (Req * Req * Req));
+  const mb = pidBody(main);
+  sel.spinInfo = { mem, cx, cy, pvx, pvy, omega, I, wBreak, U, realOK: !!(mb && mb.dayH && share > 0.6), dayH: mb && mb.dayH };
+  const spin = { frac: omega / wBreak, realOK: sel.spinInfo.realOK, realText: mb && mb.dayH ? (mb.dayH < 0 ? 'backwards, ' : '') + fmtDur(Math.abs(mb.dayH) * 3600) : '',
+    text: Math.abs(omega) < 1e-6 ? 'not spinning' : `${Math.round(Math.abs(omega / wBreak) * 100)}% of break-up${omega < 0 ? ', backwards' : ''}` };
+  showInspector(name, status, tone, [
+    ['Made of', comp], ['Mass', fmtMassKg(M * U.kgPerMass) + (main < 250 && origMass[main] ? ` (${Math.round(M / origMass[main] * 100)}% of original ${pidName(main)})` : '')],
+    ['Size', `about ${Math.round(2 * Math.sqrt(area) * U.kmPerUnit).toLocaleString()} km across`],
+    ['Speed', kms(Math.hypot(pvx - C.vx, pvy - C.vy))],
+    ['Spin', spinT ? `one turn every ${spinT}` : 'barely spinning'],
+    ['Temperature', T], ['Shape', elong > 1.25 ? `stretched ${elong.toFixed(1)}:1` : 'round'], ['Particles', n.toLocaleString()]], spin);
+}
+// Set the selected object's spin: swap its current average rotation for a new one, keeping its other motions.
+function setSpin(wNew) {
+  const s = sel && sel.spinInfo; if (!s) return;
+  const dw = wNew - s.omega;
+  for (const i of s.mem) { if (i >= S.N) continue; const dx = S.x[i] - s.cx, dy = S.y[i] - s.cy; S.vx[i] -= dw * dy; S.vy[i] += dw * dx; }
+  s.omega = wNew;
+}
+$('inSpin').addEventListener('input', e => { if (!sel || !sel.spinInfo) return; sel.spinBusy = true; setSpin(parseFloat(e.target.value) * sel.spinInfo.wBreak); });
+$('inSpin').addEventListener('change', () => { if (sel) sel.spinBusy = false; updateInspector(); });
+$('inStop').addEventListener('click', () => { setSpin(0); updateInspector(); });
+$('inReal').addEventListener('click', () => {
+  const s = sel && sel.spinInfo; if (!s || !s.realOK) return;
+  // real angular speed, converted to sim time (positive = anticlockwise here)
+  setSpin(2 * Math.PI / (s.dayH * 3600) * s.U.secPerSec); updateInspector();
+});
+function drawSelection(z, ox, oy) {
+  if (!sel) return;
+  let x, y, r;
+  if (sel.kind === 'clump') { if (sel.cx === undefined) return; x = sel.cx; y = sel.cy; r = Math.max(10 * dpr, sel.Rg * z * 1.9); }
+  else if (S.bh) { x = S.bh.x; y = S.bh.y; r = sel.kind === 'point' ? S.bh.rcap * z * 1.15 : 18 * dpr; } else return;
+  ctx.strokeStyle = 'rgba(207,197,255,.9)'; ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([6 * dpr, 5 * dpr]);
+  ctx.beginPath(); ctx.arc(x * z + ox, y * z + oy, r, 0, 6.2832); ctx.stroke(); ctx.setLineDash([]);
+}
+// ---------- spawning ----------
+let spawnPid = 3, spawnMats = {}, flashMsg = null;
+$('inClose').addEventListener('click', closeInspector);
+function spawnRadius() {
+  if (state.spawn === 'rock' || !geo || !geo.ref) return rockR();
+  return Scenario.spawnSize(S, geo, BODIES[state.spawn]).R;
+}
+function flash(msg) { flashMsg = { msg, t: performance.now() }; }
+function drawFlash() {
+  if (!flashMsg) return;
+  const age = (performance.now() - flashMsg.t) / 1000; if (age > 3.5) { flashMsg = null; return; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.font = '600 14px Figtree, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = `rgba(0,0,0,${(0.6 * Math.min(1, 3.5 - age)).toFixed(2)})`; ctx.fillText(flashMsg.msg, vr.cx + 1, 111);
+  ctx.fillStyle = `rgba(255,226,170,${Math.min(1, 3.5 - age).toFixed(2)})`; ctx.fillText(flashMsg.msg, vr.cx, 110);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+function syncSpawnOptions() {
+  const sel = $('iSpawn'), o = sel.querySelector('option[value="bh3"]');
+  if (o) { o.disabled = !!S.bh; if (S.bh && state.spawn === 'bh3') { state.spawn = 'rock'; sel.value = 'rock'; } }
+}
+function rockR() { return geo ? Math.max(S.P.r * 3, Math.min(geo.R1, geo.Rmax * 0.6) * 0.2) : 20; }
+function setFollow(on) {
+  state.follow = on; state.autoZoom = on;
+  $('bFollow').setAttribute('aria-pressed', String(on));
+  $('bFollow').textContent = on ? 'Following' : 'Follow';
+}
+function stopFollow() { if (state.follow || state.autoZoom) setFollow(false); }
+function setCursor() { canvas.style.cursor = state.throwMode && state.mode === 'planets' ? 'crosshair' : (pan ? 'grabbing' : 'grab'); }
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) {
+    drag = null; pan = null;
+    const [a, b] = [...pointers.values()];
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: cam.z, w: toWorld(mx, my) };
+    stopFollow();
+    return;
+  }
+  if (pointers.size > 2) return;
+  if (state.mode === 'planets' && (state.throwMode || e.button === 2 || e.shiftKey)) {
+    const w = toWorld(e.clientX, e.clientY);
+    drag = { wx: w.x, wy: w.y, wx2: w.x, wy2: w.y };
+  } else {
+    pan = { sx: e.clientX, sy: e.clientY, cx: cam.x, cy: cam.y, moved: false };
+    setCursor();
+  }
+});
+canvas.addEventListener('pointermove', e => {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    cam.z = cam.zt = clampZ(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d);
+    cam.x = pinch.w.x - (mx - vr.cx) / cam.z; cam.y = pinch.w.y - (my - vr.cy) / cam.z;
+    return;
+  }
+  if (drag) { const w = toWorld(e.clientX, e.clientY); drag.wx2 = w.x; drag.wy2 = w.y; }
+  else if (pan) {
+    const dx = e.clientX - pan.sx, dy = e.clientY - pan.sy;
+    if (!pan.moved && Math.hypot(dx, dy) > 3) { pan.moved = true; stopFollow(); }
+    if (pan.moved) { cam.x = pan.cx - dx / cam.z; cam.y = pan.cy - dy / cam.z; }
+  }
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (pinch) { if (pointers.size < 2) pinch = null; return; }
+  if (pan) { const click = !pan.moved; pan = null; setCursor(); if (click && state.mode === 'planets') trySelect(e.clientX, e.clientY); return; }
+  if (!drag || e.type === 'pointercancel') { drag = null; return; }
+  const c = comState(), t = throwVel();
+  if (phase !== 'run') { drag = null; return; } // wait until the scene has launched
+  if (state.spawn === 'rock') {
+    Scenario.ensureScale(S, geo, null);
+    const rk = geo.kRef ? rockR() / geo.kRef : 1; // rocks weigh as small spheres too
+    S.addBody(drag.wx, drag.wy, rockR(), Scenario.rock.map(l => ({ ...l, mass: l.mass * rk })), 2, c.vx + t.vx, c.vy + t.vy);
+  } else {
+    const body = BODIES[state.spawn];
+    let base = spawnMats[state.spawn];
+    if (base === undefined && body.layers.length) { base = BASE.length; spawnMats[state.spawn] = base; BASE.push(...body.layers.map(l => l.col)); buildColors(); }
+    const res = Scenario.spawn(S, geo, body, drag.wx, drag.wy, c.vx + t.vx, c.vy + t.vy, spawnPid, base || 0);
+    if (res.ok && !body.blackhole) { spawnNames[spawnPid] = body.name; spawnKeys[spawnPid] = state.spawn; origMass[spawnPid] = S.bodyMass(spawnPid); spawnPid = Math.min(250, spawnPid + 1); }
+    if (res.error) flash(res.error); else if (res.shrunk) flash(`${body.name} is too big for this scene at real size, so it was shrunk to fit`);
+    syncSpawnOptions();
+  }
+  drag = null;
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+// with a black hole you can zoom in until its horizon fills about a third of the view
+const clampZ = z => Math.max(0.002, Math.min(state.mode === 'planets' && S.bh && S.bh.rs ? Math.min(vr.w, vr.h) * 0.17 / S.bh.rs : 8, z));
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const z = clampZ(cam.z * Math.exp(-e.deltaY * 0.0015));
+  if (state.autoZoom) { state.autoZoom = false; }
+  if (!state.follow) { // zoom toward the cursor
+    const w = toWorld(e.clientX, e.clientY);
+    cam.x = w.x - (e.clientX - vr.cx) / z; cam.y = w.y - (e.clientY - vr.cy) / z;
+  }
+  cam.z = cam.zt = z;
+}, { passive: false });
+const keysDown = new Set();
+addEventListener('keydown', e => { if (e.key.startsWith('Arrow') && !(e.target.closest && e.target.closest('input,select'))) { e.preventDefault(); keysDown.add(e.key); stopFollow(); } });
+addEventListener('keyup', e => keysDown.delete(e.key));
+addEventListener('blur', () => keysDown.clear());
+function keyPan(dt) {
+  if (!keysDown.size) return;
+  const v = 600 * dt / cam.z;
+  if (keysDown.has('ArrowLeft')) cam.x -= v; if (keysDown.has('ArrowRight')) cam.x += v;
+  if (keysDown.has('ArrowUp')) cam.y -= v; if (keysDown.has('ArrowDown')) cam.y += v;
+}
+
+// ---------- controls ----------
+const pres = $('presets');
+const legend = document.createElement('legend'); legend.textContent = 'Pick a collision, or tune your own below'; pres.appendChild(legend);
+// With a black hole, the angle setting sets closest approach (2·sin(angle) tidal radii) and speed is
+// in multiples of the escape speed there (1 = parabolic, about 0.71 = circular).
+const BH_PRESETS = [
+  { id: 'bhdisk', name: 'Make an accretion disk', angle: 17, speed: 0.72 },
+  { id: 'bhspag', name: 'Spaghettify', angle: 14, speed: 1 },
+  { id: 'bhplunge', name: 'Straight in', angle: 0, speed: 1 },
+  { id: 'bhgraze', name: 'Graze', angle: 49, speed: 1 },
+  { id: 'bhrepeat', name: 'Repeated passes', angle: 30, speed: 0.9 }
+];
+let presetSet = null;
+function buildPresetChips() {
+  const isBH = !!BODIES[state.impactor].blackhole, list = isBH ? BH_PRESETS : PRESETS;
+  if (presetSet === list) return;
+  presetSet = list;
+  for (const c of [...pres.querySelectorAll('.chip')]) c.remove();
+  legend.textContent = isBH ? 'Pick what happens, or tune your own below' : 'Pick a collision, or tune your own below';
+  for (const p of list) {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.id = p.id; b.textContent = p.name;
+    b.addEventListener('click', () => { Object.assign(state, { angle: p.angle, speed: p.speed, preset: p.id, orbit: !!p.orbit }); syncInputs(); restart(); });
+    pres.appendChild(b);
+  }
+  $('iSpeed').min = isBH ? '0.71' : '0.8';
+  const d = isBH ? BH_PRESETS[0] : PRESETS[0]; // switching between black hole and planet: start from the first preset
+  Object.assign(state, { angle: d.angle, speed: d.speed, preset: d.id, orbit: false });
+}
+buildPresetChips();
+function syncInputs() {
+  $('iRatio').value = Math.log10(state.ratio); $('iAngle').value = state.angle; $('iSpeed').value = state.speed; $('iTime').value = state.time;
+  if (state.mode === 'planets') $('iDetail').value = String(state.detail);
+  $('iTarget').value = state.target; $('iImpactor').value = state.impactor;
+  const empty = state.target === 'empty';
+  $('iImpactor').disabled = empty; $('presets').hidden = empty;
+  for (const id of ['iRatio', 'iAngle', 'iSpeed']) $(id).closest('label').hidden = empty;
+  const isBH = !!BODIES[state.impactor].blackhole, isOrbit = !isBH && state.orbit, tidal = isBH || isOrbit;
+  $('iRatio').disabled = tidal;
+  $('oRatio').textContent = isBH ? 'n/a' : isOrbit ? 'real' : fmtRatio(state.ratio);
+  $('iSpeed').min = tidal ? '0.71' : '0.8';
+  $('lAngle').textContent = tidal ? 'Closest approach' : 'Impact angle';
+  $('lSpeed').textContent = tidal ? 'Speed' : 'Impact speed';
+  $('oSpeed').textContent = (+state.speed).toFixed(2) + '×' + (tidal ? (state.speed < 0.75 ? ' circular' : state.speed < 0.99 ? ' bound' : state.speed < 1.01 ? ' parabolic' : '') : '');
+  const near = isOrbit && geo && geo.pointPlanet ? geo.rp / geo.roche : 2 * Math.sin(state.angle * Math.PI / 180);
+  $('oAngle').textContent = tidal ? (state.angle === 0 && isBH ? 'straight in' : near.toFixed(2) + '×' + (isOrbit ? ' Roche' : '')) : state.angle + '°';
+  $('oTime').textContent = (+state.time) + '×';
+  for (const b of pres.querySelectorAll('.chip')) b.setAttribute('aria-checked', String(b.dataset.id === state.preset));
+}
+// ---------- body pickers & legend ----------
+for (const id of ['iTarget', 'iImpactor']) {
+  const el = $(id);
+  for (const [k, b] of Object.entries(BODIES)) {
+    if (b.blackhole && id === 'iTarget') continue; // black holes only come in as the impactor
+    const o = document.createElement('option'); o.value = k; o.textContent = b.name; el.appendChild(o);
+  }
+  if (id === 'iTarget') { const o = document.createElement('option'); o.value = 'empty'; o.textContent = 'Empty space'; el.prepend(o); }
+  el.addEventListener('change', () => {
+    state[id === 'iTarget' ? 'target' : 'impactor'] = el.value;
+    if (state.target !== 'empty' && !BODIES[state.impactor].blackhole) state.ratio = clampRatio(realRatio(state.target, state.impactor));
+    buildPresetChips(); syncInputs(); restart();
+  });
+}
+const fmtRatio = v => v < 1 ? (v < 0.1 ? (v * 100).toFixed(1) : Math.round(v * 100)) + '%' : (v < 10 ? v.toFixed(1) : Math.round(v)) + '×';
+const fmtRho = v => String(v);
+function renderLegend() {
+  const L = $('legend'); L.textContent = '';
+  if (state.target === 'empty') {
+    const p = document.createElement('p'); p.className = 'lnote';
+    p.textContent = 'Empty space. Pick something from the Spawn menu and right-drag (or turn on Spawn mode and drag) to add it: where you press is where it appears, and the drag sets its speed. The first planet you add sets the scale; everything after is at real size compared with it.';
+    L.appendChild(p); return;
+  }
+  const tb = BODIES[state.target], ib = BODIES[state.impactor];
+  if (ib.blackhole) { renderBHLegend(tb, ib, L); return; }
+  if (geo.pointPlanet) { renderOrbitLegend(tb, ib, L); return; }
+  const same = state.target === state.impactor;
+  let hidden = false;
+  for (const [b, who, R, pr] of [[tb, 'Target', geo.R1, geo.r1], [ib, 'Impactor', geo.R2, geo.r2]]) {
+    let prev = 0;
+    const row = document.createElement('div'); row.className = 'lrow';
+    const nm = document.createElement('strong'); nm.textContent = same ? `${b.name} (${who.toLowerCase()})` : b.name; row.appendChild(nm);
+    const av = document.createElement('span'); av.className = 'avg'; av.textContent = `overall ${b.avg}`; row.appendChild(av);
+    for (const l of b.layers) {
+      const sp = document.createElement('span');
+      const i = document.createElement('i'); i.style.background = l.col; sp.appendChild(i);
+      const thin = (l.to - prev) * R < 1.6 * pr; prev = l.to;
+      if (thin) { sp.className = 'thin'; hidden = true; }
+      sp.appendChild(document.createTextNode(`${l.name} ${fmtRho(l.rho)}${thin ? '*' : ''}`));
+      row.appendChild(sp);
+    }
+    L.appendChild(row);
+  }
+  const note = document.createElement('p'); note.className = 'lnote';
+  const real = realRatio(state.target, state.impactor), pct = v => (v * 100 < 10 ? (v * 100).toFixed(1) : Math.round(v * 100)) + '%';
+  const rocky = [tb, ib].some(b => b.layers[2] && b.layers[2].name === 'crust');
+  let txt = `Densities in g/cm³ from interior models. ` +
+    (rocky ? `Rocky crusts are drawn at 12% of the radius (real ones are 0.3–2% thick), which makes those planets a few % lighter overall; other layers are at real thickness` : `Layers are drawn at their real thickness`) +
+    `${hidden ? ' (* is thinner than one particle at this scale, so it doesn\'t show)' : ''}. Real size: ${ib.name} is ${pct(real)} of ${tb.name}'s width`;
+  const isReal = Math.abs(Math.log10(real / state.ratio)) < 0.005;
+  const starNote = [tb, ib].some(b => b.star) ? " The Sun's zones are shown at their average densities: really it's one smooth ball of gas, from about 150 g/cm³ at the centre to almost nothing at the visible surface. Its 15-million-degree core counts as the hottest material." : '';
+  note.textContent = txt + (isReal ? '. Shown at real size.' : `. Shown at ${pct(state.ratio)}. `) + ringNote(tb, ib) + starNote;
+  if (!isReal) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'linkbtn'; b.textContent = 'Use real size';
+    b.addEventListener('click', () => { state.ratio = clampRatio(real); state.preset = state.preset; syncInputs(); restart(); });
+    note.appendChild(b);
+  }
+  L.appendChild(note);
+}
+function ringNote(tb, ib) {
+  const b = tb.rings ? tb : ib.rings ? ib : null;
+  if (!b) return '';
+  return ` ${b.name}'s rings are at their real distances, ${Math.round(b.rings[0].from / 1000)},000–${Math.round(b.rings[b.rings.length - 1].to / 1000)},000 km from its centre: the faint C ring, the bright B ring, the dark Cassini Division gap, then the A ring. Each dot is a swarm of icy ring particles; they orbit in the planets' gravity but are too light to pull back. `;
+}
+const fmtKm = km => km >= 1e6 ? (km / 1e6).toFixed(1) + ' million km' : Math.round(km).toLocaleString() + ' km';
+function renderOrbitLegend(tb, ib, L) {
+  const row = document.createElement('div'); row.className = 'lrow';
+  const nm = document.createElement('strong'); nm.textContent = ib.name; row.appendChild(nm);
+  for (const l of ib.layers) { const sp = document.createElement('span'); const i = document.createElement('i'); i.style.background = l.col; sp.appendChild(i); sp.appendChild(document.createTextNode(`${l.name} ${fmtRho(l.rho)}`)); row.appendChild(sp); }
+  L.appendChild(row);
+  const note = document.createElement('p'); note.className = 'lnote';
+  const rocheKm = geo.roche * geo.kmPerUnit;
+  note.textContent = `${ib.name} is at real size next to ${tb.name}, which is ${Math.round(geo.ratio).toLocaleString()} times heavier. ` +
+    `${ib.name}'s Roche limit around ${tb.name} is about ${fmtKm(rocheKm)} (${(geo.roche / geo.planetR).toFixed(2)} ${tb.name} radii): inside it, ${tb.name}'s tides beat ${ib.name}'s own gravity. ` +
+    `Closest approach is in Roche limits; it can't be set closer than just above ${tb.name}'s surface. All the particles go to ${ib.name}; ${tb.name} acts as a point of gravity, and debris that reaches its surface falls in. Timings are real.`;
+  L.appendChild(note);
+}
+function renderBHLegend(tb, ib, L) {
+  const row = document.createElement('div'); row.className = 'lrow';
+  const nm = document.createElement('strong'); nm.textContent = tb.name; row.appendChild(nm);
+  for (const l of tb.layers) { const sp = document.createElement('span'); const i = document.createElement('i'); i.style.background = l.col; sp.appendChild(i); sp.appendChild(document.createTextNode(`${l.name} ${fmtRho(l.rho)}`)); row.appendChild(sp); }
+  L.appendChild(row);
+  const note = document.createElement('p'); note.className = 'lnote';
+  const rtKm = geo.rt * geo.kmPerUnit, ratio = geo.ratio;
+  note.textContent = ringNote(tb, ib) + `The black hole is ${ib.Msun} Suns, ${Math.round(ratio).toLocaleString()} times ${tb.name}'s mass, but its event horizon is only ${Math.round(ib.km * 2)} km across. ` +
+    `Within its tidal radius, about ${fmtKm(rtKm)} for ${tb.name}, its pull on the near side beats ${tb.name}'s own gravity, so the planet is stretched into a stream. ` +
+    `It's drawn at true size: scroll in a long way on the dashed ring to see it. Anything passing within ${Math.round(ib.km * 2)} km is captured, as relativity predicts. ` +
+    `Gas orbiting within ${fmtKm(S.bh.rdisk * geo.kmPerUnit)} slowly spirals inward, standing in for the friction inside a real accretion disk (sped up a lot: real disks take far longer to drain). Within ${fmtKm(S.bh.rbal * geo.kmPerUnit)} material moves without pressure. Newtonian gravity; closest approach in tidal radii; speed in multiples of escape speed (0.71 is a circular orbit).`;
+  L.appendChild(note);
+}
+function bindRange(id, key, relaunch) {
+  const el = $(id);
+  el.addEventListener('input', () => { state[key] = parseFloat(el.value); if (relaunch) state.preset = null; syncInputs(); });
+  if (relaunch) el.addEventListener('change', restart);
+}
+$('iRatio').addEventListener('input', e => {
+  let r = Math.pow(10, parseFloat(e.target.value));
+  const real = realRatio(state.target, state.impactor);
+  if (Math.abs(Math.log10(r / real)) < 0.04) r = real; // snap to real size
+  state.ratio = clampRatio(r); syncInputs();
+});
+$('iRatio').addEventListener('change', restart);
+bindRange('iAngle', 'angle', true); bindRange('iSpeed', 'speed', true); bindRange('iTime', 'time', false);
+$('iDetail').addEventListener('change', e => { const v = parseInt(e.target.value, 10); if (state.mode === 'planets') state.detail = v; else gstate.stars = v; restart(); });
+for (const b of document.querySelectorAll('.mode')) b.addEventListener('click', () => setMode(b.dataset.mode));
+setupGalaxyControls(); syncGalaxyInputs();
+{ // what the spawn tool makes
+  const sel = $('iSpawn');
+  const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
+  add('rock', 'Rock');
+  for (const [k, b] of Object.entries(BODIES)) add(k, b.name);
+  sel.value = state.spawn;
+  sel.addEventListener('change', () => { state.spawn = sel.value; });
+}
+$('bRestart').addEventListener('click', restart);
+function togglePause() { state.paused = !state.paused; $('bPause').setAttribute('aria-pressed', String(state.paused)); $('bPause').textContent = state.paused ? 'Resume' : 'Pause'; }
+$('bPause').addEventListener('click', togglePause);
+$('bTrails').addEventListener('click', () => { state.trails = !state.trails; clearFull = true; $('bTrails').setAttribute('aria-pressed', String(state.trails)); });
+$('bFollow').addEventListener('click', () => setFollow(!state.follow));
+$('bThrow').addEventListener('click', () => {
+  state.throwMode = !state.throwMode;
+  $('bThrow').setAttribute('aria-pressed', String(state.throwMode));
+  setCursor();
+});
+setCursor();
+$('bDock').addEventListener('click', () => {
+  const d = $('dock'), c = d.classList.toggle('collapsed');
+  $('bDock').textContent = c ? 'More settings' : 'Fewer settings'; $('bDock').setAttribute('aria-expanded', String(!c));
+  measureView();
+});
+if (innerWidth < 720) { $('dock').classList.add('collapsed'); $('bDock').textContent = 'More settings'; $('bDock').setAttribute('aria-expanded', 'false'); }
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input,select,button')) return;
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+  if (e.key === 'r' || e.key === 'R') restart();
+});
+
+syncInputs();
+restart();
+requestAnimationFrame(frame);
+})();
+</script>
+</body></html>
