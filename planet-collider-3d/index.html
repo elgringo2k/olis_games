@@ -2937,8 +2937,13 @@ let downloads = null;
 (async () => {
   try { if (window.claude && claude.use) downloads = await claude.use('downloads'); } catch (e) { downloads = null; }
 })();
-// no video encoding (an older browser, or the page served over plain http): no Video button at all
-if (!('VideoEncoder' in window)) { $('videoBtn').style.display = 'none'; $('renderPop').style.display = 'none'; }
+// browsers only encode video on secure (https) pages, so say why rather than fail
+if (!('VideoEncoder' in window)) {
+  $('renderBtn').disabled = true;
+  $('renderNote').textContent = window.isSecureContext
+    ? 'Rendering needs video encoding (WebCodecs), which this browser doesn’t support. Try a recent Chrome, Edge, Safari or Firefox.'
+    : 'Making videos only works when the game is opened from an https:// address. This page isn’t, so the browser won’t encode video here.';
+}
 state.renderSec = 30; state.renderN = 0;
 function syncRenderN() { document.querySelectorAll('#renderN .chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.rn === state.renderN))); updateEta(); }
 document.querySelectorAll('#renderN .chip').forEach(b => b.addEventListener('click', () => { state.renderN = +b.dataset.rn; syncRenderN(); }));
