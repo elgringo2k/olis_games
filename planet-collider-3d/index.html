@@ -233,7 +233,7 @@ body:not([data-mode="galaxy"]) .gal-only, body[data-mode="galaxy"] .planet-only 
 .toast[hidden] { display: none; }
 .aim-label { position: fixed; pointer-events: none; transform: translate(14px, -50%); font-size: 13px; font-weight: 600; color: var(--amber);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9); white-space: nowrap; }
-.err { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+.err { position: fixed; inset: 0; z-index: 50; background: #0c0a1d; display: none; align-items: center; justify-content: center; padding: 32px; text-align: center; }
 
 @media (max-width: 820px) {
   .top { flex-direction: column; gap: 10px; }
@@ -601,10 +601,9 @@ function createSim(N, params) {
   const rho0 = new Float32Array(N).fill(1);
   const c0s = new Float32Array(N).fill(p.c0);    // stiffness (sound speed) per chunk; extreme bodies get a stiffer one
   const Hs = new Float32Array(N); // smoothing length = hfac * chunk size      // reference (uncompressed) density per chunk
-  const nden = new Float32Array(N), press = new Float32Array(N), csnd = new Float32Array(N), rho = new Float32Array(N);
+  const nden = new Float32Array(N), press = new Float32Array(N), rho = new Float32Array(N);
   let pairCap = N * 24, pi_ = new Int32Array(pairCap), pj_ = new Int32Array(pairCap), pr_ = new Float32Array(pairCap), nPairs = 0;
   let TB = 1; while (TB < 2 * N) TB <<= 1;
-  const cellStart = new Int32Array(TB), cellCount = new Int32Array(TB), cellFill = new Int32Array(TB);
   const sorted = new Int32Array(N), ci = new Int32Array(3 * N), chash = new Int32Array(N);
   const hashOf = (x, y, z) => (((x * 73856093) ^ (y * 19349663) ^ (z * 83492791)) >>> 0) & (TB - 1);
   const PI = Math.PI;
@@ -758,8 +757,6 @@ function createSim(N, params) {
     }
     vsigMax = vmax; dtLimit = dtl;
   }
-  const pon = new Float32Array(N);
-
   let stepDt = 0;
   // Pressure (fast) is integrated every step; gravity (slow) is recalculated only every gInterval of sim time and
   // applied as kicks at the moment it is calculated (a multiple-time-step "RESPA" scheme). Applying gravity this
@@ -821,8 +818,6 @@ function createSim(N, params) {
 // so they're built from smaller chunks instead: at least MIN_N2 of them. s2 is their size relative to the target's.
 const MIN_N2 = 420;
 let SPH_C0 = 10, SPH_HFAC = 0.9;
-// reference densities relative to rock: iron core, rocky mantle, crust
-const MAT_RHO = [2.4, 1.0, 0.85];
 // Layers from interior models. core: share of the body's volume that is iron core (real sizes: Earth's core reaches
 // 55% of the radius, Mercury's 83%). Crusts are drawn 12% of the radius thick (real ones are 0.3-2%), so the crust
 // starts at 68% of the volume. rho: densities in g/cm3 of core, mantle, crust; the overall density is for display.
@@ -1049,7 +1044,6 @@ function launch(world, opts) {
 const SAND_NE = 2400;                                  // chunks in an Earth-sized body
 const SAND_H = 10 / (0.6 * Math.cbrt(SAND_NE));        // chunk size for Earth-sized bodies
 const R_EARTH_U = 9.3;                                 // Earth's radius in sim units (6371 km)
-const KIND_CORE = { earth: 0.17, mars: 0.12, moon: 0.03 };
 const SAND_SETTLE_T = 2.6;
 
 function sandParams() {
@@ -1500,8 +1494,10 @@ document.addEventListener('visibilitychange', () => { if (typeof sand !== 'undef
 window.addEventListener('pointerdown', e => { if (typeof sand !== 'undefined' && !e.target.closest('#view')) sand.keys.clear(); });
 window.addEventListener('keydown', e => {
   if (state.rendering || renderJob) return;
-  if (state.mode === 'menu') return;
-  if (e.target.tagName === 'INPUT' && e.target.type === 'range') return;
+  if ($('menu').classList.contains('on')) return;
+  const tag = e.target.tagName;
+  if (tag === 'SELECT' || tag === 'TEXTAREA' || (tag === 'INPUT' && e.target.type !== 'checkbox')) return;
+  if (e.code === 'Space' && tag === 'INPUT') return;   // Space ticks the focused checkbox
   if (e.code === 'Space') { e.preventDefault(); togglePause(); }
   else if (state.mode === 'sandbox' && sandKey(e, true)) { /* handled by the sandbox */ }
   else if (state.mode === 'galaxy' && galKey(e, true)) { /* free camera */ }
@@ -2527,7 +2523,7 @@ canvas.addEventListener('pointerdown', e => {
   canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   canvas.classList.add('dragging');
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); r0 = cam.tR; }
-  if (window.innerWidth <= 760) { activePanel().classList.remove('open'); $('settingsBtn').setAttribute('aria-expanded', 'false'); }
+  if (window.innerWidth <= 820) { activePanel().classList.remove('open'); $('settingsBtn').setAttribute('aria-expanded', 'false'); }
 });
 canvas.addEventListener('pointermove', e => {
   const p = ptrs.get(e.pointerId); if (!p) return;
@@ -2597,6 +2593,7 @@ function surfAnchorList() {
     if (key == null) return null;
     const b = sand.bodies.get(key); R = b.radiusE * R_EARTH_U; mine = i => world.bodyId[i] === key;
   } else {
+    if (!state.info) return null;   // the planets are still forming
     key = state.followBody != null ? state.followBody : 0;
     R = key === 0 ? state.info.R1 : state.info.R2; mine = i => world.body[i] === key;
   }
@@ -2933,18 +2930,13 @@ function frame(now) {
 }
 
 // ---------- Render mode: offline, frame-exact video (WebCodecs + MP4/WebM muxer)
+// inside claude.ai videos are saved through its downloads prompt; everywhere else as an ordinary browser download
 let downloads = null;
 (async () => {
   try { if (window.claude && claude.use) downloads = await claude.use('downloads'); } catch (e) { downloads = null; }
-  if (!downloads) {
-    $('renderBtn').disabled = true;
-    $('renderNote').textContent = 'Saving videos isn\u2019t available in this view. Open the page in claude.ai in Chrome, Edge, Safari or Firefox to render.';
-  }
 })();
-if (!('VideoEncoder' in window)) {
-  $('renderBtn').disabled = true;
-  $('renderNote').textContent = 'Rendering needs video encoding (WebCodecs), which this browser doesn\u2019t support. Try a recent Chrome, Edge, Safari or Firefox.';
-}
+// no video encoding (an older browser, or the page served over plain http): no Video button at all
+if (!('VideoEncoder' in window)) { $('videoBtn').style.display = 'none'; $('renderPop').style.display = 'none'; }
 state.renderSec = 30; state.renderN = 0;
 function syncRenderN() { document.querySelectorAll('#renderN .chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.rn === state.renderN))); updateEta(); }
 document.querySelectorAll('#renderN .chip').forEach(b => b.addEventListener('click', () => { state.renderN = +b.dataset.rn; syncRenderN(); }));
@@ -2989,7 +2981,7 @@ function fmtDur(s) { s = Math.max(0, Math.round(s)); return s >= 60 ? Math.floor
 
 let renderJob = null;
 async function startRender() {
-  if (renderJob || !downloads) return;
+  if (renderJob) return;
   const seconds = state.renderSec, FPS = 60, total = seconds * FPS;
   const job = renderJob = { cancelled: false, blob: null };
   const ov = $('rendering'), status = $('renderStatus'), bar = $('renderBar');
@@ -3123,6 +3115,13 @@ async function startRender() {
 }
 async function saveRender() {
   const job = renderJob; if (!job || !job.blob) return;
+  if (!downloads) {
+    const url = URL.createObjectURL(job.blob), a = document.createElement('a');
+    a.href = url; a.download = job.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    $('renderStatus').textContent = 'Saved ' + job.name + ' to your downloads.';
+    return;
+  }
   try {
     await downloads.save({ filename: job.name, data: job.blob });
     $('renderStatus').textContent = 'Saved ' + job.name + '.';
@@ -3148,6 +3147,7 @@ function enterMode(mode) {
   $('menu').classList.remove('on');
   surfSet(false);
   if (state.mode === 'galaxy' && mode !== 'galaxy') galClear();
+  sand.gen++;   // stop any sandbox scene that is still forming
   clearRings();
   state.mode = mode;
   document.body.dataset.mode = mode;
@@ -3165,7 +3165,11 @@ function enterMode(mode) {
     camTarget.set(0, 0, 0); trackC.set(0, 0, 0);
     galStart(); galFrameCamera(); cam.r = cam.tR;
   }
-  else if (mode === 'collide') { stopSpawn(); clearSelection(); restart(); }
+  else if (mode === 'collide') {
+    stopSpawn(); clearSelection();
+    cam.tTheta = -0.5; cam.tPhi = 1.05; userZoomed = false;   // back to the home view, not the sandbox's or galaxy's zoom
+    restart();
+  }
   else startSandbox();
   frameView();
 }
@@ -3218,7 +3222,7 @@ const omegaForDay = h => h ? 2 * Math.PI / (h / HOURS_PER_UNIT_T) : 0;
 const sand = {
   bodies: new Map(), nextId: 1, kind: null, layer: 0, hover: null, placing: null, aim: null,
   selected: null, followId: null, pickFollow: false, lockR: false, lockM: false, aimLayer: 0, keys: new Set(),
-  keyAt: {}, scene: 'earthmoon', target: new THREE.Vector3(), tpl: new Map(), queue: Promise.resolve(), sums: null, frameN: 0, pendingTimer: 0,
+  keyAt: {}, scene: 'earthmoon', target: new THREE.Vector3(), tpl: new Map(), queue: Promise.resolve(), gen: 0, sums: null, frameN: 0, pendingTimer: 0,
 };
 const sandToolsMat = c => new THREE.MeshBasicMaterial({ color: c, wireframe: true, transparent: true, opacity: 0.35, depthWrite: false });
 const ghostBall = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), sandToolsMat(0xf6b35c)); ghostBall.visible = false; scene.add(ghostBall);
@@ -3258,7 +3262,8 @@ function paintTemplate(tpl) {
 function getTemplate(kind, massE, radiusE, label, nChunks) {
   const key = tplKey(kind, massE, radiusE, nChunks);
   if (sand.tpl.has(key)) return Promise.resolve(sand.tpl.get(key));
-  return new Promise(resolve => {
+  const build = sand.gen;
+  return new Promise((resolve, reject) => {
     const was = state.phase;
     state.phase = 'building';
     $('formingText').textContent = 'Forming ' + label;
@@ -3266,6 +3271,7 @@ function getTemplate(kind, massE, radiusE, label, nChunks) {
     $('forming').classList.remove('hidden');
     const gen = templateBuilder(kind, massE, radiusE, nChunks);
     const slice = () => {
+      if (build !== sand.gen) { reject(STALE); return; }   // restarted or left the sandbox: drop this build
       const t0 = performance.now();
       let r;
       do { r = gen.next(); } while (!r.done && performance.now() - t0 < 25);
@@ -3278,8 +3284,13 @@ function getTemplate(kind, massE, radiusE, label, nChunks) {
     setTimeout(slice, 0);
   });
 }
-// one build at a time
-function queued(fn) { sand.queue = sand.queue.then(fn).catch(e => console.error(e)); return sand.queue; }
+// one build at a time; a restart or leaving the sandbox (sand.gen++) drops whatever is still queued or forming
+const STALE = 'stale';
+function queued(fn) {
+  const gen = sand.gen;
+  sand.queue = sand.queue.then(() => gen === sand.gen ? fn() : undefined).catch(e => { if (e !== STALE) console.error(e); });
+  return sand.queue;
+}
 
 // Rebuild the particle arrays: keep everything except removed bodies, then append new ones.
 function assemble(remove, adds) {
@@ -3316,7 +3327,7 @@ function assemble(remove, adds) {
     const tt = (add.tilt || 0) * Math.PI / 180, ct = Math.cos(tt), st = Math.sin(tt);
     const ax = add.axis || [0, -st, ct];
     const qa = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(ax[0], ax[1], ax[2])), tv = new THREE.Vector3();
-    const bb = sand.bodies.get(add.id); if (bb) bb.axis = ax;
+    const bb = sand.bodies.get(add.id); if (bb) { bb.axis = ax; bb.thr = T.thr; }   // thr: the surface colour thresholds of the template it was built from
     for (let i = 0; i < T.N; i++) {
       const a = 3 * i, b = 3 * j;
       tv.set(T.local[a], T.local[a + 1], T.local[a + 2]).applyQuaternion(qa);
@@ -3357,8 +3368,7 @@ function assemble(remove, adds) {
     }
     if (!best) return interiorColor('earth', 2, 0.9);
     const dx = p[3 * i] - S.x[best.id], dy = p[3 * i + 1] - S.y[best.id], dz = p[3 * i + 2] - S.z[best.id], r = Math.hypot(dx, dy, dz) || 1;
-    const tpl = sand.tpl.get(tplKey(best.kind, best.massE, best.radiusE));
-    return surfaceColorOf(best.kind, dx / r, dy / r, dz / r, tpl && tpl.thr);
+    return surfaceColorOf(best.kind, dx / r, dy / r, dz / r, best.thr);
   };
   $('count').textContent = N.toLocaleString('en-GB');
   computeSums();
@@ -3408,8 +3418,9 @@ function uniqueName(kind) {
 }
 
 function startSandbox() {
+  sand.gen++;
   stopSpawn(); clearSelection(); clearRings();
-  state.phase = 'building';
+  state.phase = 'building'; $('forming').classList.add('hidden');
   [solidPts, glowPts, ghostPts].forEach(o => o && scene.remove(o));
   world = { sandbox: true, sim: null };
   sand.bodies.clear(); sand.nextId = 1; sand.followId = null; sand.pickFollow = false; $('sFollow').checked = false;
@@ -4671,7 +4682,10 @@ function galClear() {
   if (gal.stars) { scene.remove(gal.stars); gal.stars.geometry.dispose(); gal.stars = null; }
   if (gal.trailPts) { scene.remove(gal.trailPts); gal.trailPts.geometry.dispose(); gal.trailPts = null; }
   for (const kname of ['dust', 'haze', 'neb', 'core']) if (gal[kname]) { scene.remove(gal[kname]); if (kname !== 'haze') gal[kname].geometry.dispose(); gal[kname] = null; }
-  for (const o of gal.bh || []) if (o) { scene.remove(o); scene.remove(o.userData.ring); }
+  for (const o of gal.bh || []) if (o) {
+    scene.remove(o); scene.remove(o.userData.ring);
+    for (const m of [...o.children, o.userData.ring]) { m.geometry.dispose(); m.material.dispose(); }
+  }
   gal.bh = []; gal.built = false;
 }
 
@@ -4944,7 +4958,6 @@ function galFrameCamera() { gal.follow = 'both'; gal.followOn = true; cam.tR = 4
 galUI();
 
 requestAnimationFrame(frame);
-window.__sim = state;
 })();
 </script>
 </body>
