@@ -263,7 +263,7 @@ body:not([data-mode="galaxy"]) .gal-only, body[data-mode="galaxy"] .planet-only 
     <button class="card" data-mode="collide"><b>Collisions</b><span>Pick any two planets, from the Moon to Jupiter, and smash them together. Watch them hit, melt, splash and maybe make a moon.</span><i>Start</i></button>
     <button class="card" data-mode="galaxy"><b>Galaxy collisions</b><span>The Milky Way meets Andromeda, or pick your own pair. Zoom right in to see the black holes, their glowing discs and jets.</span><i>Start</i></button>
     <button class="card" data-mode="sandbox" data-scene="earthmoon"><b>Earth–Moon system</b><span>Earth and the Moon at their real distance. Add more planets, fling them around, and change their size, mass and spin.</span><i>Start</i></button>
-    <button class="card" data-mode="sandbox" data-scene="solar"><b>Solar system</b><span>The Sun and all eight planets at their real distances, with the Moon and rings, coasting on their orbits. Speed it up to watch years pass, or knock something out of place.</span><i>Start</i></button>
+    <button class="card" data-mode="sandbox" data-scene="solar"><b>Solar system</b><span>The Sun and all eight planets at their real distances, with their moons and rings, coasting on their orbits. Speed it up to watch years pass, or knock something out of place.</span><i>Start</i></button>
     <button class="card" data-mode="sandbox" data-scene="empty"><b>Empty space</b><span>Nothing but stars. Build your own system from Earths, Moons, Mars, Venus, Mercury and the giant planets, and fling them at each other.</span><i>Start</i></button>
   </div>
 </div>
@@ -2894,6 +2894,7 @@ function frame(now) {
       // at slow speeds a frame holds less than one coasting step, so take a shorter one rather than wait for a whole step
       const dc = coastDt();
       while (accum > 0 && performance.now() - t0 < 24) { const d = Math.min(dc, accum); if (!coastStep(d)) break; state.simT += d; accum -= d; n++; stepped += d; }
+      if (world.coasting) coastFlush();
       if (accum > dc * 3) accum = 0;
     } else {
       if (world.coasting) { world.coasting = false; sim.reprime(); }   // back to full physics: start fresh from where things are
@@ -3777,20 +3778,25 @@ function sandOverlay() {
   const id = sand.selected;
   if (id != null && S && S.M[id] > 0 && sand.selR) { selBall.visible = true; selBall.position.set(S.x[id], S.y[id], S.z[id]); selBall.scale.setScalar(sand.selR * 1.2); }
   else selBall.visible = false;
-  // name labels
-  const box = $('labels'), w = window.innerWidth, h = window.innerHeight, v = new THREE.Vector3();
+  // name labels: one that would sit on a heavier body's label (a moon seen from far away) waits until you zoom in;
+  // the selected body's label always shows
+  const box = $('labels'), w = window.innerWidth, h = window.innerHeight, v = new THREE.Vector3(), placed = [];
   const have = new Map([...box.children].map(el => [+el.dataset.id, el]));
-  for (const b of sand.bodies.values()) {
+  const order = [...sand.bodies.values()].sort((a, b) => (b.id === sand.selected) - (a.id === sand.selected) || b.massE - a.massE);
+  for (const b of order) {
     let el = have.get(b.id);
     if (!el) { el = document.createElement('span'); el.dataset.id = b.id; box.appendChild(el); }
     have.delete(b.id);
     if (!S || !(S.M[b.id] > 0)) { el.style.display = 'none'; continue; }
     v.set(S.x[b.id], S.y[b.id], S.z[b.id] + b.radiusE * R_EARTH_U * 1.3).project(camera);
     if (v.z > 1 || v.z < -1) { el.style.display = 'none'; continue; }
+    const lx = (v.x + 1) / 2 * w, ly = (1 - v.y) / 2 * h - 4;
+    if (placed.some(q => Math.abs(q[0] - lx) < 44 && Math.abs(q[1] - ly) < 14)) { el.style.display = 'none'; continue; }
+    placed.push([lx, ly]);
     el.style.display = '';
     if (el.textContent !== b.name) el.textContent = b.name;
     el.className = b.id === sand.selected ? 'sel' : '';
-    el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h - 4) + 'px';
+    el.style.left = lx + 'px'; el.style.top = ly + 'px';
   }
   for (const el of have.values()) el.remove();
 }
@@ -4106,7 +4112,7 @@ function coastBegin() {
     for (let i = 0; i < set.n; i++) { set.off[3 * i] = set.pos[3 * i] - B.x; set.off[3 * i + 1] = set.pos[3 * i + 1] - B.y; set.off[3 * i + 2] = set.pos[3 * i + 2] - B.z; }
     if (!set.axis) set.axis = B.ax;
   }
-  world.coast = { bodies, host, off };
+  world.coast = { bodies, host, off, pending: 0 };
   world.coasting = true;
 }
 // step size: a small fraction of the shortest orbit between any two bodies
@@ -4136,18 +4142,26 @@ function rotAbout(x, y, z, k, th, out) {
   out[1] = y * c + (k[2] * x - k[0] * z) * s + k[1] * d;
   out[2] = z * c + (k[0] * y - k[1] * x) * s + k[2] * d;
 }
+// moves only the bodies' centres; their chunks and rings are placed once a frame by coastFlush, so a short step stays cheap
 function coastStep(dt) {
-  const C = world.coast, B = C.bodies, sim = world.sim, p = sim.pos, v = sim.vel, h = 0.5 * dt, tmp = [0, 0, 0];
+  const C = world.coast, B = C.bodies, sim = world.sim, h = 0.5 * dt;
   coastAcc(B);
   for (const b of B) { b.vx += b.ax_ * h; b.vy += b.ay_ * h; b.vz += b.az_ * h; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; }
   coastAcc(B);
   for (const b of B) { b.vx += b.ax_ * h; b.vy += b.ay_ * h; b.vz += b.az_ * h; }
+  C.pending += dt;
   // has anything come close? hand back to the full physics before they touch
   for (let i = 0; i < B.length; i++) for (let k = i + 1; k < B.length; k++) {
     const d = Math.hypot(B[i].x - B[k].x, B[i].y - B[k].y, B[i].z - B[k].z);
-    if (d < COAST_GAP * (B[i].R + B[k].R)) { coastWrite(); world.coasting = false; sim.reprime(); return false; }
+    if (d < COAST_GAP * (B[i].R + B[k].R)) { coastFlush(); world.coasting = false; sim.reprime(); return false; }
   }
-  // spin each body rigidly and place its chunks
+  return true;
+}
+// spin each body rigidly through the time stepped since the last call, and place its chunks and rings
+function coastFlush() {
+  const C = world.coast, B = C.bodies, sim = world.sim, dt = C.pending, tmp = [0, 0, 0];
+  if (!(dt > 0)) return;
+  C.pending = 0;
   const off = C.off, host = C.host;
   for (let i = 0; i < sim.N; i++) {
     const b = B[host[i]]; if (!b) continue;
@@ -4172,7 +4186,6 @@ function coastStep(dt) {
   }
   // heat still fades while coasting
   const f = Math.exp(-0.05 * dt); for (let i = 0; i < sim.N; i++) sim.heat[i] *= f;
-  return true;
 }
 // write the solid-body motion into the chunks: position = centre + offset, velocity = centre velocity + spin x offset
 function coastWrite() {
@@ -4185,18 +4198,29 @@ function coastWrite() {
   }
 }
 
-// ---------- The Solar system: the Sun and eight planets at their real distances (plus the Moon), on circular orbits
+// ---------- The Solar system: the Sun and eight planets at their real distances (plus their moons), on circular orbits
 // in one plane, each with its real spin and tilt. Fewer chunks per body so the whole system fits.
 const AU = 149.6e6 / KM_PER_UNIT;      // one astronomical unit in sim units
 const SOLAR = [
   ['sun', 0, 2500], ['mercury', 0.387, 350], ['venus', 0.723, 900], ['earth', 1.0, 1200], ['mars', 1.524, 400],
   ['jupiter', 5.203, 1500], ['saturn', 9.537, 1500], ['uranus', 19.19, 900], ['neptune', 30.07, 900],
 ];
+// the big and middle-sized moons: planet, moon, distance from the planet's centre in km, chunks, and the orbit's tilt
+// from the planet's equator in degrees (over 90 goes round backwards, like Triton). Mars's moons are left out: at
+// 11-22 km across, their chunks would be so small that the whole system would slow to a crawl.
+const SOLAR_MOONS = [
+  ['jupiter', 'io', 421700, 150, 0], ['jupiter', 'europa', 671034, 150, 0], ['jupiter', 'ganymede', 1070412, 200, 0], ['jupiter', 'callisto', 1882709, 200, 0],
+  ['saturn', 'mimas', 185539, 40, 0], ['saturn', 'enceladus', 237948, 40, 0], ['saturn', 'tethys', 294619, 60, 0], ['saturn', 'dione', 377396, 60, 0],
+  ['saturn', 'rhea', 527108, 80, 0], ['saturn', 'titan', 1221870, 200, 0], ['saturn', 'iapetus', 3560820, 80, 15.5],
+  ['uranus', 'miranda', 129390, 40, 4.3], ['uranus', 'ariel', 190900, 60, 0], ['uranus', 'umbriel', 266000, 60, 0], ['uranus', 'titania', 435910, 80, 0], ['uranus', 'oberon', 583520, 80, 0],
+  ['neptune', 'triton', 354759, 150, 157],
+];
 function startSolarSystem() {
   queued(async () => {
     const tpls = {};
     for (const [kind, , n] of SOLAR) tpls[kind] = await getTemplate(kind, KINDS[kind].massE, KINDS[kind].radiusE, KINDS[kind].label, n);
     tpls.moon = await getTemplate('moon', KINDS.moon.massE, KINDS.moon.radiusE, 'the Moon', 350);
+    for (const [, kind, , n] of SOLAR_MOONS) tpls[kind] = await getTemplate(kind, KINDS[kind].massE, KINDS[kind].radiusE, KINDS[kind].label, n);
     const Msun = 1000 * KINDS.sun.massE, rnd = mulberry(17), adds = [];
     let px = 0, py = 0, pz = 0;
     for (const [kind, a] of SOLAR) {
@@ -4205,8 +4229,24 @@ function startSolarSystem() {
       if (kind === 'sun') { adds.push({ tpl: tpls.sun, id, P: { x: 0, y: 0, z: 0 }, V: { x: 0, y: 0, z: 0 }, omega: omegaForDay(def.day), tilt: def.tilt, sun: true }); continue; }
       const r = a * AU, th = rnd() * 2 * Math.PI, vk = Math.sqrt(Msun / r), m = 1000 * def.massE;
       const P = { x: r * Math.cos(th), y: r * Math.sin(th), z: 0 }, V = { x: -vk * Math.sin(th), y: vk * Math.cos(th), z: 0 };
-      adds.push({ tpl: tpls[kind], id, P, V, omega: omegaForDay(def.day), tilt: def.tilt });
+      const planet = { tpl: tpls[kind], id, P, V: { ...V }, omega: omegaForDay(def.day), tilt: def.tilt };
+      adds.push(planet);
       px += m * V.x; py += m * V.y;
+      // its moons on circular orbits around its equator (the planet's axis is its tilt about x, as in assemble)
+      for (const [host, mk, km, , inc] of SOLAR_MOONS) {
+        if (host !== kind) continue;
+        const A = (def.tilt + inc) * Math.PI / 180, nrm = [0, -Math.sin(A), Math.cos(A)];   // orbit's axis
+        const d = km / KM_PER_UNIT, Mm = 1000 * KINDS[mk].massE, vm = Math.sqrt((m + Mm) / d), ph = rnd() * 2 * Math.PI;
+        const c = Math.cos(ph), s = Math.sin(ph);   // in the orbit plane: (1, 0, 0) and (0, cos A, sin A)
+        const u = { x: -vm * s, y: vm * c * Math.cos(A), z: vm * c * Math.sin(A) };
+        const idM = sand.nextId++;
+        sand.bodies.set(idM, { id: idM, kind: mk, name: KINDS[mk].label, massE: KINDS[mk].massE, radiusE: KINDS[mk].radiusE });
+        adds.push({ tpl: tpls[mk], id: idM, P: { x: P.x + d * c, y: P.y + d * s * Math.cos(A), z: d * s * Math.sin(A) },
+          V: { x: V.x + u.x, y: V.y + u.y, z: u.z }, omega: vm / d, axis: nrm });   // keeps one face to its planet
+        // the planet recoils so the pair's centre keeps to the planet's orbit
+        planet.V.x -= Mm / m * u.x; planet.V.y -= Mm / m * u.y; planet.V.z -= Mm / m * u.z;
+        px += Mm * V.x; py += Mm * V.y;
+      }
       if (kind === 'earth') {
         // the Moon on its real orbit around Earth
         const d = 384400 / KM_PER_UNIT, Mm = 1000 * KINDS.moon.massE, vm = Math.sqrt((m + Mm) / d), idM = sand.nextId++;
