@@ -2891,8 +2891,9 @@ function frame(now) {
     let stepped = 0;
     if (state.mode === 'sandbox' && sandCoastReady()) {
       // everything is far apart: bodies coast on their orbits as solid spinning balls, with big time steps
+      // at slow speeds a frame holds less than one coasting step, so take a shorter one rather than wait for a whole step
       const dc = coastDt();
-      while (accum >= dc && performance.now() - t0 < 24) { if (!coastStep(dc)) break; state.simT += dc; accum -= dc; n++; stepped += dc; }
+      while (accum > 0 && performance.now() - t0 < 24) { const d = Math.min(dc, accum); if (!coastStep(d)) break; state.simT += d; accum -= d; n++; stepped += d; }
       if (accum > dc * 3) accum = 0;
     } else {
       if (world.coasting) { world.coasting = false; sim.reprime(); }   // back to full physics: start fresh from where things are
@@ -2913,7 +2914,7 @@ function frame(now) {
       state.dtAvg = state.dtAvg ? state.dtAvg * (1 - a) + sim.dt * a : sim.dt;
       state.msN = sim.N;
     }
-    if (accum > sim.dt * 3) accum = 0; // machine can't keep up: slow down rather than stall
+    if (!world.coasting && accum > sim.dt * 3) accum = 0; // machine can't keep up: slow down rather than stall
     if (n) { geom.attributes.position.needsUpdate = true; geom.attributes.aHeat.needsUpdate = true; }
     phaseChanges(world, stepped);
     if (state.mode === 'collide') updateReadout(); else sandReadout();
