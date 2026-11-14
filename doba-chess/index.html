@@ -267,6 +267,7 @@ body.home-on.mood-classic .tagline{color:var(--ink)}
 .tr-hero{display:flex;align-items:center;gap:22px;margin:16px 0 22px}
 .tr-coach{width:130px;height:130px;border-width:4px}
 .tr-title{font-family:"Bungee","Arial Black",sans-serif;font-weight:400;font-size:clamp(30px,6vw,46px);line-height:1;margin:0 0 12px;text-shadow:3px 3px 0 #2E9E5B}
+.tr-coachname{font-weight:800;font-size:17px;margin:0 0 8px}
 .tr-say{position:relative;margin:0;background:var(--surface);border:2px solid #2E9E5B;border-radius:16px;padding:10px 14px;font-weight:600;max-width:52ch;box-shadow:var(--lift)}
 .tr-sec{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:18px;margin-bottom:16px;box-shadow:var(--lift)}
 .tr-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -632,6 +633,7 @@ body.home-on.mood-classic .tagline{color:var(--ink)}
     <div class="ava tr-coach" id="trCoachAva" aria-hidden="true"></div>
     <div class="tr-hero-body">
       <h2 class="tr-title">Super Doba<br>Training Course</h2>
+      <div class="tr-coachname">Coach Super Doba<span class="elo">1100 Elo</span></div>
       <p class="tr-say" id="trCoachSay" aria-live="polite"></p>
     </div>
   </section>
@@ -1841,6 +1843,9 @@ $("backBtn").addEventListener("click",leaveGame);
 // artifact, otherwise a direct browser-to-browser connection through PeerJS.
 const TAB_ID=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():("t"+Math.random().toString(36).slice(2)+Date.now().toString(36));
 const PEER_PREFIX="doba-chess-pin-";
+// Always talk to the PeerJS cloud over a secure socket, even when the page itself is served over plain http
+// (an S3 static website is http-only, and PeerJS would otherwise try an insecure socket on port 443 and fail).
+const PEER_OPTS={debug:0,host:"0.peerjs.com",port:443,path:"/",secure:true,config:{iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},{urls:["turn:eu-0.turn.peerjs.com:3478","turn:us-0.turn.peerjs.com:3478"],username:"peerjs",credential:"peerjsp"}]}};
 let dbP=null,peerLibP=null;
 function getDb(){if(!dbP)dbP=(window.claude&&typeof window.claude.use==="function")?Promise.resolve(window.claude.use("db")).catch(()=>null):Promise.resolve(null);return dbP;}
 function loadPeer(){
@@ -1862,7 +1867,7 @@ function errText(e){
   if(c==="revoked"||c==="not_granted"||c==="capability_disabled"||c==="capability_removed")return "Online play isn’t available on this page.";
   if(c==="peer-unavailable"||c==="no_game")return "No game found with that PIN. Check the number and try again.";
   if(c==="peer_unavailable"||c==="network"||c==="server-error"||c==="socket-error"||c==="socket-closed"||c==="browser-incompatible")return "Couldn’t connect to the matchmaking service. Check your internet connection and try again.";
-  return "Couldn’t reach the game server. Check your connection and try again.";
+  return "Couldn’t reach the game server. Check your connection and try again."+(c?" ("+c+")":"");
 }
 function withTimeout(p,ms,code){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej({code:code||"timeout"}),ms))]);}
 function showPinWait(pin,v){
@@ -1920,7 +1925,7 @@ async function mpStartPeer(){
   for(let i=0;i<8;i++){
     const pin=String(1000+Math.floor(Math.random()*9000));
     const res=await new Promise(resolve=>{
-      const peer=new Peer(PEER_PREFIX+pin,{debug:0});
+      const peer=new Peer(PEER_PREFIX+pin,PEER_OPTS);
       const t=setTimeout(()=>{try{peer.destroy();}catch(e){}resolve({err:{code:"network"}});},12000);
       peer.on("open",()=>{clearTimeout(t);resolve({peer});});
       peer.on("error",err=>{clearTimeout(t);try{peer.destroy();}catch(e){}resolve({err,taken:err&&err.type==="unavailable-id"});});
@@ -1979,7 +1984,7 @@ async function mpJoinDb(db,pin){
 async function mpJoinPeer(pin){
   let Peer;try{Peer=await loadPeer();}catch(e){mpMsg(errText(e),true);return;}
   const res=await new Promise(resolve=>{
-    const peer=new Peer({debug:0});let done=false;
+    const peer=new Peer(PEER_OPTS);let done=false;
     const fail=err=>{if(done)return;done=true;clearTimeout(t);try{peer.destroy();}catch(e){}resolve({err});};
     const t=setTimeout(()=>fail({code:"no_game"}),12000);
     peer.on("error",err=>fail(err&&err.type==="peer-unavailable"?{code:"no_game"}:err));
@@ -2348,7 +2353,7 @@ function trPrepGame(){
   ["trHint","trRestart","trNext"].forEach(id=>$(id).hidden=false);
   $("modeTag").hidden=true;$("backBtn").textContent="‹ Training";
   setAccent(COACH);
-  $("botAva").innerHTML=COACH.ava;$("botName").innerHTML='<span class="nm">'+COACH.name+'</span>';
+  $("botAva").innerHTML=COACH.ava;$("botName").innerHTML='<span class="nm">'+COACH.name+'</span><span class="elo">1100 Elo</span>';
   $("youAva").innerHTML=YOU_AV;$("youName").textContent="You";
   setBar($("botBar"),COACH);setBar($("youBar"),null);
   $("bubble2").textContent="";
@@ -2451,7 +2456,9 @@ function trHintMove(){
   if(g.check)return test(()=>inCheck());
   return lm[0];
 }
-$("trHint").addEventListener("click",()=>{if(!tr||tr.done||tr.locked)return;const m=trHintMove();if(!m)return;hintMove=m;hintStage=2;tr.hinted=true;renderBoard();renderArrows();renderTrStatus();say("Follow the green arrow!",1);});
+$("trHint").addEventListener("click",()=>{if(!tr||tr.done||tr.locked)return;
+  if(hintMove&&hintStage===1&&legalNow.includes(hintMove)){hintStage=2;renderBoard();renderArrows();renderTrStatus();say("Follow the green arrow!",1);return;}
+  const m=trHintMove();if(!m)return;hintMove=m;hintStage=1;tr.hinted=true;renderBoard();renderArrows();renderTrStatus();say("Look at the glowing piece. Where could it go?",1);});
 $("trRestart").addEventListener("click",()=>{if(tr)trLoadStep();});
 $("trNext").addEventListener("click",()=>{
   if(!tr||!tr.done)return;
@@ -2461,6 +2468,7 @@ $("trNext").addEventListener("click",()=>{
 function renderTrBtns(){
   if(!tr)return;
   setDis($("trHint"),tr.done||tr.locked||!!tr.step.explain);
+  $("trHint").textContent=(hintMove&&hintStage===1&&!tr.done)?"Show where":"Hint";
   const nb=$("trNext");setDis(nb,!tr.done);nb.classList.toggle("solid",tr.done);
   nb.textContent=(tr.kind==="lesson"&&tr.si<LESSONS[tr.li].steps.length-1)?"Next step ›":"Continue ›";
 }
@@ -2468,7 +2476,7 @@ function renderTrStatus(){
   const s=$("status");s.classList.remove("past");let main,sub="";
   if(tr.kind==="lesson"){const L=LESSONS[tr.li];main="Lesson "+(tr.li+1)+": "+L.title;sub="Step "+(tr.si+1)+" of "+L.steps.length+(tr.done&&!tr.step.explain?". Done!":"");}
   else{main="Daily puzzle "+(tr.pi+1)+" of 5";sub=tr.done?"Solved!":tr.step.kind==="tac"?"Win material":tr.step.kind==="m2"?"Mate in 2":"Mate in 1";}
-  if(hintMove&&!tr.done)sub="Hint: try "+sanOfHint()+".";
+  if(hintMove&&!tr.done)sub=hintStage<2?"Hint: move your "+pieceName(board[hintMove&127]&7)+" on "+sqName(hintMove&127)+". Press Show where to see the square.":"Hint: try "+sanOfHint()+".";
   s.innerHTML="";s.append(main);const x=document.createElement("span");x.className="sub";x.textContent=sub;s.appendChild(x);
   renderTrBtns();
 }
